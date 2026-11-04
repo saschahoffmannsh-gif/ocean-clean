@@ -2,28 +2,34 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b9fcb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Ocean Clean">
-  <link rel="manifest" href="./manifest.webmanifest?v=20261104-full2">
-  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.webmanifest?v=20261104-full3">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20261104-full3">
   <title>Ocean Clean</title>
   <script>
-  // iOS-Home-Bildschirm-App (black-translucent): Das Layout-Viewport ist dort um die
-  // Statusleistenhöhe zu kurz (innerHeight/100vh/100lvh < Bildschirmhöhe), obwohl die
-  // Seite oben unter der Statusleiste beginnt -> unten bliebe ein Streifen ohne Wasser.
-  // Deshalb dort die echte Bildschirmhöhe als Mindesthöhe für das Meer setzen.
-  (function(){var d=document.documentElement;function fit(){var h=innerHeight;
-   if(navigator.standalone===true&&screen&&screen.height){var p=innerHeight>=innerWidth,sh=p?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);if(sh>h&&sh-h<160)h=sh;}
-   d.style.setProperty('--app-h',h+'px');}
+  // Version (auch unten neben Impressum sichtbar) – zum Prüfen, ob die neue Fassung geladen ist.
+  window.OCEAN_CLEAN_VERSION='2026.11.04-3';
+  // Sichtbare Spielfeldhöhe -> --play-h. Das WASSER ist absichtlich höher (siehe styles.css)
+  // und ragt unten über den Bildschirmrand, egal wie iOS die Viewport-Höhe meldet.
+  // iOS-Home-Bildschirm-App (black-translucent) meldet die Höhe teils um die Statusleiste zu klein;
+  // dort zählt die echte Bildschirmhöhe.
+  (function(){var d=document.documentElement;function fit(){var h=innerHeight,
+   sa=navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
+   if(sa&&screen&&screen.height){var p=innerHeight>=innerWidth,sh=p?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);if(sh>h&&sh-h<160)h=sh;}
+   d.style.setProperty('--play-h',h+'px');d.classList.toggle('standalone',!!sa);}
    fit();addEventListener('resize',fit);addEventListener('orientationchange',function(){setTimeout(fit,300)});if(window.visualViewport)visualViewport.addEventListener('resize',fit);})();
   </script>
   <link rel="icon" type="image/svg+xml" href="./assets/wave.svg">
-  <link rel="stylesheet" href="./water-13.0.0/ocean.css?v=20261104-full2">
-  <link rel="stylesheet" href="./styles.css?v=20261104-full2">
+  <link rel="stylesheet" href="./water-13.0.0/ocean.css?v=20261104-full3">
+  <link rel="stylesheet" href="./styles.css?v=20261104-full3">
   <link rel="preload" as="image" href="./water-13.0.0/assets/coast-no-tent-v4.png">
 </head>
 <body>
@@ -32,9 +38,9 @@
     <header class="hud">
       <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16c2.4 0 3.5-1.3 4.7-3.8C9.6 8.3 11.5 5 15.4 5a5.3 5.3 0 0 1 5.3 5.2c-1.3-1.7-3.8-2-5.1-.6-1.7 1.8-.3 4.4 2.5 4.4H21M3 19h18"/></svg><span>ocean <b>clean</b></span></div>
     </header>
-    <nav class="legal" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></nav>
+    <nav class="legal" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span class="ver" id="app-version">v2026.11.04-3</span></nav>
     <p id="error" class="error" role="alert" hidden></p>
   </main>
-  <script type="module" src="./app.js?v=20261104-full2"></script>
+  <script type="module" src="./app.js?v=20261104-full3"></script>
 </body>
 </html>

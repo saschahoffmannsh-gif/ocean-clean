@@ -6,8 +6,8 @@
 // Kein direktes Ziehen – der Finger bewegt das Wasser (Bugwelle + lokale
 // Wischströmung aus swipe-input.js), die Strömung nimmt den Müll mit.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {TRASH} from './trash-catalog.js?v=20261104-full2';
-import {createBody,advance,displayFloat} from './trash-physics.js?v=20261104-full2';
+import {TRASH} from './trash-catalog.js?v=20261104-full3';
+import {createBody,advance,displayFloat} from './trash-physics.js?v=20261104-full3';
 
 const load=src=>new Promise((ok,fail)=>{const i=new Image();i.decoding='async';i.onload=()=>ok(i);i.onerror=()=>fail(new Error('Bild fehlt: '+src));i.src=src;});
 const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
@@ -35,13 +35,15 @@ export class TrashLayer{
   document.addEventListener('visibilitychange',()=>document.hidden?this.stop():this.start());
   this.start();return this;
  }
- get base(){return Math.max(21,Math.min(36,Math.min(this.ocean.width,this.ocean.height)/390*25));}
+ get base(){return Math.max(21,Math.min(36,Math.min(this.ocean.width,this.playH())/390*25));}
+ // Sichtbare Spielfeldhöhe (--play-h); das Wasser-Canvas ist bewusst höher und ragt unten über den Rand.
+ playH(){const v=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--play-h'));return v>0?Math.min(this.ocean.height,v):this.ocean.height;}
  size(b){return this.base*b.kind.radius;}
  resize(){
   const o=this.ocean,dpr=Math.min(devicePixelRatio||1,2),w=Math.round(o.width*dpr),h=Math.round(o.height*dpr);this.dpr=dpr;
   if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}
-  if(this.w&&this.bodies.length){const sx=o.width/this.w,sy=o.height/this.h;for(const b of this.bodies){b.x*=sx;b.y*=sy;}}
-  this.w=o.width;this.h=o.height;
+  const ph=this.playH();if(this.w&&this.bodies.length){const sx=o.width/this.w,sy=ph/this.h;for(const b of this.bodies){b.x*=sx;b.y*=sy;}}
+  this.w=o.width;this.h=ph;
  }
  spawn(){
   const n=this.count??Math.round(Math.max(26,Math.min(38,this.w*this.h/10500))),order=[];
@@ -56,7 +58,7 @@ export class TrashLayer{
  stop(){cancelAnimationFrame(this.raf);this.raf=0;}
  frame(){
   const t0=performance.now(),now=t0,frameDt=Math.min(.1,(now-(this.last||now-16.7))/1000);this.last=now;
-  const o=this.ocean,w=o.width,h=o.height,F=this.cfg.float;
+  const o=this.ocean,w=o.width,h=this.h||o.height,F=this.cfg.float;
   this.steps=advance(this.sim,this.bodies,(t,n)=>({width:w,height:h,now:n,t,pulses:o.pulses,
    flow:(x,y)=>this.input.flow.sample(x,y,n),size:b=>this.size(b)}),frameDt,now,this.cfg.drift,
    (dt,env)=>{for(const b of this.bodies){

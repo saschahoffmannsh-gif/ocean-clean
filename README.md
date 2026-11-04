@@ -36,7 +36,10 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 
 - `viewport-fit=cover`: Wasser und Müll-Canvas füllen das ganze Display (hinter Notch/Dynamic Island und Home-Indicator),
   `position:fixed`, Höhe `100lvh` (Fallbacks `100vh`, `-webkit-fill-available`). Die 620-px-Spalte aus `ocean.css` wird nur in `styles.css` überschrieben.
-- iOS-Home-Bildschirm-App: Dort ist das Layout-Viewport um die Statusleiste zu kurz; ein Inline-Skript in `index.html` setzt `--app-h` auf die echte Bildschirmhöhe (`max(100lvh, var(--app-h))`).
+- Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
+  (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
+  und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
+- Version unten neben Impressum (`v2026.11.04-3`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
 - Logo und Impressum/Datenschutz rücken per `env(safe-area-inset-*)` (und ggf. Browserleiste: `100lvh − 100dvh`) ein.
 - Drehen / Leistenwechsel: `app.js` misst bei `resize`, `orientationchange` und `visualViewport.resize` neu.
 - `manifest.webmanifest` (display `fullscreen`), Icons in `assets/icons/` (192, 512, maskable 512, apple-touch-icon 180).

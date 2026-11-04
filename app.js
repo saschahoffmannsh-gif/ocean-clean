@@ -1,7 +1,7 @@
 import {OceanWater} from './water-13.0.0/ocean.js';
-import {makeConfig} from './src/config.js?v=20261104-full2';
-import {TrashLayer} from './src/trash-layer.js?v=20261104-full2';
-import {SwipeInput,tuneWater} from './src/swipe-input.js?v=20261104-full2';
+import {makeConfig} from './src/config.js?v=20261104-full3';
+import {TrashLayer} from './src/trash-layer.js?v=20261104-full3';
+import {SwipeInput,tuneWater} from './src/swipe-input.js?v=20261104-full3';
 const root=document.querySelector('#ocean'),error=document.querySelector('#error');
 const fail=message=>{error.hidden=false;error.textContent=message;};
 try{
@@ -11,9 +11,10 @@ try{
  const input=new SwipeInput(ocean,config);
  root.addEventListener('ocean-error',()=>fail('Die Wasseroberfläche konnte nicht wiederhergestellt werden. Bitte die Seite neu laden.'));
  const trash=await new TrashLayer(ocean,config,input).init();
- window.oceanClean={ocean,trash,input,config};
+ window.oceanClean={ocean,trash,input,config,version:window.OCEAN_CLEAN_VERSION};
+ if(new URLSearchParams(location.search).has('debug'))import('./src/debug.js?v=20261104-full3').then(m=>m.startDebug(window.oceanClean));
  // Vollbild: bei Drehung / Browserleisten-Änderung Wasser und Müll-Canvas neu vermessen
  let pending=0;const refit=()=>{cancelAnimationFrame(pending);pending=requestAnimationFrame(()=>{const r=root.getBoundingClientRect();
-  if(Math.abs(r.width-ocean.width)>.5||Math.abs(r.height-ocean.height)>.5){ocean.resize();trash.resize();}});};
+  if(Math.abs(r.width-ocean.width)>.5||Math.abs(r.height-ocean.height)>.5)ocean.resize();trash.resize();});};
  addEventListener('orientationchange',()=>setTimeout(refit,250));addEventListener('resize',refit);visualViewport?.addEventListener('resize',refit);
 }catch(e){fail('Das Meer konnte nicht geladen werden. Bitte die Seite neu laden.');console.error(e);}
