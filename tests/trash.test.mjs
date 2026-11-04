@@ -11,7 +11,7 @@ import {probe} from './helpers/suction-probe.mjs';
 
 test('trash catalog: 18-24+ sprites, category in file name, files exist',()=>{
  assert.ok(TRASH.length>=18);
- for(const t of TRASH){assert.match(t.src,new RegExp(`/${t.category}-${t.name}\\.png$`));assert.ok(existsSync(new URL('..'+t.src.slice(1),import.meta.url)),t.src);}
+ for(const t of TRASH){const f=t.src.split('?')[0];assert.match(f,new RegExp(`/${t.category}-${t.name}\\.png$`));assert.ok(existsSync(new URL('..'+f.slice(1),import.meta.url)),t.src);assert.ok(t.look>.3&&t.look<=1.3,'look '+t.name);}
  assert.equal(new Set(TRASH.map(t=>t.src)).size,TRASH.length);
 });
 

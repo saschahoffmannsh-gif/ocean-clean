@@ -32,7 +32,16 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
   Dünung und Restwellen lassen sie nur wippen/kippen (Original-`stepBuoyancy`, Hub ≤ 2,5 px), aber nicht wandern.
 - Kein direktes Ziehen: Der Finger bewegt nur das Wasser.
 
-## Sog beim Wischen (v2026.11.04-5)
+## Müll-Items v2: strikte Draufsicht (v2026.11.04-6)
+- Alle 24 Sprites neu (gleiche Dateinamen in `assets/trash/`), orthografisch senkrecht von oben, flach treibend,
+  Licht oben links, keine eingebauten Schatten. Prompts, Zuordnung und abgelehnte Zellen in
+  `asset-sources/trash/metadata.json`, Bildbögen in `asset-sources/trash/sheets/`, Freistellen mit
+  `process_trash.py`, Kontaktbogen `contact_sheet.py` → `screenshots/trash-contact-v2.png`. v1 archiviert in
+  `asset-sources/trash/v1/`.
+- Renderer: `look` je Item (realistische relative Größen, nur Darstellung), freie 360°-Drehung, Schatten aus der
+  Silhouette. Physik (`radius`, `mass`, `float`) unverändert.
+
+## Sog beim Wischen (v2026.11.04-6)
 - Enger Sog-Kern (Kielwasser) direkt unter der Fingerspur in `src/swipe-flow.js`, Parameter `flow.suction` in
   `src/config.js` (`radius` 30 px, `strength` .3, `inward` .15, `ahead` .35, `decay` .7 s; skaliert mit `?force`).
 - Teile auf der Spur werden zusätzlich ~25–32 px in Wischrichtung mitgezogen und zur Spurmitte gehalten statt
@@ -45,7 +54,7 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version unten neben Impressum (`v2026.11.04-5`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
+- Version unten neben Impressum (`v2026.11.04-6`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
 - v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
   `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
   aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.

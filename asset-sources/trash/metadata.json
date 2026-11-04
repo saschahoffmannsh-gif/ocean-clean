@@ -1,14 +1,17 @@
 {
- "tool": "GenerateImage (Grok Bot), 2026-11-04, aspect 3:4, sheets 2–4 with sheet 1 as style reference",
- "stylePrompt": "High quality painted, slightly realistic 2.5D mobile game illustration, steep top-down view from above, soft warm sunlight from the upper left, gentle self-shading, crisp clean silhouettes, rich but natural colors, like premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, no cast shadows on the background, no water, no text, no labels, no borders.",
+ "version": 2,
+ "tool": "GenerateImage (Grok Bot), 2026-11-04 – v2 strikte Draufsicht; v1 archiviert in asset-sources/trash/v1/",
+ "review": "Jedes Item auf Perspektive geprüft; abgelehnte Zellen (rejected) neu generiert in sheet5/sheet6. Zellen mit null werden ignoriert.",
+ "look": "Darstellungsgröße (lange Seite) relativ, nur Renderer; Physik nutzt weiter radius.",
  "processing": "asset-sources/trash/process_trash.py",
  "sheets": [
   {
-   "file": "asset-sources/trash/sheets/sheet1-plastik.jpg",
+   "file": "asset-sources/trash/sheets/v2-sheet1-plastik.jpg",
    "grid": [
     3,
     2
    ],
+   "aspect": "4:3",
    "items": [
     {
      "category": "plastik",
@@ -16,7 +19,8 @@
      "label": "PET-Flasche",
      "radius": 0.95,
      "mass": 0.6,
-     "float": 0.9
+     "float": 0.9,
+     "look": 0.95
     },
     {
      "category": "plastik",
@@ -24,7 +28,8 @@
      "label": "Plastiktüte",
      "radius": 1.0,
      "mass": 0.25,
-     "float": 0.55
+     "float": 0.55,
+     "look": 1.1
     },
     {
      "category": "plastik",
@@ -32,7 +37,8 @@
      "label": "Plastikbecher",
      "radius": 0.8,
      "mass": 0.35,
-     "float": 0.8
+     "float": 0.8,
+     "look": 0.62
     },
     {
      "category": "plastik",
@@ -40,65 +46,44 @@
      "label": "Strohhalm",
      "radius": 0.7,
      "mass": 0.15,
-     "float": 0.9
+     "float": 0.9,
+     "look": 0.8
     },
-    {
-     "category": "plastik",
-     "name": "sixpack-ring",
-     "label": "Sixpack-Ring",
-     "radius": 0.85,
-     "mass": 0.2,
-     "float": 0.6
-    },
+    null,
     {
      "category": "plastik",
      "name": "kanister",
      "label": "Kanister",
      "radius": 1.05,
      "mass": 0.9,
-     "float": 0.95
+     "float": 0.95,
+     "look": 1.05
     }
    ],
-   "prompt": "Game asset sprite sheet: six separate pieces of floating ocean plastic trash … (1) crumpled clear-blue PET water bottle with white cap and blue label, (2) crumpled white plastic shopping bag, (3) red plastic party cup lying on its side, (4) bent striped plastic drinking straw, (5) clear plastic six-pack ring holder, (6) yellow plastic jerrycan canister with handle. Arranged in a neat 3 columns x 2 rows grid with very generous empty space, each object fully inside its own cell. High quality painted, slightly realistic 2.5D mobile game illustration, steep top-down view from above, soft warm sunlight from the upper left, gentle self-shading, crisp clean silhouettes, rich but natural colors, like premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, no cast shadows on the background, no water, no text, no labels, no borders."
+   "rejected": {
+    "sixpack-ring": "9 statt 6 Ringe → neu in sheet6"
+   },
+   "prompt": "Game asset sprite sheet, strict top-down orthographic view: camera directly above, looking straight down at 90 degrees, flat lay, no perspective, no side walls visible, no bottoms visible, like objects floating flat on a water surface photographed from a drone straight above. Six separate pieces of floating plastic trash in a neat 3 columns x 2 rows grid with very generous empty space, each object fully inside its own cell, all objects in a consistent relative scale: (1) clear-blue PET water bottle lying flat, seen from above as a long horizontal profile with white cap and blue label on top, slightly crumpled; (2) crumpled white plastic shopping bag lying flat, spread out on the surface, handles splayed; (3) red plastic party cup seen from directly above: a round circle showing the open mouth, the inner bottom and the rolled rim ring, concentric circles; (4) red and white striped plastic drinking straw lying flat, slightly bent; (5) clear plastic six-pack ring holder lying flat seen from above, six round rings; (6) yellow plastic jerrycan canister lying flat on its side seen straight from above, showing its broad flat face with the handle and cap at the top edge. High quality painted, slightly realistic mobile game illustration, soft warm sunlight from the upper left, gentle self-shading, slightly wet glossy surfaces, crisp clean silhouettes, rich but natural colors, premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, absolutely no cast shadows, no drop shadows, no water, no text, no borders."
   },
   {
-   "file": "asset-sources/trash/sheets/sheet2-metall-glas.jpg",
+   "file": "asset-sources/trash/sheets/v2-sheet2-metall-glas.jpg",
    "grid": [
     3,
     2
    ],
+   "aspect": "4:3",
    "items": [
-    {
-     "category": "metall",
-     "name": "dose",
-     "label": "Getränkedose",
-     "radius": 0.75,
-     "mass": 0.5,
-     "float": 0.8
-    },
-    {
-     "category": "metall",
-     "name": "konservendose",
-     "label": "Konservendose",
-     "radius": 0.8,
-     "mass": 0.7,
-     "float": 0.65
-    },
-    {
-     "category": "metall",
-     "name": "spraydose",
-     "label": "Spraydose",
-     "radius": 0.85,
-     "mass": 0.6,
-     "float": 0.8
-    },
+    null,
+    null,
+    null,
     {
      "category": "metall",
      "name": "kronkorken",
      "label": "Kronkorken",
      "radius": 0.42,
      "mass": 0.15,
-     "float": 0.6
+     "float": 0.6,
+     "look": 0.4
     },
     {
      "category": "glas",
@@ -106,57 +91,46 @@
      "label": "Glasflasche",
      "radius": 1.0,
      "mass": 0.9,
-     "float": 0.7
+     "float": 0.7,
+     "look": 1.0
     },
-    {
-     "category": "glas",
-     "name": "glas",
-     "label": "Schraubglas",
-     "radius": 0.82,
-     "mass": 0.85,
-     "float": 0.65
-    }
+    null
    ],
-   "prompt": "Game asset sprite sheet: six separate pieces of floating ocean metal and glass trash … (1) dented red aluminium soda can lying on its side, (2) rusty opened tin food can with jagged peeled lid and faded paper label, (3) blue and silver aerosol spray can lying on its side, (4) small bent metal bottle cap crown cork, (5) dark green glass beer bottle lying on its side with a cork-brown label, (6) amber brown glass jar with a metal screw lid. Glass is painted mostly opaque with soft highlights. Arranged in a neat 3 columns x 2 rows grid with very generous empty space, each object fully inside its own cell. High quality painted, slightly realistic 2.5D mobile game illustration, steep top-down view from above, soft warm sunlight from the upper left, gentle self-shading, crisp clean silhouettes, rich but natural colors, like premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, no cast shadows on the background, no water, no text, no labels, no borders."
+   "rejected": {
+    "dose": "Deckel als Ellipse sichtbar (schräg)",
+    "konservendose": "Seitenwand sichtbar",
+    "spraydose": "Ende schräg",
+    "glas": "Seitenwand sichtbar"
+   },
+   "prompt": "Game asset sprite sheet, strict top-down orthographic view: camera directly above, looking straight down at 90 degrees, flat lay, no perspective, no side walls visible, no bottoms visible, like objects floating flat on a water surface photographed from a drone straight above. Six separate pieces of floating metal and glass trash in a neat 3 columns x 2 rows grid with very generous empty space, each object fully inside its own cell, all in a consistent relative scale: (1) dented red aluminium soda can lying flat, seen from above as a horizontal rectangle-like profile, the round top visible only as a narrow edge at one end; (2) rusty opened tin food can seen from directly above: a circle with the open top, jagged peeled lid bent to one side, rim ring visible; (3) blue and silver aerosol spray can lying flat, horizontal profile from above with nozzle cap at one end; (4) metal bottle cap crown cork seen exactly from above: round disc with crimped serrated edge, slightly bent; (5) dark green glass beer bottle lying flat, horizontal long profile from above with a brown label; (6) amber brown glass jar with metal screw lid seen exactly from above: round metal lid circle with amber glass rim around it. Glass painted mostly opaque with soft highlights. High quality painted, slightly realistic mobile game illustration, soft warm sunlight from the upper left, gentle self-shading, slightly wet glossy surfaces, crisp clean silhouettes, rich but natural colors, premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, absolutely no cast shadows, no drop shadows, no water, no text, no borders."
   },
   {
-   "file": "asset-sources/trash/sheets/sheet3-papier-gummi.jpg",
+   "file": "asset-sources/trash/sheets/v2-sheet3-papier-gummi.jpg",
    "grid": [
     3,
     2
    ],
+   "aspect": "4:3",
    "items": [
-    {
-     "category": "papier",
-     "name": "karton",
-     "label": "Karton",
-     "radius": 1.05,
-     "mass": 0.6,
-     "float": 0.6
-    },
+    null,
     {
      "category": "papier",
      "name": "zeitung",
      "label": "Zeitung",
      "radius": 0.95,
      "mass": 0.35,
-     "float": 0.5
+     "float": 0.5,
+     "look": 1.05
     },
-    {
-     "category": "papier",
-     "name": "pappbecher",
-     "label": "Pappbecher",
-     "radius": 0.78,
-     "mass": 0.35,
-     "float": 0.75
-    },
+    null,
     {
      "category": "gummi",
      "name": "badelatsche",
      "label": "Badelatsche",
      "radius": 0.85,
      "mass": 0.45,
-     "float": 0.95
+     "float": 0.95,
+     "look": 0.9
     },
     {
      "category": "gummi",
@@ -164,7 +138,8 @@
      "label": "Reifen",
      "radius": 1.1,
      "mass": 1.2,
-     "float": 0.7
+     "float": 0.7,
+     "look": 1.25
     },
     {
      "category": "sonstiges",
@@ -172,17 +147,23 @@
      "label": "Fischernetz-Knäuel",
      "radius": 1.1,
      "mass": 0.8,
-     "float": 0.5
+     "float": 0.5,
+     "look": 1.2
     }
    ],
-   "prompt": "Game asset sprite sheet: six separate pieces of floating ocean paper and rubber trash … (1) soggy flattened brown cardboard box with tape, (2) folded wet newspaper, (3) white paper coffee cup with brown sleeve and plastic lid lying on its side, (4) single bright blue rubber flip-flop sandal, (5) small black rubber car tire, (6) tangled green and orange fishing net clump with rope. Arranged in a neat 3 columns x 2 rows grid with very generous empty space, each object fully inside its own cell. High quality painted, slightly realistic 2.5D mobile game illustration, steep top-down view from above, soft warm sunlight from the upper left, gentle self-shading, crisp clean silhouettes, rich but natural colors, like premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, no cast shadows on the background, no water, no text, no labels, no borders."
+   "rejected": {
+    "karton": "offen, Innenwände perspektivisch",
+    "pappbecher": "Seitenwand sichtbar"
+   },
+   "prompt": "Game asset sprite sheet, strict top-down orthographic view: camera directly above, looking straight down at 90 degrees, flat lay, no perspective, no side walls visible, no bottoms visible, like objects floating flat on a water surface photographed from a drone straight above. Six separate pieces of floating trash in a neat 3 columns x 2 rows grid with very generous empty space, each object fully inside its own cell, all in a consistent relative scale: (1) soggy brown cardboard box seen exactly from above: square top with four open flaps folded outward and packing tape, no side walls visible; (2) wet folded newspaper lying completely flat, seen from above, rectangle with blurred unreadable print columns; (3) white paper coffee cup seen exactly from above: round white plastic lid with drink opening, concentric circles, brown sleeve barely peeking out around the edge; (4) single bright blue rubber flip-flop sandal lying flat, seen from above, sole outline with Y-strap; (5) black rubber car tire lying flat, seen exactly from above as a perfect circular ring with tread pattern and empty hole in the center; (6) tangled green and orange fishing net clump lying flat spread on the surface with a rope, seen from above. High quality painted, slightly realistic mobile game illustration, soft warm sunlight from the upper left, gentle self-shading, slightly wet glossy surfaces, crisp clean silhouettes, rich but natural colors, premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, absolutely no cast shadows, no drop shadows, no water, no text, no borders."
   },
   {
-   "file": "asset-sources/trash/sheets/sheet4-sonstiges.jpg",
+   "file": "asset-sources/trash/sheets/v2-sheet4-sonstiges.jpg",
    "grid": [
     3,
     2
    ],
+   "aspect": "4:3",
    "items": [
     {
      "category": "gummi",
@@ -190,7 +171,8 @@
      "label": "Gummihandschuh",
      "radius": 0.8,
      "mass": 0.3,
-     "float": 0.7
+     "float": 0.7,
+     "look": 0.9
     },
     {
      "category": "plastik",
@@ -198,7 +180,8 @@
      "label": "Wasserball",
      "radius": 0.9,
      "mass": 0.25,
-     "float": 1.0
+     "float": 1.0,
+     "look": 1.0
     },
     {
      "category": "plastik",
@@ -206,7 +189,8 @@
      "label": "Waschmittelflasche",
      "radius": 0.95,
      "mass": 0.75,
-     "float": 0.9
+     "float": 0.9,
+     "look": 1.0
     },
     {
      "category": "sonstiges",
@@ -214,7 +198,8 @@
      "label": "Fischerboje",
      "radius": 0.85,
      "mass": 0.7,
-     "float": 1.0
+     "float": 1.0,
+     "look": 0.95
     },
     {
      "category": "plastik",
@@ -222,7 +207,8 @@
      "label": "Styropor-Box",
      "radius": 0.95,
      "mass": 0.3,
-     "float": 1.0
+     "float": 1.0,
+     "look": 0.9
     },
     {
      "category": "plastik",
@@ -230,10 +216,96 @@
      "label": "Zahnbürste",
      "radius": 0.7,
      "mass": 0.15,
-     "float": 0.85
+     "float": 0.85,
+     "look": 0.75
     }
    ],
-   "prompt": "Game asset sprite sheet: six separate pieces of floating ocean trash … (1) yellow rubber cleaning glove, (2) faded red and white beach ball, (3) white plastic detergent bottle with orange cap, (4) orange plastic fishing buoy float with rope loop, (5) white styrofoam takeaway food box, half open, (6) small blue plastic toothbrush. Arranged in a neat 3 columns x 2 rows grid with very generous empty space, each object fully inside its own cell. High quality painted, slightly realistic 2.5D mobile game illustration, steep top-down view from above, soft warm sunlight from the upper left, gentle self-shading, crisp clean silhouettes, rich but natural colors, like premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, no cast shadows on the background, no water, no text, no labels, no borders."
+   "prompt": "Game asset sprite sheet, strict top-down orthographic view: camera directly above, looking straight down at 90 degrees, flat lay, no perspective, no side walls visible, no bottoms visible, like objects floating flat on a water surface photographed from a drone straight above. Six separate pieces of floating trash in a neat 3 columns x 2 rows grid with very generous empty space, each object fully inside its own cell, all in a consistent relative scale: (1) yellow rubber cleaning glove lying completely flat, palm down, fingers spread, seen from above; (2) faded red and white beach ball seen from directly above: a sphere showing the round valve cap at the center with colored segments radiating outward like a star; (3) white plastic detergent bottle with orange cap lying flat on its side seen from above, horizontal profile showing its flat broad face with handle; (4) orange plastic fishing buoy float lying flat, horizontal elongated capsule seen from above with a dark band and a rope loop at one end; (5) closed white styrofoam takeaway food box seen exactly from above: square lid with molded ridges and the front tab, no sides visible; (6) small blue plastic toothbrush lying flat seen from above, bristles at one end. High quality painted, slightly realistic mobile game illustration, soft warm sunlight from the upper left, gentle self-shading, slightly wet glossy surfaces, crisp clean silhouettes, rich but natural colors, premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, absolutely no cast shadows, no drop shadows, no water, no text, no borders."
+  },
+  {
+   "file": "asset-sources/trash/sheets/v2-sheet5-nachgeneriert.jpg",
+   "grid": [
+    3,
+    2
+   ],
+   "aspect": "4:3",
+   "items": [
+    {
+     "category": "metall",
+     "name": "dose",
+     "label": "Getränkedose",
+     "radius": 0.75,
+     "mass": 0.5,
+     "float": 0.8,
+     "look": 0.68
+    },
+    {
+     "category": "metall",
+     "name": "konservendose",
+     "label": "Konservendose",
+     "radius": 0.8,
+     "mass": 0.7,
+     "float": 0.65,
+     "look": 0.62
+    },
+    {
+     "category": "metall",
+     "name": "spraydose",
+     "label": "Spraydose",
+     "radius": 0.85,
+     "mass": 0.6,
+     "float": 0.8,
+     "look": 0.8
+    },
+    {
+     "category": "glas",
+     "name": "glas",
+     "label": "Schraubglas",
+     "radius": 0.82,
+     "mass": 0.85,
+     "float": 0.65,
+     "look": 0.58
+    },
+    {
+     "category": "papier",
+     "name": "karton",
+     "label": "Karton",
+     "radius": 1.05,
+     "mass": 0.6,
+     "float": 0.6,
+     "look": 1.1
+    },
+    {
+     "category": "papier",
+     "name": "pappbecher",
+     "label": "Pappbecher",
+     "radius": 0.78,
+     "mass": 0.35,
+     "float": 0.75,
+     "look": 0.6
+    }
+   ],
+   "prompt": "Game asset sprite sheet, strict top-down orthographic view, technical plan view: camera exactly perpendicular above, zero perspective, zero tilt, like a flat-lay product photo shot straight down. Cylindrical objects lying on their side are seen exactly perpendicular to their axis, so their ends appear as straight edges with NO ellipse visible; upright round objects are seen as perfect concentric circles with NO side wall visible. Six separate pieces of floating trash in a neat 3 columns x 2 rows grid with very generous empty space, each fully inside its own cell, consistent relative scale: (1) dented red aluminium soda can lying on its side, seen from above as a flat rectangle-like profile with straight ends, silver rims as thin straight bands at both ends; (2) rusty opened tin food can standing upright seen exactly from above: perfect circle, inner rusty bottom, thin rim ring, jagged peeled lid lying flat folded outward beside it, no outer wall visible; (3) blue and silver aerosol spray can lying on its side seen from above as a straight flat profile with straight ends and a small white nozzle cap at one end; (4) amber brown glass jar standing upright seen exactly from above: perfect circle of a silver metal screw lid with a thin amber glass ring around it, no side wall visible; (5) brown cardboard box seen exactly from above with its top closed: square with flaps closed and a strip of packing tape across the middle, slightly soggy, no side walls visible; (6) white paper coffee cup standing upright seen exactly from above: perfect concentric circles of the white plastic lid with a small drink opening, no side wall visible. High quality painted, slightly realistic mobile game illustration, soft warm sunlight from the upper left, gentle self-shading, slightly wet glossy surfaces, crisp clean silhouettes, rich but natural colors, premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, absolutely no cast shadows, no drop shadows, no water, no text, no borders."
+  },
+  {
+   "file": "asset-sources/trash/sheets/v2-sheet6-sixpack.jpg",
+   "grid": [
+    1,
+    1
+   ],
+   "aspect": "1:1",
+   "items": [
+    {
+     "category": "plastik",
+     "name": "sixpack-ring",
+     "label": "Sixpack-Ring",
+     "radius": 0.85,
+     "mass": 0.2,
+     "float": 0.6,
+     "look": 0.75
+    }
+   ],
+   "prompt": "Game asset sprite, strict top-down orthographic plan view, camera exactly perpendicular above, zero perspective: a single clear translucent plastic six-pack ring holder lying completely flat, exactly six round rings arranged in 2 rows of 3, connected by the typical thin plastic web, slightly bent and wet glossy, centered with generous empty space. Plastic painted slightly milky white-blue so it reads clearly. High quality painted, slightly realistic mobile game illustration, soft warm sunlight from the upper left, gentle self-shading, slightly wet glossy surfaces, crisp clean silhouettes, rich but natural colors, premium casual mobile game item icons. Background: perfectly flat solid pure magenta (#FF00FF) everywhere, no gradient, no texture, absolutely no cast shadows, no drop shadows, no water, no text, no borders."
   }
  ]
 }

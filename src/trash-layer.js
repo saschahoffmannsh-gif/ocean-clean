@@ -6,8 +6,8 @@
 // Kein direktes Ziehen – der Finger bewegt das Wasser (Bugwelle + lokale
 // Wischströmung aus swipe-input.js), die Strömung nimmt den Müll mit.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {TRASH} from './trash-catalog.js?v=20261104-full5';
-import {createBody,advance,displayFloat} from './trash-physics.js?v=20261104-full5';
+import {TRASH} from './trash-catalog.js?v=20261104-full6';
+import {createBody,advance,displayFloat} from './trash-physics.js?v=20261104-full6';
 
 const load=src=>new Promise((ok,fail)=>{const i=new Image();i.decoding='async';i.onload=()=>ok(i);i.onerror=()=>fail(new Error('Bild fehlt: '+src));i.src=src;});
 const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
@@ -39,6 +39,8 @@ export class TrashLayer{
  // Sichtbare Spielfeldhöhe (--play-h); das Wasser-Canvas ist bewusst höher und ragt unten über den Rand.
  playH(){const v=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--play-h'));return v>0?Math.min(this.ocean.height,v):this.ocean.height;}
  size(b){return this.base*b.kind.radius;}
+ // Darstellung: realistische relative Größen der Draufsicht-Sprites (Physik bleibt bei size()).
+ look(b){return this.base*(b.kind.look??b.kind.radius);}
  resize(){
   const o=this.ocean,dpr=Math.min(devicePixelRatio||1,2),w=Math.round(o.width*dpr),h=Math.round(o.height*dpr);this.dpr=dpr;
   if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}
@@ -80,7 +82,7 @@ export class TrashLayer{
  draw(){
   const c=this.ctx,dpr=this.dpr;c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,this.canvas.width,this.canvas.height);
   for(const b of this.bodies){
-   const size=this.size(b),f=b.float,box=size*2.3,k=box/b.sprite.img.width,pw=b.sprite.shadow.width*k,ph=b.sprite.shadow.height*k;
+   const size=this.look(b),f=b.float,box=size*2.3,k=box/b.sprite.img.width,pw=b.sprite.shadow.width*k,ph=b.sprite.shadow.height*k;
    const sx=Math.cos(f.roll*Math.PI/180)*(1-f.bob*.01),sy=Math.cos(f.pitch*Math.PI/180)*(1-f.bob*.01);
    const place=(dx,dy)=>{c.setTransform(dpr,0,0,dpr,0,0);c.translate(b.x+dx,b.y+f.bob+dy);c.rotate(b.angle+f.roll*.004);c.scale(sx,sy);};
    // Schatten aufs Wasser: nach unten rechts, bei Hub (Teil höher) etwas weiter weg und weicher

@@ -6,17 +6,18 @@
   "radius": 0.95,
   "mass": 0.6,
   "float": 0.9,
+  "look": 0.95,
   "file": "assets/trash/plastik-pet-flasche.png",
-  "sheet": "asset-sources/trash/sheets/sheet1-plastik.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet1-plastik.jpg",
   "cell": [
    0,
    0
   ],
   "sourceSize": [
-   182,
-   317
+   320,
+   118
   ],
-  "scale": 0.744
+  "scale": 0.738
  },
  {
   "category": "plastik",
@@ -25,17 +26,18 @@
   "radius": 1.0,
   "mass": 0.25,
   "float": 0.55,
+  "look": 1.1,
   "file": "assets/trash/plastik-tuete.png",
-  "sheet": "asset-sources/trash/sheets/sheet1-plastik.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet1-plastik.jpg",
   "cell": [
    1,
    0
   ],
   "sourceSize": [
-   275,
-   309
+   268,
+   271
   ],
-  "scale": 0.764
+  "scale": 0.871
  },
  {
   "category": "plastik",
@@ -44,17 +46,18 @@
   "radius": 0.8,
   "mass": 0.35,
   "float": 0.8,
+  "look": 0.62,
   "file": "assets/trash/plastik-becher.png",
-  "sheet": "asset-sources/trash/sheets/sheet1-plastik.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet1-plastik.jpg",
   "cell": [
    2,
    0
   ],
   "sourceSize": [
-   230,
-   185
+   200,
+   199
   ],
-  "scale": 1.026
+  "scale": 1.18
  },
  {
   "category": "plastik",
@@ -63,36 +66,18 @@
   "radius": 0.7,
   "mass": 0.15,
   "float": 0.9,
+  "look": 0.8,
   "file": "assets/trash/plastik-strohhalm.png",
-  "sheet": "asset-sources/trash/sheets/sheet1-plastik.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet1-plastik.jpg",
   "cell": [
    0,
    1
   ],
   "sourceSize": [
-   203,
-   293
+   330,
+   105
   ],
-  "scale": 0.805
- },
- {
-  "category": "plastik",
-  "name": "sixpack-ring",
-  "label": "Sixpack-Ring",
-  "radius": 0.85,
-  "mass": 0.2,
-  "float": 0.6,
-  "file": "assets/trash/plastik-sixpack-ring.png",
-  "sheet": "asset-sources/trash/sheets/sheet1-plastik.jpg",
-  "cell": [
-   1,
-   1
-  ],
-  "sourceSize": [
-   293,
-   240
-  ],
-  "scale": 0.805
+  "scale": 0.715
  },
  {
   "category": "plastik",
@@ -101,72 +86,16 @@
   "radius": 1.05,
   "mass": 0.9,
   "float": 0.95,
+  "look": 1.05,
   "file": "assets/trash/plastik-kanister.png",
-  "sheet": "asset-sources/trash/sheets/sheet1-plastik.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet1-plastik.jpg",
   "cell": [
    2,
    1
   ],
   "sourceSize": [
-   232,
-   284
-  ],
-  "scale": 0.831
- },
- {
-  "category": "metall",
-  "name": "dose",
-  "label": "Getränkedose",
-  "radius": 0.75,
-  "mass": 0.5,
-  "float": 0.8,
-  "file": "assets/trash/metall-dose.png",
-  "sheet": "asset-sources/trash/sheets/sheet2-metall-glas.jpg",
-  "cell": [
-   0,
-   0
-  ],
-  "sourceSize": [
-   195,
-   277
-  ],
-  "scale": 0.852
- },
- {
-  "category": "metall",
-  "name": "konservendose",
-  "label": "Konservendose",
-  "radius": 0.8,
-  "mass": 0.7,
-  "float": 0.65,
-  "file": "assets/trash/metall-konservendose.png",
-  "sheet": "asset-sources/trash/sheets/sheet2-metall-glas.jpg",
-  "cell": [
-   1,
-   0
-  ],
-  "sourceSize": [
-   222,
-   301
-  ],
-  "scale": 0.784
- },
- {
-  "category": "metall",
-  "name": "spraydose",
-  "label": "Spraydose",
-  "radius": 0.85,
-  "mass": 0.6,
-  "float": 0.8,
-  "file": "assets/trash/metall-spraydose.png",
-  "sheet": "asset-sources/trash/sheets/sheet2-metall-glas.jpg",
-  "cell": [
-   2,
-   0
-  ],
-  "sourceSize": [
-   241,
-   197
+   237,
+   241
   ],
   "scale": 0.979
  },
@@ -177,17 +106,18 @@
   "radius": 0.42,
   "mass": 0.15,
   "float": 0.6,
+  "look": 0.4,
   "file": "assets/trash/metall-kronkorken.png",
-  "sheet": "asset-sources/trash/sheets/sheet2-metall-glas.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet2-metall-glas.jpg",
   "cell": [
    0,
    1
   ],
   "sourceSize": [
-   124,
-   102
+   160,
+   154
   ],
-  "scale": 1.903
+  "scale": 1.475
  },
  {
   "category": "glas",
@@ -196,55 +126,18 @@
   "radius": 1.0,
   "mass": 0.9,
   "float": 0.7,
+  "look": 1.0,
   "file": "assets/trash/glas-flasche.png",
-  "sheet": "asset-sources/trash/sheets/sheet2-metall-glas.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet2-metall-glas.jpg",
   "cell": [
    1,
    1
   ],
   "sourceSize": [
-   250,
-   300
+   374,
+   117
   ],
-  "scale": 0.787
- },
- {
-  "category": "glas",
-  "name": "glas",
-  "label": "Schraubglas",
-  "radius": 0.82,
-  "mass": 0.85,
-  "float": 0.65,
-  "file": "assets/trash/glas-glas.png",
-  "sheet": "asset-sources/trash/sheets/sheet2-metall-glas.jpg",
-  "cell": [
-   2,
-   1
-  ],
-  "sourceSize": [
-   208,
-   280
-  ],
-  "scale": 0.843
- },
- {
-  "category": "papier",
-  "name": "karton",
-  "label": "Karton",
-  "radius": 1.05,
-  "mass": 0.6,
-  "float": 0.6,
-  "file": "assets/trash/papier-karton.png",
-  "sheet": "asset-sources/trash/sheets/sheet3-papier-gummi.jpg",
-  "cell": [
-   0,
-   0
-  ],
-  "sourceSize": [
-   266,
-   232
-  ],
-  "scale": 0.887
+  "scale": 0.631
  },
  {
   "category": "papier",
@@ -253,36 +146,18 @@
   "radius": 0.95,
   "mass": 0.35,
   "float": 0.5,
+  "look": 1.05,
   "file": "assets/trash/papier-zeitung.png",
-  "sheet": "asset-sources/trash/sheets/sheet3-papier-gummi.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet3-papier-gummi.jpg",
   "cell": [
    1,
    0
   ],
   "sourceSize": [
-   288,
-   254
+   302,
+   238
   ],
-  "scale": 0.819
- },
- {
-  "category": "papier",
-  "name": "pappbecher",
-  "label": "Pappbecher",
-  "radius": 0.78,
-  "mass": 0.35,
-  "float": 0.75,
-  "file": "assets/trash/papier-pappbecher.png",
-  "sheet": "asset-sources/trash/sheets/sheet3-papier-gummi.jpg",
-  "cell": [
-   2,
-   0
-  ],
-  "sourceSize": [
-   208,
-   211
-  ],
-  "scale": 1.118
+  "scale": 0.781
  },
  {
   "category": "gummi",
@@ -291,17 +166,18 @@
   "radius": 0.85,
   "mass": 0.45,
   "float": 0.95,
+  "look": 0.9,
   "file": "assets/trash/gummi-badelatsche.png",
-  "sheet": "asset-sources/trash/sheets/sheet3-papier-gummi.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet3-papier-gummi.jpg",
   "cell": [
    0,
    1
   ],
   "sourceSize": [
-   197,
-   263
+   142,
+   318
   ],
-  "scale": 0.897
+  "scale": 0.742
  },
  {
   "category": "gummi",
@@ -310,17 +186,18 @@
   "radius": 1.1,
   "mass": 1.2,
   "float": 0.7,
+  "look": 1.25,
   "file": "assets/trash/gummi-reifen.png",
-  "sheet": "asset-sources/trash/sheets/sheet3-papier-gummi.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet3-papier-gummi.jpg",
   "cell": [
    1,
    1
   ],
   "sourceSize": [
-   222,
-   257
+   285,
+   289
   ],
-  "scale": 0.918
+  "scale": 0.817
  },
  {
   "category": "sonstiges",
@@ -329,17 +206,18 @@
   "radius": 1.1,
   "mass": 0.8,
   "float": 0.5,
+  "look": 1.2,
   "file": "assets/trash/sonstiges-fischernetz.png",
-  "sheet": "asset-sources/trash/sheets/sheet3-papier-gummi.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet3-papier-gummi.jpg",
   "cell": [
    2,
    1
   ],
   "sourceSize": [
-   283,
-   238
+   329,
+   280
   ],
-  "scale": 0.834
+  "scale": 0.717
  },
  {
   "category": "gummi",
@@ -348,14 +226,15 @@
   "radius": 0.8,
   "mass": 0.3,
   "float": 0.7,
+  "look": 0.9,
   "file": "assets/trash/gummi-handschuh.png",
-  "sheet": "asset-sources/trash/sheets/sheet4-sonstiges.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet4-sonstiges.jpg",
   "cell": [
    0,
    0
   ],
   "sourceSize": [
-   172,
+   200,
    299
   ],
   "scale": 0.789
@@ -367,17 +246,18 @@
   "radius": 0.9,
   "mass": 0.25,
   "float": 1.0,
+  "look": 1.0,
   "file": "assets/trash/plastik-wasserball.png",
-  "sheet": "asset-sources/trash/sheets/sheet4-sonstiges.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet4-sonstiges.jpg",
   "cell": [
    1,
    0
   ],
   "sourceSize": [
-   235,
-   237
+   268,
+   271
   ],
-  "scale": 0.996
+  "scale": 0.871
  },
  {
   "category": "plastik",
@@ -386,17 +266,18 @@
   "radius": 0.95,
   "mass": 0.75,
   "float": 0.9,
+  "look": 1.0,
   "file": "assets/trash/plastik-waschmittelflasche.png",
-  "sheet": "asset-sources/trash/sheets/sheet4-sonstiges.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet4-sonstiges.jpg",
   "cell": [
    2,
    0
   ],
   "sourceSize": [
-   164,
-   297
+   283,
+   245
   ],
-  "scale": 0.795
+  "scale": 0.834
  },
  {
   "category": "sonstiges",
@@ -405,17 +286,18 @@
   "radius": 0.85,
   "mass": 0.7,
   "float": 1.0,
+  "look": 0.95,
   "file": "assets/trash/sonstiges-boje.png",
-  "sheet": "asset-sources/trash/sheets/sheet4-sonstiges.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet4-sonstiges.jpg",
   "cell": [
    0,
    1
   ],
   "sourceSize": [
-   174,
-   318
+   312,
+   188
   ],
-  "scale": 0.742
+  "scale": 0.756
  },
  {
   "category": "plastik",
@@ -424,17 +306,18 @@
   "radius": 0.95,
   "mass": 0.3,
   "float": 1.0,
+  "look": 0.9,
   "file": "assets/trash/plastik-styropor-box.png",
-  "sheet": "asset-sources/trash/sheets/sheet4-sonstiges.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet4-sonstiges.jpg",
   "cell": [
    1,
    1
   ],
   "sourceSize": [
-   258,
-   285
+   254,
+   266
   ],
-  "scale": 0.828
+  "scale": 0.887
  },
  {
   "category": "plastik",
@@ -443,16 +326,157 @@
   "radius": 0.7,
   "mass": 0.15,
   "float": 0.85,
+  "look": 0.75,
   "file": "assets/trash/plastik-zahnbuerste.png",
-  "sheet": "asset-sources/trash/sheets/sheet4-sonstiges.jpg",
+  "sheet": "asset-sources/trash/sheets/v2-sheet4-sonstiges.jpg",
   "cell": [
    2,
    1
   ],
   "sourceSize": [
-   154,
-   289
+   217,
+   261
   ],
-  "scale": 0.817
+  "scale": 0.904
+ },
+ {
+  "category": "metall",
+  "name": "dose",
+  "label": "Getränkedose",
+  "radius": 0.75,
+  "mass": 0.5,
+  "float": 0.8,
+  "look": 0.68,
+  "file": "assets/trash/metall-dose.png",
+  "sheet": "asset-sources/trash/sheets/v2-sheet5-nachgeneriert.jpg",
+  "cell": [
+   0,
+   0
+  ],
+  "sourceSize": [
+   273,
+   159
+  ],
+  "scale": 0.864
+ },
+ {
+  "category": "metall",
+  "name": "konservendose",
+  "label": "Konservendose",
+  "radius": 0.8,
+  "mass": 0.7,
+  "float": 0.65,
+  "look": 0.62,
+  "file": "assets/trash/metall-konservendose.png",
+  "sheet": "asset-sources/trash/sheets/v2-sheet5-nachgeneriert.jpg",
+  "cell": [
+   1,
+   0
+  ],
+  "sourceSize": [
+   262,
+   214
+  ],
+  "scale": 0.901
+ },
+ {
+  "category": "metall",
+  "name": "spraydose",
+  "label": "Spraydose",
+  "radius": 0.85,
+  "mass": 0.6,
+  "float": 0.8,
+  "look": 0.8,
+  "file": "assets/trash/metall-spraydose.png",
+  "sheet": "asset-sources/trash/sheets/v2-sheet5-nachgeneriert.jpg",
+  "cell": [
+   2,
+   0
+  ],
+  "sourceSize": [
+   312,
+   148
+  ],
+  "scale": 0.756
+ },
+ {
+  "category": "glas",
+  "name": "glas",
+  "label": "Schraubglas",
+  "radius": 0.82,
+  "mass": 0.85,
+  "float": 0.65,
+  "look": 0.58,
+  "file": "assets/trash/glas-glas.png",
+  "sheet": "asset-sources/trash/sheets/v2-sheet5-nachgeneriert.jpg",
+  "cell": [
+   0,
+   1
+  ],
+  "sourceSize": [
+   232,
+   234
+  ],
+  "scale": 1.009
+ },
+ {
+  "category": "papier",
+  "name": "karton",
+  "label": "Karton",
+  "radius": 1.05,
+  "mass": 0.6,
+  "float": 0.6,
+  "look": 1.1,
+  "file": "assets/trash/papier-karton.png",
+  "sheet": "asset-sources/trash/sheets/v2-sheet5-nachgeneriert.jpg",
+  "cell": [
+   1,
+   1
+  ],
+  "sourceSize": [
+   233,
+   232
+  ],
+  "scale": 1.013
+ },
+ {
+  "category": "papier",
+  "name": "pappbecher",
+  "label": "Pappbecher",
+  "radius": 0.78,
+  "mass": 0.35,
+  "float": 0.75,
+  "look": 0.6,
+  "file": "assets/trash/papier-pappbecher.png",
+  "sheet": "asset-sources/trash/sheets/v2-sheet5-nachgeneriert.jpg",
+  "cell": [
+   2,
+   1
+  ],
+  "sourceSize": [
+   230,
+   233
+  ],
+  "scale": 1.013
+ },
+ {
+  "category": "plastik",
+  "name": "sixpack-ring",
+  "label": "Sixpack-Ring",
+  "radius": 0.85,
+  "mass": 0.2,
+  "float": 0.6,
+  "look": 0.75,
+  "file": "assets/trash/plastik-sixpack-ring.png",
+  "sheet": "asset-sources/trash/sheets/v2-sheet6-sixpack.jpg",
+  "cell": [
+   0,
+   0
+  ],
+  "sourceSize": [
+   600,
+   414
+  ],
+  "scale": 0.393
  }
 ]

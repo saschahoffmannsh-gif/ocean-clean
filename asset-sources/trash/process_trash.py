@@ -1,4 +1,4 @@
-"""Cut the generated magenta-keyed trash sheets into transparent sprites.
+"""v2 (strict top-down). Cut the generated magenta-keyed trash sheets into transparent sprites.
 Usage: python3 asset-sources/trash/process_trash.py  (run from repo root)
 Steps per sheet: chroma alpha from magenta-ness (min(R,B)-G), colour un-mixing
 against the sheet's background colour (removes magenta fringe), edge despill,
@@ -57,6 +57,7 @@ def run():
             ids = [i for i in ids if sizes[i - 1] >= big * .02]
             return ndimage.binary_dilation(np.isin(lab, ids), iterations=3)
         for i, item in enumerate(sh['items']):
+            if item is None: continue  # abgelehnte Zelle (falsche Perspektive), siehe metadata 'rejected'
             cx, cy = i % cols, i // cols
             x0, y0 = 0, 0
             # components of the whole sheet, assigned to this cell by centroid
