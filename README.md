@@ -1,28 +1,16 @@
-# Ocean Clean – Wasseroberfläche (Prototyp)
+# Ocean Clean – Original-Meer
 
-Offenes Meer von oben, ohne Küste. Darauf ein **unsichtbares 6×6-Logikraster**
-(`grid.js`), das die freie Meeresfläche zwischen Kopfzeile und späterer
-Steuerleiste ausfüllt. Vier Platzhalter (Kiste, Flasche, Dose, Reifen) schwimmen
-auf Rasterfeldern und zeigen den Auftrieb.
+Reines Original-Meer aus **Ocean Water 13.0.0** (Export aus Ocean Clean 13.0.0, Quellstand
+`55e004ca58e798537a2d28e510d6ae932e2c5947`) mit Kopfzeile „ocean clean“ und Impressum/Datenschutz.
 
-Starten (kein Build-Schritt):
+- `water-13.0.0/core/*` und `water-13.0.0/assets/coast-no-tent-v4.png`: bytegleiche Originalmodule
+  (Prüfsummen in `SOURCE_MANIFEST.json`, geprüft von `npm test`).
+- `water-13.0.0/ocean.js`, `ocean.css`, `ocean-audio.js`, `water-preset.json`: unveränderter Adapter aus dem Export.
+- `app.js`: `OceanWater.create(#ocean, {settings:{swell:85,light:65,quality:'auto'}, gesture:'game', travel:0.10})`.
+  Kein Einstellungsmenü, Meeresklang bleibt aus.
 
-```sh
-cd ocean-clean && python3 -m http.server 8000   # dann http://localhost:8000
-```
+Der Ordnername `water-13.0.0/` dient zugleich als Cache-Busting für die Originalmodule
+(diese bleiben bytegleich und erhalten daher keine `?v=`-Parameter). Bei neuer Wasserversion neuen Ordner anlegen.
 
-URL-Optionen: `?grid=1` zeigt das Raster zum Entwickeln (Taste **G** schaltet um),
-`?swell=0…100` Wellengang (Standard 32), `?light=0…100` Licht (65), `?quality=eco|high`.
-Antippen des Wassers erzeugt eine Welle, Objekte in der Nähe reagieren.
-
-## Dateien
-- `water.js` – WebGL2-Shader (übernommen aus Ocean Merge, Küste entfernt) + 2D-Fallback
-- `buoyancy.js` – Auftrieb/Wippen/Kippen (aus Ocean Merge, ohne Brandung, plus Hochsee-Dünung)
-- `camera.js` – Weltmaßstab und langsames Treiben über das Meer
-- `grid.js` – unsichtbares 6×6-Raster: `gridGeometry`, `cellCenter`, `cellAt`
-- `app.js` – Schleife, Platzhalter, Eingaben; `window.oceanClean.splash(x,y,power)` für spätere Merges
-- `assets/open-sea-floor.png` – nahtlos kachelbarer Meeresgrund, aus dem Tiefwasserbereich von `coast-no-tent-v4.png` erzeugt
-
-## Veröffentlichung
-GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen Verbindungen (Schriften = Systemschriften).
-Impressum/Datenschutz: `impressum.html`, `datenschutz.html`, dezent unten rechts verlinkt.
+Starten: `python3 -m http.server 8000` → http://localhost:8000 · Tests: `npm test` (Node 20+).
+Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen Verbindungen.

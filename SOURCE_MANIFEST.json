@@ -1,0 +1,55 @@
+{
+  "project": "Ocean Clean – Wasserexport",
+  "source_commit": "55e004ca58e798537a2d28e510d6ae932e2c5947",
+  "source_package_version": "13.0.0",
+  "files": [
+    {
+      "source": "dist/water.js",
+      "export": "public/core/water.js",
+      "sha256": "8c5a427b975258481af24c6f0a13cb6a8a44f3eb96c1c19a0fa40fa593a4ea8d",
+      "byte_identical": true
+    },
+    {
+      "source": "dist/camera.js",
+      "export": "public/core/camera.js",
+      "sha256": "b993f77bc3338a505e1ccbbc04b75f63ad815b281de42d1c22dbec28961ece6d",
+      "byte_identical": true
+    },
+    {
+      "source": "dist/game-feel.js",
+      "export": "public/core/game-feel.js",
+      "sha256": "72e5e45841b5f59ee0c66c3176d5d8ad67a6a09286cc1f2be4b97c21de4a0b74",
+      "byte_identical": true
+    },
+    {
+      "source": "dist/surf.js",
+      "export": "public/core/surf.js",
+      "sha256": "4ffabaff5c6ef32fd93afc81cc239cdadf5b8c44b5e1d2872eba2381ea016929",
+      "byte_identical": true
+    },
+    {
+      "source": "dist/buoyancy.js",
+      "export": "public/core/buoyancy.js",
+      "sha256": "3348fa82d882f9a04ba852b51f39490d9308e82dfde34dd5bf443e4088422ad1",
+      "byte_identical": true
+    },
+    {
+      "source": "dist/water-settings.js",
+      "export": "public/core/water-settings.js",
+      "sha256": "5d83184c42ebb62052a0d7963e739b793d5223983acc616785fc70843fbd94ec",
+      "byte_identical": true
+    },
+    {
+      "source": "dist/voyage-touch.js",
+      "export": "public/core/voyage-touch.js",
+      "sha256": "34d9f7efffab16844a9eac05b46836a56003bd3c3a8f1222f1bb0298dfebc569",
+      "byte_identical": true
+    },
+    {
+      "source": "dist/assets/coast-no-tent-v4.png",
+      "export": "public/assets/coast-no-tent-v4.png",
+      "sha256": "aa253edbe395cb4d0dea9c2e91d1d86adb8e23253d037146b5fdeffeeff9474b",
+      "byte_identical": true
+    }
+  ]
+}

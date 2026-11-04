@@ -1,0 +1,18 @@
+{
+  "source": "Ocean Clean 13.0.0",
+  "swell": 85,
+  "light": 65,
+  "quality": "auto",
+  "sound": false,
+  "oceanView": true,
+  "oceanTravel": 0.1,
+  "objectAnchoring": 0.9,
+  "camera": {"x": 0, "y": -0.1},
+  "surface": {"surfPeriod": 7.6, "surfGain": 1.85, "crestWidthGain": 1.5, "swellGain": 1.22, "ambientIntervalMs": 2100},
+  "simulation": {"stepSeconds": 0.016666666666666666, "frameDeltaCap": 0.04, "accumulatorCap": 0.05, "edgeDamping": [0.92, 0.993], "heightClamp": [-0.8, 0.8]},
+  "qualityPresets": {"auto": {"dprCap": 1.5, "simulationWidth": 192}, "high": {"dprCap": 2, "simulationWidth": 240}, "eco": {"dprCap": 1, "simulationWidth": 128}},
+  "motionWake": {"leadingAmplitude": 0.31, "leadingOffsetPx": 12, "leadingRadius": 6.2, "trailingAmplitude": -0.17, "trailingOffsetPx": -16, "trailingRadius": 5.2, "waterSwipePower": 0.95, "itemSwipePower": 1.15},
+  "buoyancy": {"maxHeave": 9.5, "maxPitch": 12, "maxRoll": 10, "maxDip": 0.16, "responseGain": 4.7},
+  "interactionWaves": {"lifetimeMs": 2000, "speedPxPerSecond": 250, "widthPx": 46, "decay": 1.15},
+  "reducedMotion": "Original behavior: default swell 12 and reduced interaction animation when the device requests reduced motion."
+}

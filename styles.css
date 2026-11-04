@@ -1,28 +1,9 @@
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;overscroll-behavior:none;touch-action:none;background:#0592c4;overflow:hidden;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent}
-.world{position:fixed;inset:0;overflow:hidden;touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;--cell:60px}
-#water,.grid-debug{position:absolute;inset:0;width:100%;height:100%;display:block}
-.grid-debug{pointer-events:none;z-index:3}.grid-debug[hidden]{display:none}
-.float-layer{position:absolute;inset:0;pointer-events:none;z-index:2}
-.floater{position:absolute;left:0;top:0;width:calc(var(--cell)*.92);height:calc(var(--cell)*.92);margin:calc(var(--cell)*-.46);will-change:transform;--dip:0;--lift:0}
-/* Schatten auf dem Wasser: Sonne von links oben (wie im Original), wandert beim Anheben weiter weg. */
-.float-shadow{position:absolute;inset:18%;border-radius:40%;background:#04506a;opacity:calc(.32 - var(--dip)*1.2);filter:blur(calc(var(--cell)*.06));transform:translate(calc(var(--cell)*.07 + var(--lift)*.5px),calc(var(--cell)*.09 + var(--lift)*.7px))}
-.float-art{position:absolute;left:50%;top:50%;width:100%;height:100%;transform-origin:center}
-.float-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
-/* Heller Wasserrand folgt der Objektform und wird beim Eintauchen kräftiger. */
-.surface-art{filter:drop-shadow(0 0 1.5px rgb(232 255 246 / calc(.45 + var(--dip)*3))) drop-shadow(0 1px 1px #0b4a5a40) brightness(calc(1 - var(--dip)*.9))}
-/* Unter Wasser liegender Teil: leicht versetzt, türkis gefärbt, verschwommen. */
-.submerged-art{opacity:.45;filter:blur(1.5px) saturate(.5) brightness(.7) sepia(.2) hue-rotate(150deg);transform:translate(2px,3px) scale(1.04)}
+/* Nur Ocean-Clean-Oberfläche über dem Original-Meer; das Meer selbst kommt aus water-13.0.0/ocean.css. */
+#ocean{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 .hud{position:absolute;left:0;right:0;top:0;padding:calc(14px + env(safe-area-inset-top)) 16px 0;display:flex;z-index:5;pointer-events:none}
 .brand{display:flex;align-items:center;gap:6px;font-family:Fraunces,Georgia,serif;font-size:19px;letter-spacing:-.8px;color:#fffae4;background:#0b4a5a55;border:1px solid #fff5d92e;border-radius:25px;padding:5px 12px 5px 9px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);text-shadow:0 2px 15px #0b503a77}
 .brand b{font-weight:500}.brand svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
-.hint{position:absolute;left:0;right:0;bottom:calc(34px + env(safe-area-inset-bottom));margin:0;text-align:center;font-size:11px;font-weight:600;color:#f5ffed;text-shadow:0 1px 6px #005a6280;pointer-events:none;z-index:4;opacity:.85}
-.loading{position:absolute;inset:0;background:#0592c4;z-index:10;transition:opacity .6s;pointer-events:none}
-.loaded .loading{opacity:0}
-@media (min-width:900px){.brand{font-size:22px}.hud{padding:22px 26px 0}.hint{font-size:12px}}
-/* Dezente Rechtslinks: klein, halbtransparent, unten rechts – stören das Spielbild nicht. */
 .legal{position:absolute;right:calc(10px + env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));z-index:6;display:flex;gap:8px;font-size:9px;font-weight:500;opacity:.55}
 .legal a{color:#eafffa;text-decoration:none;text-shadow:0 1px 4px #00506299}
-.legal a:hover,.legal a:focus-visible{opacity:1;text-decoration:underline}
-.legal:hover{opacity:.95}
-.spray{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.legal a:hover,.legal a:focus-visible{opacity:1;text-decoration:underline}.legal:hover{opacity:.95}
+.error{position:absolute;z-index:7;left:20px;right:20px;bottom:40px;background:#f8faed;color:#153f43;border-radius:18px;padding:20px;margin:0}
