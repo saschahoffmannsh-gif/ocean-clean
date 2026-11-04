@@ -39,7 +39,17 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version unten neben Impressum (`v2026.11.04-3`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
+- Version unten neben Impressum (`v2026.11.04-4`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
+- v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
+  `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
+  aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.
+  `display-mode`-Query) `html`/`body` auf `max(100vh,100lvh,--play-h)`. Belege:
+  github.com/get-bb/bb/commit/2356aee352cc0e870f534e6c2a4696b2bb674266, github.com/GarrickZ2/grove/pull/20,
+  github.com/openchamber/openchamber/issues/2287, github.com/anomalyco/opencode/pull/46703, WebKit-Bug 313800.
+- Alternativen, falls der Streifen bleibt: (a) Manifest + `black-translucent` für iOS entfernen – kein Spalt mehr,
+  aber undurchsichtige Statusleiste, Wasser reicht nicht mehr unter die Notch (github.com/agegr/pi-web/issues/598);
+  (b) Gerät einmal drehen und zurück (temporär). Manifest-/Meta-Änderungen greifen erst nach Löschen und neu
+  Hinzufügen des Home-Bildschirm-Icons.
 - Logo und Impressum/Datenschutz rücken per `env(safe-area-inset-*)` (und ggf. Browserleiste: `100lvh − 100dvh`) ein.
 - Drehen / Leistenwechsel: `app.js` misst bei `resize`, `orientationchange` und `visualViewport.resize` neu.
 - `manifest.webmanifest` (display `fullscreen`), Icons in `assets/icons/` (192, 512, maskable 512, apple-touch-icon 180).

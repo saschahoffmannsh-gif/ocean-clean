@@ -24,6 +24,16 @@ body{min-height:100%;background:#0b9fcb;overscroll-behavior:none;position:fixed;
 .legal{right:calc(12px + env(safe-area-inset-right));bottom:auto;top:calc(var(--play-h,100vh) - 8px - env(safe-area-inset-bottom));transform:translateY(-100%);align-items:center}
 .legal .ver{color:#eafffa;opacity:.7;font-size:8px;letter-spacing:.2px}
 #error{left:calc(20px + env(safe-area-inset-left));right:calc(20px + env(safe-area-inset-right));bottom:auto;top:calc(var(--play-h,100vh) - 40px - env(safe-area-inset-bottom));transform:translateY(-100%)}
+/* iOS-Home-Bildschirm-App (iOS 26, black-translucent + viewport-fit=cover): Dort sind innerHeight/100%/100dvh
+   um die Statusleiste zu kurz, nur 100lvh/100vh = echte Bildschirmhöhe. html/body mit height:100% (aus ocean.css)
+   + overflow:hidden schnitten das Meer deshalb unten ab -> Streifen. In der App die ganze Kette auf volle Höhe setzen.
+   Belege: github.com/get-bb/bb/commit/2356aee, github.com/GarrickZ2/grove/pull/20, github.com/openchamber/openchamber/issues/2287 */
+html.standalone,html.standalone body{height:100vh;height:100lvh;height:max(100vh,100lvh,var(--play-h,0px));min-height:0}
+html.standalone body{inset:0 0 auto 0}
+@media (display-mode:standalone),(display-mode:fullscreen){
+ html,body{height:100vh;height:100lvh;height:max(100vh,100lvh,var(--play-h,0px))}
+ body{inset:0 0 auto 0}
+}
 /* Diagnose (?debug=1) */
 .debug{position:fixed;z-index:20;left:calc(8px + env(safe-area-inset-left));top:calc(64px + env(safe-area-inset-top));max-width:calc(100vw - 16px);margin:0;padding:8px 10px;border-radius:10px;background:#001a24d9;color:#d9fff6;font:10px/1.35 ui-monospace,Menlo,monospace;white-space:pre;pointer-events:none}
 .probe{position:fixed;left:0;top:0;width:1px;visibility:hidden;pointer-events:none}

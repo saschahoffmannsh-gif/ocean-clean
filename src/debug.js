@@ -16,6 +16,7 @@ export function startDebug(app){
    `safe-area t/r/b/l ${cs.paddingTop}/${cs.paddingRight}/${cs.paddingBottom}/${cs.paddingLeft}`,
    `standalone    nav=${navigator.standalone} mm=${matchMedia('(display-mode: standalone)').matches}`,
    `--play-h      ${getComputedStyle(document.documentElement).getPropertyValue('--play-h')}`,
+   `html/body     ${r(document.documentElement.getBoundingClientRect().height)}/${r(document.body.getBoundingClientRect().height)}  class=${document.documentElement.className}`,
    `container     ${r(root.top)}..${r(root.bottom)} (${r(root.width)}×${r(root.height)})`,
    `water canvas  css ${app.ocean.width}×${app.ocean.height} px ${gl.width}×${gl.height}`,
    `trash canvas  px ${tc.width}×${tc.height}  field ${app.trash.w}×${r(app.trash.h)}`,
