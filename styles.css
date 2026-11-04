@@ -1,6 +1,6 @@
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#0592c4;overflow:hidden;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent}
-.world{position:fixed;inset:0;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;--cell:60px}
+html,body{margin:0;height:100%;overscroll-behavior:none;touch-action:none;background:#0592c4;overflow:hidden;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent}
+.world{position:fixed;inset:0;overflow:hidden;touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;--cell:60px}
 #water,.grid-debug{position:absolute;inset:0;width:100%;height:100%;display:block}
 .grid-debug{pointer-events:none;z-index:3}.grid-debug[hidden]{display:none}
 .float-layer{position:absolute;inset:0;pointer-events:none;z-index:2}

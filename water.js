@@ -4,7 +4,7 @@
 // GPU-Wellensimulation (Ping-Pong-Höhenfeld) für lokale Störungen.
 // Geändert: Küstenlinie, Brandung, Sand, Uferschaum und Wassermaske entfallen.
 // Der Meeresgrund ist eine nahtlos kachelbare Textur in Weltkoordinaten.
-import {seaView} from './camera.js';
+import {seaView} from './camera.js?v=20261104-swipe';
 
 // Gemeinsame GLSL-Hilfen: Bildschirm-UV -> Welt -> Kachel-UV.
 const WORLD_GLSL=`
@@ -29,6 +29,10 @@ out vec4 fragColor;
 uniform sampler2D uState;
 uniform vec2 uTexel;
 uniform vec4 uDrops[12];
+uniform vec4 uSegs[16];   // Wischspur: Strecke a(xy)→b(zw), Bildschirm 0…1
+uniform vec2 uSegP[16];   // x=Amplitude, y=Radius in Texeln
+uniform int uSegCount;
+uniform float uDamp;
 uniform int uDropCount;
 void main(){
   vec2 p=vUv;
@@ -37,12 +41,20 @@ void main(){
   float next=(texture(uState,p+vec2(uTexel.x,0.)).r+texture(uState,p-vec2(uTexel.x,0.)).r+texture(uState,p+vec2(0.,uTexel.y)).r+texture(uState,p-vec2(0.,uTexel.y)).r)*.5-state.g;
   // Offenes Meer: Wellen laufen am Bildrand weich aus statt zu reflektieren.
   float edge=min(min(p.x,1.-p.x),min(p.y,1.-p.y));
-  next*=mix(.90,.993,smoothstep(0.,.06,edge));
+  next*=mix(.90,uDamp,smoothstep(0.,.06,edge));
   for(int i=0;i<12;i++){
     if(i>=uDropCount)break;
     vec2 d=(p-uDrops[i].xy)/uTexel;
     float r=length(d)/uDrops[i].w;
     if(r<1.)next+=(cos(r*3.14159265)+1.)*.5*uDrops[i].z;
+  }
+  // Finger-Kapseln: lückenlose Störung entlang der ganzen Wischstrecke.
+  for(int i=0;i<16;i++){
+    if(i>=uSegCount)break;
+    vec2 a=uSegs[i].xy/uTexel,b=uSegs[i].zw/uTexel,q=p/uTexel,ab=b-a;
+    float h=clamp(dot(q-a,ab)/max(dot(ab,ab),1e-4),0.,1.);
+    float r=length(q-a-ab*h)/uSegP[i].y;
+    if(r<1.)next+=(cos(r*3.14159265)+1.)*.5*uSegP[i].x;
   }
   next=clamp(next,-.8,.8);
   fragColor=vec4(next,h,0.,1.);
@@ -62,6 +74,8 @@ uniform float uTime;
 uniform float uWind;
 uniform float uLight;
 uniform float uHasSimulation;
+uniform vec4 uTouches[4]; // Fingerspitzen: xy, Gischt-Stärke, Radius
+uniform int uTouchCount;
 uniform vec4 uRipples[20];
 uniform int uRippleCount;
 ${WORLD_GLSL}
@@ -100,6 +114,8 @@ void main(){
     float d=texture(uState,uv+vec2(0.,uTexel.y)).r;
     height=texture(uState,uv).r;
     dynamicGrad=vec2(b-a,d-c)*4.5;
+    // Fingerwellen sichtbar verstärken; das ruhige Grundbild (kleine Gradienten) bleibt unverändert.
+    dynamicGrad*=1.+3.2*smoothstep(.045,.3,length(dynamicGrad));
     curvature+=vec3(a+b-2.*height,0.,c+d-2.*height)*75.;
   }else{
     for(int i=0;i<20;i++){
@@ -123,7 +139,7 @@ void main(){
   grad+=vec2(.55,1.)*cos(swellPhase)*.0016*(.4+uWind);
   grad+=dynamicGrad;
   vec2 drift=vec2(seaGradient.x/aspect,seaGradient.y)*.018;
-  vec2 refraction=vec2(grad.x/aspect,grad.y)*.022;
+  vec2 refraction=vec2(grad.x/aspect,grad.y)*.022+vec2(dynamicGrad.x/aspect,dynamicGrad.y)*.03;
   vec2 sampleUv=uv+refraction+drift;
   vec3 normal=normalize(vec3(-grad.x,grad.y,1.));
   // Snell-Brechung des Sonnenstrahls an der echten Oberflächennormalen.
@@ -173,8 +189,22 @@ void main(){
   color+=vec3(1.,.99,.85)*specular*(.05+uLight*.16)*(.45+sun*.55);
   color+=vec3(.75,.94,.90)*pow(highlight,24.)*.009*uLight;
   color+=vec3(.35,.8,.68)*height*.28;
-  float crest=smoothstep(.18,.7,length(dynamicGrad))*.18;
-  color=mix(color,vec3(.87,1.,.95),min(crest,.25));
+  // Wellenkämme der Wischspur: Glanz auf den Flanken, gebrochener Schaum auf steilen Kämmen.
+  float dynSlope=length(dynamicGrad);
+  vec3 dynNormal=normalize(vec3(-dynamicGrad.x*.35,dynamicGrad.y*.35,1.));
+  float dynHighlight=pow(max(dot(dynNormal,normalize(vec3(-.32,.46,1.)+vec3(0.,0.,1.))),0.),40.);
+  color+=vec3(1.,.99,.9)*dynHighlight*smoothstep(.05,.4,dynSlope)*(.25+uLight*.35);
+  color+=vec3(.55,.95,.92)*max(height,0.)*.22;
+  float foamNoise=morphNoise(world*95.+vec2(t*.9,-t*.7))*.6+morphNoise(world*210.-t*1.3)*.4;
+  float crest=smoothstep(.18,.7,dynSlope)*.18+smoothstep(.45,1.3,dynSlope)*smoothstep(.45,.85,foamNoise)*.55;
+  // Gischt-Schimmer direkt an der Fingerspitze bei schnellen Bewegungen.
+  for(int i=0;i<4;i++){
+    if(i>=uTouchCount)break;
+    vec2 d=(uv-uTouches[i].xy)*vec2(aspect,1.);
+    float fall=exp(-dot(d,d)/(uTouches[i].w*uTouches[i].w));
+    crest+=fall*uTouches[i].z*(.25+.75*smoothstep(.35,.8,foamNoise));
+  }
+  color=mix(color,vec3(.9,1.,.97),clamp(crest,0.,.8));
   // Sanfte Randabdunklung: das Meer wirkt nach außen tiefer und weiter.
   vec2 v=(uv-.5)*vec2(aspect>1.?1.:.85,1.);
   color*=1.-smoothstep(.35,.95,length(v))*.16;
@@ -201,7 +231,7 @@ export class WaterSurface{
     this.canvas=canvas;
     const gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,preserveDrawingBuffer:false,powerPreference:'default'});
     if(!gl)throw new Error('WebGL2 unavailable');
-    this.gl=gl;this.surface=program(gl,FRAGMENT);this.stepProgram=program(gl,STEP);this.time=0;this.accumulator=0;this.pending=[];this.ripples=[];this.stateIndex=0;this.camera={x:0,y:0};
+    this.gl=gl;this.surface=program(gl,FRAGMENT);this.stepProgram=program(gl,STEP);this.time=0;this.accumulator=0;this.pending=[];this.segments=[];this.touches=[];this.ripples=[];this.stateIndex=0;this.camera={x:0,y:0};
     this.floatSupported=!!gl.getExtension('EXT_color_buffer_float');
     const vertices=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vertices);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
     this.vaos=new Map();
@@ -246,24 +276,38 @@ export class WaterSurface{
     this.ripples.push([x,y,this.time,Math.min(2.2,Math.abs(amplitude)*7)]);
     if(this.ripples.length>20)this.ripples.shift();
   }
+  // Wischspur von (x0,y0) nach (x1,y1), Bildschirm 0…1. Die Kapsel im Step-Shader
+  // deckt die ganze Strecke ab, auch bei schnellen Wischern entstehen keine Lücken.
+  stroke(x0,y0,x1,y1,amplitude,radius=4){
+    if(!Number.isFinite(x0+y0+x1+y1+amplitude+radius))return;
+    if(this.floatSupported&&this.states.length===2){if(this.segments.length<96)this.segments.push([x0,y0,x1,y1,amplitude,radius]);}
+    else if(Math.hypot(x1-x0,y1-y0)>.002&&Math.random()<.3){this.ripples.push([x1,y1,this.time,Math.min(2.2,Math.abs(amplitude)*40)]);if(this.ripples.length>20)this.ripples.shift();}
+  }
+  // Fingerspitzen für den Gischt-Schimmer: [{x,y,foam,radius}]
+  setTouches(list){this.touches=list.slice(0,4);}
   calm(){
-    this.pending=[];this.ripples=[];
+    this.pending=[];this.segments=[];this.ripples=[];
     const g=this.gl;for(const s of this.states){g.bindFramebuffer(g.FRAMEBUFFER,s.fbo);g.clearColor(0,0,0,1);g.clear(g.COLOR_BUFFER_BIT);}g.bindFramebuffer(g.FRAMEBUFFER,null);
   }
   advance(dt,settings){
     const g=this.gl;this.time+=dt;this.accumulator=Math.min(this.accumulator+dt,.05);
     const hasSimulation=this.floatSupported&&this.states.length===2;
     if(hasSimulation){
-      while(this.accumulator>=1/60){
+      // 90 Hz: Ringwellen laufen 1,5× so schnell wie vorher, Spur klingt über mehrere Sekunden ab.
+      const STEP_DT=1/90;
+      while(this.accumulator>=STEP_DT){
         this.use(this.stepProgram);const source=this.states[this.stateIndex],target=this.states[1-this.stateIndex];g.bindFramebuffer(g.FRAMEBUFFER,target.fbo);g.viewport(0,0,this.simW,this.simH);this.bind(source.texture,0,'uState');g.uniform2f(this.uniform('uTexel'),1/this.simW,1/this.simH);
-        const packet=this.pending.splice(0,12),drops=new Float32Array(48);packet.forEach((drop,index)=>drops.set(drop,index*4));g.uniform4fv(this.uniform('uDrops[0]'),drops);g.uniform1i(this.uniform('uDropCount'),packet.length);g.drawArrays(g.TRIANGLES,0,3);this.stateIndex=1-this.stateIndex;this.accumulator-=1/60;
+        const packet=this.pending.splice(0,12),drops=new Float32Array(48);packet.forEach((drop,index)=>drops.set(drop,index*4));g.uniform4fv(this.uniform('uDrops[0]'),drops);g.uniform1i(this.uniform('uDropCount'),packet.length);
+        const segs=this.segments.splice(0,16),sd=new Float32Array(64),sp=new Float32Array(32);segs.forEach((s,i)=>{sd.set(s.slice(0,4),i*4);sp.set(s.slice(4,6),i*2);});g.uniform4fv(this.uniform('uSegs[0]'),sd);g.uniform2fv(this.uniform('uSegP[0]'),sp);g.uniform1i(this.uniform('uSegCount'),segs.length);g.uniform1f(this.uniform('uDamp'),.9965);
+        g.drawArrays(g.TRIANGLES,0,3);this.stateIndex=1-this.stateIndex;this.accumulator-=STEP_DT;
       }
-    }else{this.pending=[];this.accumulator=0;}
+    }else{this.pending=[];this.segments=[];this.accumulator=0;}
     this.ripples=this.ripples.filter(r=>this.time-r[2]<7);
     this.use(this.surface);g.bindFramebuffer(g.FRAMEBUFFER,null);g.viewport(0,0,this.canvas.width,this.canvas.height);this.bind(this.imageTexture,0,'uImage');this.bind(hasSimulation?this.states[this.stateIndex].texture:this.black,1,'uState');
     g.uniform2f(this.uniform('uCamera'),this.camera.x,this.camera.y);
     g.uniform2f(this.uniform('uTile'),TILE.x,TILE.y);g.uniform1f(this.uniform('uViewH'),seaView(this.width,this.height).h);
     g.uniform2f(this.uniform('uResolution'),this.width,this.height);g.uniform2f(this.uniform('uTexel'),1/this.simW,1/this.simH);g.uniform1f(this.uniform('uTime'),this.time);g.uniform1f(this.uniform('uWind'),settings.swell/100);g.uniform1f(this.uniform('uLight'),settings.light/100);g.uniform1f(this.uniform('uHasSimulation'),hasSimulation?1:0);
+    const touchData=new Float32Array(16);this.touches.forEach((p,i)=>touchData.set([p.x,p.y,p.foam,p.radius],i*4));g.uniform4fv(this.uniform('uTouches[0]'),touchData);g.uniform1i(this.uniform('uTouchCount'),this.touches.length);
     const ripples=new Float32Array(80);this.ripples.forEach((r,index)=>ripples.set(r,index*4));g.uniform4fv(this.uniform('uRipples[0]'),ripples);g.uniform1i(this.uniform('uRippleCount'),this.ripples.length);g.drawArrays(g.TRIANGLES,0,3);
   }
 }
@@ -273,6 +317,8 @@ export class CanvasSurface{
   constructor(canvas,image){this.canvas=canvas;this.image=image;this.context=canvas.getContext('2d',{alpha:false});this.ripples=[];this.time=0;this.width=1;this.height=1;this.camera={x:0,y:0};}
   setCamera(x,y){this.camera.x=x;this.camera.y=y;}
   resize(width,height,dpr=1.5){this.width=width;this.height=height;this.dpr=dpr;this.canvas.width=Math.round(width*dpr);this.canvas.height=Math.round(height*dpr);}
+  stroke(x0,y0,x1,y1,amplitude){if(Math.random()<.35)this.disturb(x1,y1,Math.min(.5,Math.abs(amplitude)*6));}
+  setTouches(){}
   disturb(x,y,amplitude=.14){this.ripples.push({x,y,start:this.time,amplitude});if(this.ripples.length>35)this.ripples.shift();}
   calm(){this.ripples=[];}
   advance(dt,settings){
