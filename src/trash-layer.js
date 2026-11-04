@@ -3,10 +3,11 @@
 // Brechung des Meeres liegen nicht über den Teilen. Kontakt zum Wasser: weicher
 // Schatten nach unten rechts (Sonne oben links), heller Benetzungsrand und sparsame
 // Mini-Ripples über ocean.disturb, wenn ein Teil durchs Wasser gleitet.
-// Kein direktes Ziehen – der Finger bewegt nur das Wasser, das Wasser den Müll.
+// Kein direktes Ziehen – der Finger bewegt das Wasser (Bugwelle + lokale
+// Wischströmung aus swipe-input.js), die Strömung nimmt den Müll mit.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {TRASH} from './trash-catalog.js?v=20261104-float1';
-import {createBody,advance,displayFloat} from './trash-physics.js?v=20261104-float1';
+import {TRASH} from './trash-catalog.js?v=20261104-band1';
+import {createBody,advance,displayFloat} from './trash-physics.js?v=20261104-band1';
 
 const load=src=>new Promise((ok,fail)=>{const i=new Image();i.decoding='async';i.onload=()=>ok(i);i.onerror=()=>fail(new Error('Bild fehlt: '+src));i.src=src;});
 const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
@@ -21,10 +22,11 @@ function derived(img){
 }
 
 export class TrashLayer{
- constructor(ocean,config,{count,seed=11}={}){
+ constructor(ocean,config,input,{count,seed=11}={}){
+  this.input=input;
   this.ocean=ocean;this.cfg=config;this.canvas=document.createElement('canvas');this.canvas.className='trash-layer';this.canvas.setAttribute('aria-hidden','true');
   this.ctx=this.canvas.getContext('2d');this.rand=rng(seed);this.count=count;this.bodies=[];this.raf=0;this.last=0;this.sim={};this.wakeBudget=0;this.frameMs=0;this.steps=0;
-  this.disturb=ocean.__originalDisturb||ocean.disturb.bind(ocean);
+  this.disturb=(x,y,a,r)=>ocean.surface.disturb(x,y,a,r);
  }
  async init(){
   this.sprites=await Promise.all(TRASH.map(async kind=>{const img=await load(kind.src);return{kind,img,...derived(img)};}));
@@ -56,9 +58,13 @@ export class TrashLayer{
   const t0=performance.now(),now=t0,frameDt=Math.min(.1,(now-(this.last||now-16.7))/1000);this.last=now;
   const o=this.ocean,w=o.width,h=o.height,F=this.cfg.float;
   this.steps=advance(this.sim,this.bodies,(t,n)=>({width:w,height:h,now:n,t,pulses:o.pulses,
-   local:(x,y)=>o.sampleLocalWaves(x/w,y/h,n),swell:(x,y)=>o.sample(x/w,y/h),size:b=>this.size(b)}),frameDt,now,this.cfg.drift,
-   dt=>{for(const b of this.bodies){const wave=b.wave,sea=b.sea,motion=Math.hypot(b.vx,b.vy)/200;
-     b.float=displayFloat(stepBuoyancy(b,{...sea,pitch:(sea.pitch||0)-wave.slopeY*F.waveTilt,roll:(sea.roll||0)+wave.slopeX*F.waveTilt,motion},wave.height,dt,o.reducedMotion),this.size(b),F);}});
+   flow:(x,y)=>this.input.flow.sample(x,y,n),size:b=>this.size(b)}),frameDt,now,this.cfg.drift,
+   (dt,env)=>{for(const b of this.bodies){
+     // Wippen/Kippen: Dünung + lokale Wellen (nur Auftrieb, keine Wanderung) + Wischwelle
+     const sea=o.sample(b.x/w,b.y/h),wave=o.sampleLocalWaves(b.x/w,b.y/h,env.now),band=b.flow||{vx:0,vy:0,lift:0},motion=Math.hypot(b.vx,b.vy)/200;
+     const tiltX=band.vx*.02,tiltY=band.vy*.02;
+     b.float=displayFloat(stepBuoyancy(b,{...sea,pitch:(sea.pitch||0)-wave.slopeY*F.waveTilt-tiltY,roll:(sea.roll||0)+wave.slopeX*F.waveTilt+tiltX,motion},wave.height+(band.lift||0)*F.bandLift*.1,dt,o.reducedMotion),this.size(b),F);}},this.cfg.flow);
+  this.input.flow.prune(now);
   this.ripples(frameDt,now);this.draw();
   this.frameMs=this.frameMs*.95+(performance.now()-t0)*.05;
   this.raf=requestAnimationFrame(t=>this.frame(t));
@@ -87,11 +93,3 @@ export class TrashLayer{
  }
 }
 
-// Fingerkraft des Wassers über den Adapter dämpfen (Core bleibt unverändert):
-// alle disturb()-Aufrufe von ocean.js (Tipp, Loslassen, motionWake) werden skaliert,
-// die Hintergrund-Wellen (Radius 12) separat; Wischtropfen weniger und schwächer.
-export function tuneWater(ocean,water){
- const disturb=ocean.disturb.bind(ocean),splashes=ocean.splashes.bind(ocean);ocean.__originalDisturb=disturb;
- ocean.disturb=(x,y,amplitude=.17,radius=4,withSplash=false,nearField=false)=>disturb(x,y,amplitude*(radius===12?water.ambient:water.input),radius,withSplash,nearField);
- ocean.splashes=(x,y,power=1,count=8)=>{const n=Math.round(count*water.splashCount);if(n>0&&water.splash>0)splashes(x,y,power*water.splash,n);};
-}

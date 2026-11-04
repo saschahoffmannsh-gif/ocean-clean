@@ -1,26 +1,8 @@
 // Reine Physik für frei treibenden Müll (ohne DOM, testbar mit node --test).
-// Kopplung ans Original-Meer: Die Wellenringe (ocean.pulses) laufen mit
-// SEA_FEEL.waveSpeed nach außen. Ein Teil auf einem Ring bekommt eine Drift in
-// Laufrichtung, Sog-Pulse (negativ, hinter dem Finger) ziehen leicht an. Dazu der
-// Hangabtrieb der lokalen Wellen (sampleLocalWaves) und der Dünung (sample).
-// Integration mit fester Schrittweite (cfg.step) → gleiches Verhalten bei 30/60/120 fps.
-import {SEA_FEEL} from '../water-13.0.0/core/game-feel.js';
+// Antrieb: nur das lokale Wischströmungsfeld (swipe-flow.js). Feste Schrittweite
+// (cfg.step) → gleiches Verhalten bei 30/60/120 fps.
 import {BASE_CONFIG} from './config.js';
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const smooth=(a,b,n)=>{const t=clamp((n-a)/(b-a),0,1);return t*t*(3-2*t);};
-
-export function waveDrift(pulses,x,y,now,cfg=BASE_CONFIG.drift){
- let ax=0,ay=0,energy=0;
- for(const p of pulses){
-  const age=(now-p.start)/1000;if(age<0||age>SEA_FEEL.waveLifetime/1000)continue;
-  const dx=x-p.x,dy=y-p.y,d=Math.hypot(dx,dy)||1,delta=d-age*SEA_FEEL.waveSpeed;
-  const ring=Math.exp(-((delta/(SEA_FEEL.waveWidth*1.25))**2)-age*SEA_FEEL.waveDecay)*(1-smooth(1.55,2,age));
-  const near=p.nearField||Math.abs(p.power)>.3?cfg.nearPush*Math.exp(-d/cfg.nearRange)*Math.exp(-age*4):0;
-  const s=(ring+near)*p.power*cfg.push*Math.exp(-d/cfg.range);
-  ax+=dx/d*s;ay+=dy/d*s;energy+=Math.abs(s);
- }
- return{ax,ay,energy};
-}
 
 export function createBody(kind,x,y,rand=Math.random){
  return{kind,x,y,vx:0,vy:0,angle:rand()*Math.PI*2,spin:(rand()-.5)*.08,spinBias:(rand()<.5?-1:1)*(.4+rand()*.6),
@@ -28,19 +10,20 @@ export function createBody(kind,x,y,rand=Math.random){
   wave:{height:0,slopeX:0,slopeY:0},sea:{lift:0,crest:0,pitch:0,roll:0}};
 }
 
-// Ein fester Integrationsschritt. env: {width,height,now,t,pulses,local(x,y),swell(x,y),size(body)}
-export function stepBodies(bodies,env,dt,cfg=BASE_CONFIG.drift){
+// Ein fester Integrationsschritt. env: {width,height,now,t,flow(x,y)->{vx,vy,weight},size(body)}
+// Teile übernehmen nur die LOKALE Wischströmung (Gewicht 0 außerhalb der Spur);
+// entfernte Wellenringe und Dünung verschieben nichts (nur Wippen, siehe Auftrieb).
+export function stepBodies(bodies,env,dt,cfg=BASE_CONFIG.drift,flowCfg=BASE_CONFIG.flow){
  const {width:w,height:h}=env;
  for(const b of bodies){
-  const r=env.size(b),inv=1/(b.kind.mass+cfg.inertia);
-  const drift=waveDrift(env.pulses,b.x,b.y,env.now,cfg),wave=env.local(b.x,b.y),sea=env.swell(b.x,b.y);
-  let ax=drift.ax-wave.slopeX*cfg.slope,ay=drift.ay-wave.slopeY*cfg.slope;
-  ax-=(sea.roll||0)*cfg.swell*.1;ay+=(sea.pitch||0)*cfg.swell*.1;
-  ax+=Math.sin(b.y*.011+env.t*.13)*cfg.current;ay+=Math.cos(b.x*.009-env.t*.11)*cfg.current*.75;
+  const r=env.size(b),inv=1/(b.kind.mass+cfg.inertia),f=env.flow(b.x,b.y);
+  const k=flowCfg.coupling*f.weight*inv*(1+cfg.inertia);
+  let ax=(f.vx-b.vx)*k,ay=(f.vy-b.vy)*k;
+  ax+=Math.sin(b.y*.011+env.t*.13)*cfg.current*inv;ay+=Math.cos(b.x*.009-env.t*.11)*cfg.current*.75*inv;
   const m=r*1.1;
-  if(b.x<m)ax+=(m-b.x)/m*cfg.edge;if(b.x>w-m)ax-=(b.x-(w-m))/m*cfg.edge;
-  if(b.y<m+40)ay+=(m+40-b.y)/(m+40)*cfg.edge;if(b.y>h-m)ay-=(b.y-(h-m))/m*cfg.edge;
-  b.ax=ax*inv;b.ay=ay*inv;b.energy=drift.energy;b.wave=wave;b.sea=sea;
+  if(b.x<m)ax+=(m-b.x)/m*cfg.edge*inv;if(b.x>w-m)ax-=(b.x-(w-m))/m*cfg.edge*inv;
+  if(b.y<m+40)ay+=(m+40-b.y)/(m+40)*cfg.edge*inv;if(b.y>h-m)ay-=(b.y-(h-m))/m*cfg.edge*inv;
+  b.ax=ax;b.ay=ay;b.flow=f;
  }
  for(let i=0;i<bodies.length;i++)for(let j=i+1;j<bodies.length;j++){
   const a=bodies[i],c=bodies[j],dx=c.x-a.x,dy=c.y-a.y,min=(env.size(a)+env.size(c))*.8,d2=dx*dx+dy*dy;
@@ -61,10 +44,10 @@ export function stepBodies(bodies,env,dt,cfg=BASE_CONFIG.drift){
 // Bildratenunabhängig: frameDt (s) wird in feste Schritte cfg.step zerlegt.
 // frameNow: Uhrzeit (ms, performance.now) am Ende des Bildes – daraus bekommt jeder
 // Teilschritt seine eigene Zeit für die Wellenringe. onStep(stepDt, env) z. B. für Auftrieb.
-export function advance(sim,bodies,envAt,frameDt,frameNow,cfg=BASE_CONFIG.drift,onStep){
+export function advance(sim,bodies,envAt,frameDt,frameNow,cfg=BASE_CONFIG.drift,onStep,flowCfg=BASE_CONFIG.flow){
  sim.acc=Math.min((sim.acc||0)+frameDt,cfg.step*cfg.maxSteps);let n=0;
  while(sim.acc>=cfg.step-1e-9){sim.acc-=cfg.step;sim.time=(sim.time||0)+cfg.step;
-  const env=envAt(sim.time,frameNow-Math.max(0,sim.acc)*1000);stepBodies(bodies,env,cfg.step,cfg);onStep?.(cfg.step,env);n++;}
+  const env=envAt(sim.time,frameNow-Math.max(0,sim.acc)*1000);stepBodies(bodies,env,cfg.step,cfg,flowCfg);onStep?.(cfg.step,env);n++;}
  return n;
 }
 
