@@ -31,3 +31,12 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - `src/trash-physics.js`: Teile folgen der lokalen Wischströmung (Trägheit, Wasserwiderstand, Drehung, weiche Abstoßung, weicher Rand).
   Dünung und Restwellen lassen sie nur wippen/kippen (Original-`stepBuoyancy`, Hub ≤ 2,5 px), aber nicht wandern.
 - Kein direktes Ziehen: Der Finger bewegt nur das Wasser.
+
+## Vollbild / Web-App
+
+- `viewport-fit=cover`: Wasser und Müll-Canvas füllen das ganze Display (hinter Notch/Dynamic Island und Home-Indicator),
+  `position:fixed`, Höhe `100lvh` (Fallbacks `100vh`, `-webkit-fill-available`). Die 620-px-Spalte aus `ocean.css` wird nur in `styles.css` überschrieben.
+- Logo und Impressum/Datenschutz rücken per `env(safe-area-inset-*)` (und ggf. Browserleiste: `100lvh − 100dvh`) ein.
+- Drehen / Leistenwechsel: `app.js` misst bei `resize`, `orientationchange` und `visualViewport.resize` neu.
+- `manifest.webmanifest` (display `fullscreen`), Icons in `assets/icons/` (192, 512, maskable 512, apple-touch-icon 180).
+  iPhone: Safari → Teilen → „Zum Home-Bildschirm“ → randlos ohne Adressleiste.
