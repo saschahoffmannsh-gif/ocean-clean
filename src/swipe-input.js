@@ -2,7 +2,7 @@
 // Wasser-Canvas (ocean.js verarbeitet sie weiter, seine eigenen Wisch-/Tipp-Impulse
 // werden von tuneWater() abgefangen). Statt einer Kette aus Punkttropfen entsteht
 // eine zusammenhängende, schmale Bugwelle: vorn Druck, dicht dahinter Sog.
-import {SwipeFlow} from './swipe-flow.js?v=20261104-full4';
+import {SwipeFlow} from './swipe-flow.js?v=20261104-full5';
 
 // Wake-Impulse für einen Wischabschnitt (reine Funktion, testbar).
 // Rückgabe: Liste [x,y,amplitude,radius] in Pixeln.

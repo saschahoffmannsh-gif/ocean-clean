@@ -31,7 +31,16 @@ export const BASE_CONFIG=Object.freeze({
   lifetime:1.1,      // s
   maxSegments:160,
   tapRadius:34,tapSpeed:70, // Antippen: kleiner radialer Schubs im Nahbereich
-  coupling:3.2       // 1/s wie schnell ein Teil die Strömung annimmt (× Gewicht)
+  coupling:3.2,      // 1/s wie schnell ein Teil die Strömung annimmt (× Gewicht)
+  // Sog (Kielwasser) direkt unter der Spur: zieht Teile leicht in Wischrichtung mit
+  // und hält sie zur Spurmitte hin, statt sie seitlich wegzuschieben. Eng begrenzt.
+  suction:Object.freeze({
+   radius:30,        // px seitlich um die Spur, glatter Abfall auf exakt 0
+   strength:.3,      // Anteil der Fingergeschwindigkeit in Wischrichtung
+   inward:.15,       // Zug zur Spurmitte (Anteil der Fingergeschwindigkeit)
+   ahead:.35,        // vor der Fingerspitze schwächer als dahinter
+   decay:.7          // s Abklingzeit des Sogs
+  })
  }),
  drift:Object.freeze({
   step:1/120,        // feste Physik-Schrittweite in s (bildratenunabhängig)
@@ -64,5 +73,6 @@ export function readForce(search=globalThis.location?.search||''){
 export function makeConfig(force=readForce()){
  const b=BASE_CONFIG;
  return{force,water:b.water,wake:{...b.wake,push:b.wake.push*force,pull:b.wake.pull*force,tap:b.wake.tap*force,spray:b.wake.spray*Math.min(1,force)},
-  flow:{...b.flow,carry:b.flow.carry*force,side:b.flow.side*force,tapSpeed:b.flow.tapSpeed*force},drift:b.drift,float:b.float};
+  flow:{...b.flow,carry:b.flow.carry*force,side:b.flow.side*force,tapSpeed:b.flow.tapSpeed*force,
+   suction:{...b.flow.suction,strength:b.flow.suction.strength*force,inward:b.flow.suction.inward*force}},drift:b.drift,float:b.float};
 }

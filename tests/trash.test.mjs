@@ -7,6 +7,7 @@ import {SwipeFlow} from '../src/swipe-flow.js';
 import {wakeDrops} from '../src/swipe-input.js';
 import {BASE_CONFIG,makeConfig,readForce} from '../src/config.js';
 import {simulate} from './helpers/swipe-sim.mjs';
+import {probe} from './helpers/suction-probe.mjs';
 
 test('trash catalog: 18-24+ sprites, category in file name, files exist',()=>{
  assert.ok(TRASH.length>=18);
@@ -59,4 +60,23 @@ test('soft edge brings drifting items back',()=>{
 test('display limits keep heave small and tilt reduced',()=>{
  const f=displayFloat({bob:-9.5,dip:.1,pitch:12,roll:10},20);
  assert.ok(Math.abs(f.bob)<=1.3+1e-9);assert.ok(Math.abs(f.pitch-12*BASE_CONFIG.float.pitch)<1e-9&&Math.abs(f.roll-10*BASE_CONFIG.float.roll)<1e-9);
+});
+
+test('suction: item on the stroke is pulled along 20–50 px extra, 50 px aside barely, far unchanged (60/120 fps)',()=>{
+ for(const fps of [60,120])for(const dur of [.35,.6]){
+  const on=probe({fps,dur,offset:0}),on0=probe({fps,dur,offset:0,suction:false}),gain=on.dx-on0.dx;
+  const s10=probe({fps,dur,offset:10}),s10b=probe({fps,dur,offset:10,suction:false});
+  const at50=probe({fps,dur,offset:50}),at50b=probe({fps,dur,offset:50,suction:false});
+  const far=probe({fps,dur,offset:150});
+  console.log(`${fps} fps, Wisch ${(300/dur).toFixed(0)} px/s | auf der Spur ${on0.dx.toFixed(0)} → ${on.dx.toFixed(0)} px (+${gain.toFixed(1)}) | 10 px seitlich quer ${s10b.dy.toFixed(1)} → ${s10.dy.toFixed(1)} px | 50 px: Δ ${Math.abs(at50.dx-at50b.dx).toFixed(2)} px | 150 px: ${Math.hypot(far.dx,far.dy).toFixed(2)} px`);
+  assert.ok(gain>=20&&gain<=50,'gain '+gain);
+  assert.ok(s10.dy<s10b.dy,'im Kern weniger nach außen');
+  assert.ok(Math.abs(at50.dx-at50b.dx)<1&&Math.abs(at50.dy-at50b.dy)<1,'50 px kaum');
+  assert.ok(Math.hypot(far.dx,far.dy)<3);
+  assert.ok(on.maxSpeed<=BASE_CONFIG.drift.maxSpeed+1e-6);
+ }
+ const f=new SwipeFlow(BASE_CONFIG.flow);f.addSegment(100,400,140,400,1/60,0);
+ const a=f.sample(120,400+BASE_CONFIG.flow.suction.radius+.01,20),b=new SwipeFlow({...BASE_CONFIG.flow,suction:null});b.addSegment(100,400,140,400,1/60,0);
+ const a0=b.sample(120,400+BASE_CONFIG.flow.suction.radius+.01,20);assert.ok(Math.abs(a.vx-a0.vx)<1e-9&&Math.abs(a.vy-a0.vy)<1e-9,'außerhalb des Kerns wie bisher');
+ assert.equal(makeConfig(2).flow.suction.strength,BASE_CONFIG.flow.suction.strength*2);assert.equal(makeConfig(0).flow.suction.inward,0);
 });

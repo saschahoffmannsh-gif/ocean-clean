@@ -32,6 +32,12 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
   Dünung und Restwellen lassen sie nur wippen/kippen (Original-`stepBuoyancy`, Hub ≤ 2,5 px), aber nicht wandern.
 - Kein direktes Ziehen: Der Finger bewegt nur das Wasser.
 
+## Sog beim Wischen (v2026.11.04-5)
+- Enger Sog-Kern (Kielwasser) direkt unter der Fingerspur in `src/swipe-flow.js`, Parameter `flow.suction` in
+  `src/config.js` (`radius` 30 px, `strength` .3, `inward` .15, `ahead` .35, `decay` .7 s; skaliert mit `?force`).
+- Teile auf der Spur werden zusätzlich ~25–32 px in Wischrichtung mitgezogen und zur Spurmitte gehalten statt
+  seitlich weggeschoben; ab 30 px Seitenabstand exakt wie vorher, Höchstgeschwindigkeit unverändert.
+
 ## Vollbild / Web-App
 
 - `viewport-fit=cover`: Wasser und Müll-Canvas füllen das ganze Display (hinter Notch/Dynamic Island und Home-Indicator),
@@ -39,7 +45,7 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version unten neben Impressum (`v2026.11.04-4`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
+- Version unten neben Impressum (`v2026.11.04-5`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
 - v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
   `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
   aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.
