@@ -11,11 +11,11 @@
 
 /* Vollbild bis unter Notch/Dynamic Island und Home-Indicator (viewport-fit=cover).
    Überschreibt nur die Spalten-Begrenzung (620 px) aus water-13.0.0/ocean.css. */
-html{height:100%;height:-webkit-fill-available;background:#0b9fcb}
-body{min-height:100%;min-height:-webkit-fill-available;background:#0b9fcb;overscroll-behavior:none;position:fixed;inset:0;overflow:hidden;touch-action:none}
+html{height:100%;background:#0b9fcb}
+body{min-height:100%;background:#0b9fcb;overscroll-behavior:none;position:fixed;inset:0;overflow:hidden;touch-action:none}
 #ocean{position:fixed;left:0;top:0;right:0;width:100%;max-width:none;margin:0;box-shadow:none;
- height:100vh;height:-webkit-fill-available;height:100lvh;--ui-bottom:0px}
-@supports (height:100dvh){#ocean{--ui-bottom:calc(100lvh - 100dvh)}}
+ height:100vh;height:100lvh;height:max(100lvh,var(--app-h,0px));--ui-bottom:0px}
+@supports (height:100dvh){#ocean{--ui-bottom:max(0px,calc(100lvh - 100dvh))}}
 @media(max-width:780px){#ocean{width:100%;max-width:none}}
 /* Bedienelemente bleiben im sichtbaren Bereich (Safe-Area + ggf. Browserleiste) */
 .hud{padding:calc(12px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 0 calc(16px + env(safe-area-inset-left))}

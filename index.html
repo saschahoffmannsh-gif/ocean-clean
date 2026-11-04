@@ -8,12 +8,22 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Ocean Clean">
-  <link rel="manifest" href="./manifest.webmanifest?v=20261104-full1">
+  <link rel="manifest" href="./manifest.webmanifest?v=20261104-full2">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
   <title>Ocean Clean</title>
+  <script>
+  // iOS-Home-Bildschirm-App (black-translucent): Das Layout-Viewport ist dort um die
+  // Statusleistenhöhe zu kurz (innerHeight/100vh/100lvh < Bildschirmhöhe), obwohl die
+  // Seite oben unter der Statusleiste beginnt -> unten bliebe ein Streifen ohne Wasser.
+  // Deshalb dort die echte Bildschirmhöhe als Mindesthöhe für das Meer setzen.
+  (function(){var d=document.documentElement;function fit(){var h=innerHeight;
+   if(navigator.standalone===true&&screen&&screen.height){var p=innerHeight>=innerWidth,sh=p?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);if(sh>h&&sh-h<160)h=sh;}
+   d.style.setProperty('--app-h',h+'px');}
+   fit();addEventListener('resize',fit);addEventListener('orientationchange',function(){setTimeout(fit,300)});if(window.visualViewport)visualViewport.addEventListener('resize',fit);})();
+  </script>
   <link rel="icon" type="image/svg+xml" href="./assets/wave.svg">
-  <link rel="stylesheet" href="./water-13.0.0/ocean.css?v=20261104-full1">
-  <link rel="stylesheet" href="./styles.css?v=20261104-full1">
+  <link rel="stylesheet" href="./water-13.0.0/ocean.css?v=20261104-full2">
+  <link rel="stylesheet" href="./styles.css?v=20261104-full2">
   <link rel="preload" as="image" href="./water-13.0.0/assets/coast-no-tent-v4.png">
 </head>
 <body>
@@ -25,6 +35,6 @@
     <nav class="legal" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></nav>
     <p id="error" class="error" role="alert" hidden></p>
   </main>
-  <script type="module" src="./app.js?v=20261104-full1"></script>
+  <script type="module" src="./app.js?v=20261104-full2"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 import {OceanWater} from './water-13.0.0/ocean.js';
-import {makeConfig} from './src/config.js?v=20261104-full1';
-import {TrashLayer} from './src/trash-layer.js?v=20261104-full1';
-import {SwipeInput,tuneWater} from './src/swipe-input.js?v=20261104-full1';
+import {makeConfig} from './src/config.js?v=20261104-full2';
+import {TrashLayer} from './src/trash-layer.js?v=20261104-full2';
+import {SwipeInput,tuneWater} from './src/swipe-input.js?v=20261104-full2';
 const root=document.querySelector('#ocean'),error=document.querySelector('#error');
 const fail=message=>{error.hidden=false;error.textContent=message;};
 try{
