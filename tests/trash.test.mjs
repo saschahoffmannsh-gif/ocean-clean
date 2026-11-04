@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
-import {TRASH} from '../src/trash-catalog.js';
+import {TRASH,CATEGORIES,balancedOrder} from '../src/trash-catalog.js';
 import {createBody,advance,displayFloat} from '../src/trash-physics.js';
 import {SwipeFlow} from '../src/swipe-flow.js';
 import {wakeDrops} from '../src/swipe-input.js';
@@ -9,8 +9,9 @@ import {BASE_CONFIG,makeConfig,readForce} from '../src/config.js';
 import {simulate} from './helpers/swipe-sim.mjs';
 import {probe} from './helpers/suction-probe.mjs';
 
-test('trash catalog: 18-24+ sprites, category in file name, files exist',()=>{
- assert.ok(TRASH.length>=18);
+test('trash catalog: 4 categories x 6 sprites, category in file name, files exist',()=>{
+ assert.equal(TRASH.length,24);assert.deepEqual(CATEGORIES,['plastik','metall','glas','rest']);
+ for(const c of CATEGORIES)assert.equal(TRASH.filter(t=>t.category===c).length,6,c);
  for(const t of TRASH){const f=t.src.split('?')[0];assert.match(f,new RegExp(`/${t.category}-${t.name}\\.png$`));assert.ok(existsSync(new URL('..'+f.slice(1),import.meta.url)),t.src);assert.ok(t.look>.3&&t.look<=1.3,'look '+t.name);}
  assert.equal(new Set(TRASH.map(t=>t.src)).size,TRASH.length);
 });
@@ -79,4 +80,10 @@ test('suction: item on the stroke is pulled along 20–50 px extra, 50 px aside 
  const a=f.sample(120,400+BASE_CONFIG.flow.suction.radius+.01,20),b=new SwipeFlow({...BASE_CONFIG.flow,suction:null});b.addSegment(100,400,140,400,1/60,0);
  const a0=b.sample(120,400+BASE_CONFIG.flow.suction.radius+.01,20);assert.ok(Math.abs(a.vx-a0.vx)<1e-9&&Math.abs(a.vy-a0.vy)<1e-9,'außerhalb des Kerns wie bisher');
  assert.equal(makeConfig(2).flow.suction.strength,BASE_CONFIG.flow.suction.strength*2);assert.equal(makeConfig(0).flow.suction.inward,0);
+});
+
+test('spawn order: all 4 categories about equally often',()=>{
+ for(const n of [26,31,38]){let s=7;const rand=()=>((s=s*16807%2147483647)/2147483647);
+  const o=balancedOrder(n,rand),cnt=CATEGORIES.map(c=>o.filter(i=>TRASH[i].category===c).length);
+  assert.equal(o.length,n);assert.ok(Math.max(...cnt)-Math.min(...cnt)<=1,JSON.stringify(cnt));}
 });

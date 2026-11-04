@@ -1,4 +1,4 @@
-"""v2 (strict top-down). Cut the generated magenta-keyed trash sheets into transparent sprites.
+"""v3 (4 Kategorien, strikte Draufsicht). Cut the generated magenta-keyed trash sheets into transparent sprites.
 Usage: python3 asset-sources/trash/process_trash.py  (run from repo root)
 Steps per sheet: chroma alpha from magenta-ness (min(R,B)-G), colour un-mixing
 against the sheet's background colour (removes magenta fringe), edge despill,
@@ -13,6 +13,9 @@ LO, HI, SIZE, PAD = 38.0, 150.0, 256, 10
 def key(rgb, bg):
     f = rgb.astype(np.float32)
     m = np.minimum(f[..., 0], f[..., 2]) - f[..., 1]
+    # v3: dunklere/pinkere Hintergründe (z. B. #E8007A) auf volle Magenta-Stärke normieren
+    mbg = float(min(bg[0], bg[2]) - bg[1])
+    m = m * max(1.0, 240.0 / max(mbg, 1.0))
     a = 1.0 - np.clip((m - LO) / (HI - LO), 0, 1)
     a = ndimage.median_filter(a, 3)
     # un-mix: observed = a*C + (1-a)*bg  ->  C = (obs-(1-a)bg)/a

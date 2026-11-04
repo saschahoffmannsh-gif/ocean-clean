@@ -6,8 +6,8 @@
 // Kein direktes Ziehen – der Finger bewegt das Wasser (Bugwelle + lokale
 // Wischströmung aus swipe-input.js), die Strömung nimmt den Müll mit.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {TRASH} from './trash-catalog.js?v=20261104-full6';
-import {createBody,advance,displayFloat} from './trash-physics.js?v=20261104-full6';
+import {TRASH,balancedOrder} from './trash-catalog.js?v=20261104-full7';
+import {createBody,advance,displayFloat} from './trash-physics.js?v=20261104-full7';
 
 const load=src=>new Promise((ok,fail)=>{const i=new Image();i.decoding='async';i.onload=()=>ok(i);i.onerror=()=>fail(new Error('Bild fehlt: '+src));i.src=src;});
 const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
@@ -48,9 +48,8 @@ export class TrashLayer{
   this.w=o.width;this.h=ph;
  }
  spawn(){
-  const n=this.count??Math.round(Math.max(26,Math.min(38,this.w*this.h/10500))),order=[];
-  while(order.length<n)order.push(...this.sprites.map((_,i)=>i).sort(()=>this.rand()-.5));
-  for(const i of order.slice(0,n)){
+  const n=this.count??Math.round(Math.max(26,Math.min(38,this.w*this.h/10500))),order=balancedOrder(n,this.rand);
+  for(const i of order){
    const kind=this.sprites[i].kind;let best=null,bestD=-1;
    for(let k=0;k<18;k++){const x=30+this.rand()*(this.w-60),y=80+this.rand()*(this.h-120);let d=1e9;for(const b of this.bodies)d=Math.min(d,Math.hypot(b.x-x,b.y-y));if(d>bestD){bestD=d;best={x,y};}}
    const b=createBody(kind,best.x,best.y,this.rand);b.sprite=this.sprites[i];b.float={bob:0,dip:0,pitch:0,roll:0};this.bodies.push(b);

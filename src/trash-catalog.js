@@ -1,15 +1,21 @@
-// Müll-Sprites (assets/trash/<kategorie>-<name>.png, 256 px @2x).
-// v2: strikte Draufsicht (asset-sources/trash/metadata.json).
-// radius: Größe für die Physik, look: Darstellungsgröße (lange Seite, realistische Verhältnisse), mass: Trägheit, float: wie hoch das Teil im Wasser liegt (1 = obenauf).
-// Kategorien bleiben im Dateinamen erhalten – für ein späteres Sortieren.
+// Müll-Sprites (assets/trash/<kategorie>-<name>.png, 256 px @2x), strikte Draufsicht.
+// v3: genau 4 Sortier-Kategorien à 6 Items (asset-sources/trash/metadata.json).
+// radius: Größe für die Physik, look: Darstellungsgröße (lange Seite, realistische Verhältnisse),
+// mass: Trägheit, float: wie hoch das Teil im Wasser liegt (1 = obenauf).
+export const CATEGORIES=Object.freeze(['plastik','metall','glas','rest']);
+export const CATEGORY_LABELS=Object.freeze({plastik:'Plastik',metall:'Metall',glas:'Glas',rest:'Restmüll'});
 export const TRASH=Object.freeze([
- ['plastik','pet-flasche',.95,.6,.9,0.95],['plastik','tuete',1.0,.25,.55,1.1],['plastik','becher',.8,.35,.8,0.62],
- ['plastik','strohhalm',.7,.15,.9,0.8],['plastik','sixpack-ring',.85,.2,.6,0.75],['plastik','kanister',1.05,.9,.95,1.05],
- ['plastik','wasserball',.9,.25,1,1.0],['plastik','waschmittelflasche',.95,.75,.9,1.0],['plastik','styropor-box',.95,.3,1,0.9],
- ['plastik','zahnbuerste',.7,.15,.85,0.75],
- ['metall','dose',.75,.5,.8,0.68],['metall','konservendose',.8,.7,.65,0.62],['metall','spraydose',.85,.6,.8,0.8],['metall','kronkorken',.42,.15,.6,0.4],
- ['glas','flasche',1.0,.9,.7,1.0],['glas','glas',.82,.85,.65,0.58],
- ['papier','karton',1.05,.6,.6,1.1],['papier','zeitung',.95,.35,.5,1.05],['papier','pappbecher',.78,.35,.75,0.6],
- ['gummi','badelatsche',.85,.45,.95,0.9],['gummi','reifen',1.1,1.2,.7,1.25],['gummi','handschuh',.8,.3,.7,0.9],
- ['sonstiges','fischernetz',1.1,.8,.5,1.2],['sonstiges','boje',.85,.7,1,0.95]
-].map(([category,name,radius,mass,float,look])=>Object.freeze({category,name,radius,mass,float,look,src:`./assets/trash/${category}-${name}.png?v=20261104-full6`})));
+ ['plastik','pet-flasche',0.95,0.6,0.9,0.95],['plastik','tuete',1.0,0.25,0.55,1.1],['plastik','becher',0.8,0.35,0.8,0.62],['plastik','kanister',1.05,0.9,0.95,1.05],['plastik','waschmittelflasche',0.95,0.75,0.9,1.0],['plastik','sixpack-ring',0.85,0.2,0.6,0.75],
+ ['metall','kronkorken',0.42,0.15,0.6,0.4],['metall','dose',0.75,0.5,0.8,0.68],['metall','konservendose',0.8,0.7,0.65,0.62],['metall','spraydose',0.85,0.6,0.8,0.8],['metall','alu-schale',0.9,0.2,0.9,0.9],['metall','fischdose',0.75,0.5,0.75,0.7],
+ ['glas','gruene-flasche',1.0,0.9,0.7,1.0],['glas','schraubglas',0.82,0.85,0.65,0.68],['glas','bierflasche',1.0,0.9,0.7,1.0],['glas','flaschenpost',0.95,0.8,0.75,0.95],['glas','parfuemflakon',0.7,0.6,0.65,0.58],['glas','medizinflasche',0.7,0.6,0.65,0.58],
+ ['rest','badelatsche',0.85,0.45,0.95,0.9],['rest','reifen',1.1,1.2,0.7,1.25],['rest','fischernetz',1.1,0.8,0.5,1.2],['rest','handschuh',0.8,0.3,0.7,0.9],['rest','maske',0.85,0.15,0.6,0.85],['rest','windel',1.0,0.6,0.6,1.0]
+].map(([category,name,radius,mass,float,look])=>Object.freeze({category,name,radius,mass,float,look,src:`./assets/trash/${category}-${name}.png?v=20261104-full7`})));
+// Spawn-Reihenfolge: Kategorien reihum (je Runde gemischt), innerhalb der Kategorie ohne Wiederholung
+// bis alle 6 dran waren → alle 4 Kategorien kommen gleich oft vor (±1).
+export function balancedOrder(n,rand=Math.random){
+ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+ const bags={},out=[];
+ while(out.length<n){for(const c of shuffle([...CATEGORIES])){if(out.length>=n)break;
+  if(!bags[c]?.length)bags[c]=shuffle(TRASH.map((t,i)=>i).filter(i=>TRASH[i].category===c));out.push(bags[c].pop());}}
+ return out;
+}
