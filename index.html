@@ -7,11 +7,12 @@
   <title>Ocean Clean</title>
   <link rel="icon" type="image/svg+xml" href="./assets/wave.svg">
   <link rel="preload" as="image" href="./assets/open-sea-floor.png">
-  <link rel="stylesheet" href="./styles.css?v=20261104-swipe">
+  <link rel="stylesheet" href="./styles.css?v=20261104-orig">
 </head>
 <body>
   <main class="world" id="world" aria-label="Offenes Meer mit unsichtbarem 6×6-Raster">
     <canvas id="water" aria-hidden="true"></canvas>
+    <canvas id="spray" class="spray" aria-hidden="true"></canvas>
     <div id="float-layer" class="float-layer" aria-label="Treibgut auf dem Wasser"></div>
     <canvas id="grid-debug" class="grid-debug" hidden aria-hidden="true"></canvas>
     <header class="hud">
@@ -21,6 +22,6 @@
     <nav class="legal" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></nav>
     <div class="loading" aria-hidden="true"></div>
   </main>
-  <script type="module" src="./app.js?v=20261104-swipe"></script>
+  <script type="module" src="./app.js?v=20261104-orig"></script>
 </body>
 </html>

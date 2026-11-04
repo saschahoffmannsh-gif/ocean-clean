@@ -1,6 +1,6 @@
 // Auftrieb 1:1 aus Ocean Merge (dist/buoyancy.js). Entfernt: Küstenbrandung.
 // Ergänzt: die breite Hochsee-Dünung, die auch der Shader zeigt.
-import {seaView} from './camera.js?v=20261104-swipe';
+import {seaView} from './camera.js?v=20261104-orig';
 export const INTERACTION_WAVE_LIFETIME=1400;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const smooth=(a,b,n)=>{const t=clamp((n-a)/(b-a),0,1);return t*t*(3-2*t);};

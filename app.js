@@ -1,7 +1,7 @@
-import {WaterSurface,CanvasSurface} from './water.js?v=20261104-swipe';
-import {SeaCamera} from './camera.js?v=20261104-swipe';
-import {sampleSeaMotion,sampleInteractionWaves,stepBuoyancy,INTERACTION_WAVE_LIFETIME} from './buoyancy.js?v=20261104-swipe';
-import {GRID_SIZE,gridGeometry,cellCenter,cellAt} from './grid.js?v=20261104-swipe';
+import {WaterSurface,CanvasSurface} from './water.js?v=20261104-orig';
+import {SeaCamera} from './camera.js?v=20261104-orig';
+import {sampleSeaMotion,sampleInteractionWaves,stepBuoyancy,INTERACTION_WAVE_LIFETIME} from './buoyancy.js?v=20261104-orig';
+import {GRID_SIZE,gridGeometry,cellCenter,cellAt} from './grid.js?v=20261104-orig';
 
 const $=s=>document.querySelector(s);
 const world=$('#world');let canvas=$('#water');const layer=$('#float-layer'),debug=$('#grid-debug'),debugCtx=debug.getContext('2d');
@@ -34,25 +34,37 @@ function drawDebug(){
 function resize(){
  const rect=world.getBoundingClientRect();width=Math.max(1,rect.width);height=Math.max(1,rect.height);
  const cap=settings.quality==='high'?2:settings.quality==='eco'?1:1.5;dpr=Math.min(window.devicePixelRatio||1,cap);
- renderer?.resize(width,height,dpr,settings.quality);layout();
+ renderer?.resize(width,height,dpr,settings.quality);spray.width=Math.round(width*dpr);spray.height=Math.round(height*dpr);layout();
 }
 new ResizeObserver(resize).observe(world);
 
 // Öffentliche Schnittstelle für spätere Merges: Welle an einer Bildschirmposition.
 function splash(x,y,power=1){
- renderer?.disturb(x/width,y/height,.3*power,6);
- addPulse(x,y,1.4*power);kickFloaters(x,y,0,0,.8*power);
+ drop(x/width,y/height,.26*power,5.5,true,true);kickFloaters(x,y,0,0,.6*power);
 }
-function addPulse(x,y,power){pulses.push({x,y,start:performance.now(),power,nearField:true});if(pulses.length>40)pulses.shift();}
-window.oceanClean={splash,cellCenter:i=>cellCenter(i,geometry),cellAt:(x,y)=>cellAt(x,y,geometry),get geometry(){return geometry;},settings,toggleGrid(){showGrid=!showGrid;drawDebug();},get renderer(){return renderer;}};
-
-// ── Finger auf dem Wasser ─────────────────────────────────────────────
-// Jeder gedrückte Finger (oder Maus) zieht eine Kapsel-Störung durch das
-// Höhenfeld: schnell = stärker und breiter (gekappt). Daraus entstehen Bugwelle,
-// Kielwasser und Ringwellen; an der Fingerspitze schimmert Gischt.
-const touches=new Map();
+// ── Wasser-Interaktion 1:1 wie im Original Ocean Merge ────────────────
+// Viele kleine, scharfe Tropfen (Radius 2,5 Texel) entlang der Fingerspur statt
+// einer breiten, weichen Spur: genau das erzeugt die feinen, hellen Kräuselwellen
+// und die stark tanzenden Lichtnetze. Dazu Spritzer-Partikel und Bugwellen-Bögen.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-function localPoint(e){const r=world.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top,t:e.timeStamp||performance.now()};}
+let particles=[],wakes=[];
+function addPulse(x,y,power){pulses.push({x,y,start:performance.now(),power,nearField:true});if(pulses.length>40)pulses.shift();}
+function splashes(x,y,power=1,count=8){if(reducedMotion)return;for(let i=0;i<count;i++){const angle=Math.random()*Math.PI*2,speed=(17+Math.random()*42)*power;particles.push({x:x*width,y:y*height,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed*.4-35*power,life:0,maxLife:.35+Math.random()*.32,size:.9+Math.random()*1.4});}if(particles.length>150)particles.splice(0,particles.length-150);}
+let lastPulseAt=0;
+function drop(x,y,amplitude=.17,radius=4,withSplash=false,nearField=false){
+ if(!renderer)return;renderer.disturb(x,y,amplitude,radius);
+ // Platzhalter reagieren auf jede Störung (wie game.reactToWater im Original), gedrosselt.
+ const now=performance.now();if(nearField||now-lastPulseAt>60){lastPulseAt=now;addPulse(x*width,y*height,Math.max(.35,amplitude/.27)*1.2);}
+ if(withSplash)splashes(x,y,Math.min(1.7,amplitude*5));
+}
+// Bugwelle wie motionWake im Original: Kamm vor dem Finger, Senke dahinter.
+function motionWake(x,y,dx,dy,power){
+ if(reducedMotion||!renderer)return;const distance=Math.hypot(dx,dy);if(distance<1)return;const ux=dx/distance,uy=dy/distance;
+ drop(x+ux*10/width,y+uy*10/height,.22*power,5.2,false,true);
+ drop(x-ux*14/width,y-uy*14/height,-.12*power,4.2,false,true);
+ wakes.push({x:x*width,y:y*height,angle:Math.atan2(dy,dx),life:0,power});if(wakes.length>36)wakes.shift();
+ if(power>.8)splashes(x+ux*10/width,y+uy*10/height,.3,2);
+}
 // Platzhalter in der Nähe werden leicht weggeschoben (Federn zurück aufs Feld).
 function kickFloaters(x,y,dirX,dirY,strength){
  if(!geometry)return;const R=geometry.cell*1.35;
@@ -60,44 +72,53 @@ function kickFloaters(x,y,dirX,dirY,strength){
   const k=(1-d/R)*strength*geometry.cell*2.2,nx=d>1?dx/d:0,ny=d>1?dy/d:0;
   f.vx=(f.vx||0)+(nx*.7+dirX*.5)*k;f.vy=(f.vy||0)+(ny*.7+dirY*.5)*k;f.wobble=Math.min(1.5,(f.wobble||0)+strength*.9*(1-d/R));}
 }
-function moveTouch(state,p){
- const dx=p.x-state.x,dy=p.y-state.y,dist=Math.hypot(dx,dy);if(dist<.5)return;
- const dt=Math.max(.004,(p.t-state.t)/1000),speed=dist/dt;
- state.speed+=(Math.min(speed,4000)-state.speed)*.35;
- const strength=clamp(state.speed/1500,.12,1);
- const texel=width/(renderer?.simW||192),radius=clamp(14/texel,3.5,9)*(.8+.5*strength);
- renderer?.stroke(state.x/width,state.y/height,p.x/width,p.y/height,-(.045+.11*strength)*Math.min(1,dist/6+.35),radius);
- state.travel+=dist;
- if(state.travel>26){state.travel=0;addPulse(p.x,p.y,.5+1.1*strength);}
- kickFloaters(p.x,p.y,dx/dist,dy/dist,strength*.18);
- state.x=p.x;state.y=p.y;state.t=p.t;state.foamTarget=clamp((state.speed-350)/1600,0,1);
-}
+const activePointers=new Map();
+function point(e){const r=canvas.getBoundingClientRect();return{x:clamp((e.clientX-r.left)/r.width,0,1),y:clamp((e.clientY-r.top)/r.height,0,1)};}
 world.addEventListener('pointerdown',e=>{
- if(e.target.closest('a'))return;e.preventDefault();
+ if(e.target.closest('a')||!renderer||e.button>0)return;e.preventDefault();
  try{world.setPointerCapture(e.pointerId);}catch{}
- const p=localPoint(e);touches.set(e.pointerId,{...p,speed:0,travel:0,foam:0,foamTarget:0,down:true});splash(p.x,p.y,1);
+ const p=point(e),now=performance.now();
+ activePointers.set(e.pointerId,{...p,previousX:p.x,previousY:p.y,lastDrop:now,wakeAt:-Infinity,wakePoint:{x:p.x*width,y:p.y*height},speed:0});
+ splash(p.x*width,p.y*height,1);
 });
 world.addEventListener('pointermove',e=>{
- const state=touches.get(e.pointerId);if(!state||!state.down)return;e.preventDefault();
- const events=e.getCoalescedEvents?e.getCoalescedEvents():[];for(const ev of (events.length?events:[e]))moveTouch(state,localPoint(ev));
-});
-function release(e){const state=touches.get(e.pointerId);if(state){state.down=false;state.foamTarget=0;}}
-for(const type of ['pointerup','pointercancel','lostpointercapture'])world.addEventListener(type,release);
-// iOS: kein Scrollen, kein Pinch-Zoom, kein Doppeltipp-Zoom über dem Meer.
-for(const type of ['touchstart','touchmove'])world.addEventListener(type,e=>{if(!e.target.closest('a'))e.preventDefault();},{passive:false});
-for(const type of ['gesturestart','gesturechange','dblclick'])document.addEventListener(type,e=>e.preventDefault(),{passive:false});
-addEventListener('keydown',e=>{if(e.key==='g'||e.key==='G')window.oceanClean.toggleGrid();});
-function updateTouches(dt){
- const list=[];
- for(const [id,s] of touches){
-  if(s.down)s.speed*=Math.exp(-dt*6);// stillstehender Finger beruhigt sich
-  else s.foamTarget=0;
-  if(s.down)s.foamTarget=Math.min(s.foamTarget,clamp((s.speed-350)/1600,0,1));
-  s.foam+=(s.foamTarget-s.foam)*(1-Math.exp(-dt*(s.foamTarget>s.foam?14:3.5)));
-  if(!s.down&&s.foam<.01){touches.delete(id);continue;}
-  list.push({x:s.x/width,y:s.y/height,foam:s.foam*.85,radius:.022+s.foam*.02});
+ const state=activePointers.get(e.pointerId);if(!state)return;e.preventDefault();
+ const p=point(e),now=performance.now(),distance=Math.hypot((p.x-state.x)*width,(p.y-state.y)*height);
+ // Bugwelle wie beim Wischen übers Spielfeld im Original (MergeGame.trail): alle 48 ms ab 6 px,
+ // bis zu 3 Zwischenpunkte. Stärke .6 wie im Original, bei schnellen Wischern bis 1.
+ const wp=state.wakePoint,px=p.x*width,py=p.y*height,wd=Math.hypot(px-wp.x,py-wp.y);
+ if(now-state.wakeAt>=48&&wd>=6){const steps=Math.min(3,Math.ceil(wd/18)),power=clamp(.6+state.speed/3500,.6,1);
+  for(let i=1;i<=steps;i++){const fx=wp.x+(px-wp.x)*(i-1)/steps,fy=wp.y+(py-wp.y)*(i-1)/steps,tx=wp.x+(px-wp.x)*i/steps,ty=wp.y+(py-wp.y)*i/steps;motionWake(tx/width,ty/height,tx-fx,ty-fy,power);}
+  state.wakePoint={x:px,y:py};state.wakeAt=now;}
+ // Original: höchstens alle 15 ms, ab 1,5 px, bis zu 7 interpolierte Tropfen je Schritt.
+ if(distance>1.5&&now-state.lastDrop>15){
+  const dt=Math.max(.008,(now-state.lastDrop)/1000);state.speed+=(Math.min(distance/dt,3000)-state.speed)*.5;
+  const boost=1+clamp(state.speed/1800,0,.45);// verstärkt nur bei schnellen Wischern, gekappt
+  const steps=Math.min(10,Math.max(1,Math.floor(distance/7)));
+  for(let i=1;i<=steps;i++){const f=i/steps;renderer.disturb(state.x+(p.x-state.x)*f,state.y+(p.y-state.y)*f,.07*boost,2.5);}
+  const dx=(p.x-state.x)*width,dy=(p.y-state.y)*height;
+  if(now-lastPulseAt>60){lastPulseAt=now;addPulse(p.x*width,p.y*height,.5*boost);}
+  kickFloaters(p.x*width,p.y*height,dx/distance,dy/distance,.12*boost);
+  if(distance>9&&Math.random()>.5)splashes(p.x,p.y,.55,2);
+  state.previousX=state.x;state.previousY=state.y;state.x=p.x;state.y=p.y;state.lastDrop=now;
  }
- renderer?.setTouches(list);
+});
+function releasePointer(e){const state=activePointers.get(e.pointerId);if(!state)return;if(e.type==='pointerup')drop(state.x,state.y,.075,3);activePointers.delete(e.pointerId);try{if(world.hasPointerCapture(e.pointerId))world.releasePointerCapture(e.pointerId);}catch{}}
+for(const type of ['pointerup','pointercancel','lostpointercapture'])world.addEventListener(type,releasePointer);
+// iOS: kein Scrollen, kein Pinch-Zoom, kein Doppeltipp-Zoom über dem Meer.
+world.addEventListener('touchmove',e=>{if(!e.target.closest('a'))e.preventDefault();},{passive:false});
+for(const type of ['gesturestart','gesturechange'])document.addEventListener(type,e=>e.preventDefault(),{passive:false});
+world.addEventListener('contextmenu',e=>e.preventDefault());
+addEventListener('keydown',e=>{if(e.key==='g'||e.key==='G')window.oceanClean.toggleGrid();});
+window.oceanClean={splash,cellCenter:i=>cellCenter(i,geometry),cellAt:(x,y)=>cellAt(x,y,geometry),get geometry(){return geometry;},settings,toggleGrid(){showGrid=!showGrid;drawDebug();},get renderer(){return renderer;}};
+const spray=$('#spray'),sprayContext=spray.getContext('2d');
+function paintSpray(dt){
+ sprayContext.setTransform(dpr,0,0,dpr,0,0);sprayContext.clearRect(0,0,width,height);
+ wakes=wakes.filter(w=>w.life<.48);for(const w of wakes){w.life+=dt;const age=w.life/.48,spread=13+age*14,tail=22+age*20;
+  sprayContext.save();sprayContext.translate(w.x,w.y);sprayContext.rotate(w.angle);sprayContext.lineWidth=2.1-age*1.1;sprayContext.lineCap='round';sprayContext.strokeStyle=`rgba(229,255,242,${Math.max(0,1-age)**1.8*.55*w.power})`;
+  sprayContext.beginPath();sprayContext.moveTo(8,-spread);sprayContext.quadraticCurveTo(19,0,8,spread);sprayContext.stroke();
+  for(const side of [-1,1]){sprayContext.beginPath();sprayContext.moveTo(-3,side*spread);sprayContext.quadraticCurveTo(-tail*.5,side*(spread+2),-tail,side*(spread+10));sprayContext.stroke();}sprayContext.restore();}
+ particles=particles.filter(p=>p.life<p.maxLife);for(const p of particles){p.life+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=160*dt;const alpha=Math.max(0,1-p.life/p.maxLife);sprayContext.beginPath();sprayContext.ellipse(p.x,p.y,p.size*alpha,p.size*alpha*1.5,.15,0,Math.PI*2);sprayContext.fillStyle=`rgba(238,255,244,${alpha*.8})`;sprayContext.fill();}
 }
 
 function updateFloaters(now,dt){
@@ -129,7 +150,7 @@ function animate(now){
   renderer.ripples.length=Math.max(0,renderer.ripples.length-12);// nur Simulation, keine Ringe im Fallback-Pfad
   lastAmbient=now;
  }
- updateTouches(dt);renderer.advance(dt,settings);updateFloaters(now,dt);raf=requestAnimationFrame(animate);
+ renderer.advance(dt,settings);updateFloaters(now,dt);paintSpray(dt);raf=requestAnimationFrame(animate);
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(raf);raf=0;}else{lastFrame=0;if(renderer&&!raf)raf=requestAnimationFrame(animate);}});
 
