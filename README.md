@@ -14,3 +14,14 @@ Der Ordnername `water-13.0.0/` dient zugleich als Cache-Busting für die Origina
 
 Starten: `python3 -m http.server 8000` → http://localhost:8000 · Tests: `npm test` (Node 20+).
 Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen Verbindungen.
+
+## Müll auf dem Wasser (Schritt 1, ohne Sortieren)
+
+- 24 gemalte Müll-Sprites in `assets/trash/<kategorie>-<name>.png` (Kategorien: plastik, metall, glas, papier, gummi, sonstiges – bleiben für ein späteres Sortieren im Dateinamen).
+  Herkunft, Prompts und Freistellung: `asset-sources/trash/` (`metadata.json`, `process_trash.py`, `contact_sheet.py`, Original-Sheets).
+- `src/trash-layer.js` zeichnet 26–38 frei treibende Teile in ein Offscreen-Canvas, das das Original-Meer per
+  `surface.setObjectsLayer(canvas,true,true)` unter der brechenden Oberfläche einblendet (Kaustiken/Glanz liegen darüber).
+- `src/trash-physics.js`: Die Wellenringe des Meeres (`ocean.pulses`, gleiche Laufgeschwindigkeit/Breite wie im Shader) schieben Teile in Laufrichtung,
+  Sog hinter dem Finger zieht an, dazu Hangabtrieb aus `sampleLocalWaves` und Dünung aus `sample`, Trägheit, Wasserwiderstand, Drehung, weiche Abstoßung, weicher Rand.
+  Auftrieb über das Original-`stepBuoyancy` mit Ocean-Clean-Grenzen (Hub ≤ 3 px, Rollen ×0,35, Nicken ×0,4). Schnelle Teile stören das Wasser sparsam zurück (`ocean.disturb`).
+- Kein direktes Ziehen: Der Finger bewegt nur das Wasser.
