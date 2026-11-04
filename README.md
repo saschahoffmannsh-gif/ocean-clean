@@ -19,8 +19,10 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 
 - 24 gemalte Müll-Sprites in `assets/trash/<kategorie>-<name>.png` (Kategorien: plastik, metall, glas, papier, gummi, sonstiges – bleiben für ein späteres Sortieren im Dateinamen).
   Herkunft, Prompts und Freistellung: `asset-sources/trash/` (`metadata.json`, `process_trash.py`, `contact_sheet.py`, Original-Sheets).
-- `src/trash-layer.js` zeichnet 26–38 frei treibende Teile in ein Offscreen-Canvas, das das Original-Meer per
-  `surface.setObjectsLayer(canvas,true,true)` unter der brechenden Oberfläche einblendet (Kaustiken/Glanz liegen darüber).
+- `src/trash-layer.js` zeichnet 26–38 frei treibende Teile in einen eigenen Canvas (`.trash-layer`) ÜBER dem Wasser und unter der Gischt:
+  weicher Schatten nach unten rechts, heller Benetzungsrand, sparsame Mini-Ripples. `tuneWater()` dämpft die Fingerkraft über den Adapter (Core unverändert).
+- Alle Stellschrauben: `src/config.js`. Test-Multiplikator: `?force=0..2` (z. B. `?force=0.5`).
+- Physik mit fester Schrittweite (1/120 s), gleiches Verhalten bei 30/60/120 fps (`tests/trash.test.mjs`).
 - `src/trash-physics.js`: Die Wellenringe des Meeres (`ocean.pulses`, gleiche Laufgeschwindigkeit/Breite wie im Shader) schieben Teile in Laufrichtung,
   Sog hinter dem Finger zieht an, dazu Hangabtrieb aus `sampleLocalWaves` und Dünung aus `sample`, Trägheit, Wasserwiderstand, Drehung, weiche Abstoßung, weicher Rand.
   Auftrieb über das Original-`stepBuoyancy` mit Ocean-Clean-Grenzen (Hub ≤ 3 px, Rollen ×0,35, Nicken ×0,4). Schnelle Teile stören das Wasser sparsam zurück (`ocean.disturb`).

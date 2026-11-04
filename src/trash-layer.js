@@ -1,29 +1,34 @@
-// Frei treibender Müll im Objekt-Layer des Original-Meeres.
-// Die Teile werden in ein Offscreen-Canvas gezeichnet, das water-13.0.0 unter der
-// brechenden Oberfläche einblendet (setObjectsLayer(canvas,true,true)): Kaustiken,
-// Lichtreflexe und Schaum liegen dadurch über dem Müll. Kein direktes Ziehen –
-// der Finger bewegt nur das Wasser, das Wasser bewegt den Müll.
+// Frei treibender Müll, sichtbar OBEN auf dem Wasser.
+// Eigener Canvas über dem Wasser-Canvas (und unter der Gischt), d. h. Glanz und
+// Brechung des Meeres liegen nicht über den Teilen. Kontakt zum Wasser: weicher
+// Schatten nach unten rechts (Sonne oben links), heller Benetzungsrand und sparsame
+// Mini-Ripples über ocean.disturb, wenn ein Teil durchs Wasser gleitet.
+// Kein direktes Ziehen – der Finger bewegt nur das Wasser, das Wasser den Müll.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {TRASH} from './trash-catalog.js?v=20261104-trash1';
-import {createBody,stepBodies,displayFloat} from './trash-physics.js?v=20261104-trash1';
+import {TRASH} from './trash-catalog.js?v=20261104-float1';
+import {createBody,advance,displayFloat} from './trash-physics.js?v=20261104-float1';
 
 const load=src=>new Promise((ok,fail)=>{const i=new Image();i.decoding='async';i.onload=()=>ok(i);i.onerror=()=>fail(new Error('Bild fehlt: '+src));i.src=src;});
 const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
-
-function shadowOf(img){
- // weicher, blauer Schlagschatten aus der eigenen Silhouette (Sonne oben links)
- const c=document.createElement('canvas');c.width=img.width+48;c.height=img.height+48;const g=c.getContext('2d');
- g.filter='blur(9px)';g.drawImage(img,24,24);g.filter='none';g.globalCompositeOperation='source-in';g.fillStyle='rgb(0,38,58)';g.fillRect(0,0,c.width,c.height);return c;
+const PAD=40;
+// Aus der Silhouette abgeleitet: Schatten (dunkel, weich) und Benetzungsrand (hell, schmal).
+function derived(img){
+ const mk=()=>{const c=document.createElement('canvas');c.width=img.width+PAD*2;c.height=img.height+PAD*2;return c;};
+ const shadow=mk(),g=shadow.getContext('2d');g.filter='blur(7px)';g.drawImage(img,PAD,PAD);g.filter='none';g.globalCompositeOperation='source-in';g.fillStyle='rgb(0,42,60)';g.fillRect(0,0,shadow.width,shadow.height);
+ const rim=mk(),r=rim.getContext('2d');r.filter='blur(3px)';for(const [dx,dy] of [[-5,0],[5,0],[0,-5],[0,5],[-4,-4],[4,4],[-4,4],[4,-4]])r.drawImage(img,PAD+dx,PAD+dy);r.filter='none';
+ r.globalCompositeOperation='source-in';r.fillStyle='rgb(225,255,250)';r.fillRect(0,0,rim.width,rim.height);r.globalCompositeOperation='destination-out';r.drawImage(img,PAD,PAD);
+ return{shadow,rim};
 }
 
 export class TrashLayer{
- constructor(ocean,{count,seed=11}={}){
-  this.ocean=ocean;this.canvas=document.createElement('canvas');this.ctx=this.canvas.getContext('2d');
-  this.rand=rng(seed);this.count=count;this.bodies=[];this.raf=0;this.last=0;this.wakeBudget=0;this.t=0;this.frameMs=0;
+ constructor(ocean,config,{count,seed=11}={}){
+  this.ocean=ocean;this.cfg=config;this.canvas=document.createElement('canvas');this.canvas.className='trash-layer';this.canvas.setAttribute('aria-hidden','true');
+  this.ctx=this.canvas.getContext('2d');this.rand=rng(seed);this.count=count;this.bodies=[];this.raf=0;this.last=0;this.sim={};this.wakeBudget=0;this.frameMs=0;this.steps=0;
+  this.disturb=ocean.__originalDisturb||ocean.disturb.bind(ocean);
  }
  async init(){
-  this.sprites=await Promise.all(TRASH.map(async kind=>{const img=await load(kind.src);return{kind,img,shadow:shadowOf(img)};}));
-  this.resize();this.spawn();this.ocean.surface.setObjectsLayer(this.canvas,true,true);
+  this.sprites=await Promise.all(TRASH.map(async kind=>{const img=await load(kind.src);return{kind,img,...derived(img)};}));
+  this.ocean.spray.before(this.canvas);this.resize();this.spawn();
   this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(this.ocean.root);
   document.addEventListener('visibilitychange',()=>document.hidden?this.stop():this.start());
   this.start();return this;
@@ -31,7 +36,7 @@ export class TrashLayer{
  get base(){return Math.max(21,Math.min(36,this.ocean.width/390*25));}
  size(b){return this.base*b.kind.radius;}
  resize(){
-  const o=this.ocean,w=Math.round(o.width*o.dpr),h=Math.round(o.height*o.dpr);
+  const o=this.ocean,dpr=Math.min(devicePixelRatio||1,2),w=Math.round(o.width*dpr),h=Math.round(o.height*dpr);this.dpr=dpr;
   if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}
   if(this.w&&this.bodies.length){const sx=o.width/this.w,sy=o.height/this.h;for(const b of this.bodies){b.x*=sx;b.y*=sy;}}
   this.w=o.width;this.h=o.height;
@@ -42,40 +47,51 @@ export class TrashLayer{
   for(const i of order.slice(0,n)){
    const kind=this.sprites[i].kind;let best=null,bestD=-1;
    for(let k=0;k<18;k++){const x=30+this.rand()*(this.w-60),y=80+this.rand()*(this.h-120);let d=1e9;for(const b of this.bodies)d=Math.min(d,Math.hypot(b.x-x,b.y-y));if(d>bestD){bestD=d;best={x,y};}}
-   const b=createBody(kind,best.x,best.y,this.rand);b.sprite=this.sprites[i];this.bodies.push(b);
+   const b=createBody(kind,best.x,best.y,this.rand);b.sprite=this.sprites[i];b.float={bob:0,dip:0,pitch:0,roll:0};this.bodies.push(b);
   }
  }
  start(){if(!this.raf&&!document.hidden){this.last=0;this.raf=requestAnimationFrame(t=>this.frame(t));}}
  stop(){cancelAnimationFrame(this.raf);this.raf=0;}
- frame(now){
-  const t0=performance.now(),dt=Math.min(.04,(now-(this.last||now-16.7))/1000);this.last=now;this.t+=dt;
-  const o=this.ocean,w=o.width,h=o.height;
-  stepBodies(this.bodies,{width:w,height:h,now:performance.now(),t:this.t,pulses:o.pulses,
-   local:(x,y)=>o.sampleLocalWaves(x/w,y/h),swell:(x,y)=>o.sample(x/w,y/h),size:b=>this.size(b)},dt);
-  this.wakeBudget=Math.min(4,this.wakeBudget+dt*3);
-  this.draw(dt,now);
+ frame(){
+  const t0=performance.now(),now=t0,frameDt=Math.min(.1,(now-(this.last||now-16.7))/1000);this.last=now;
+  const o=this.ocean,w=o.width,h=o.height,F=this.cfg.float;
+  this.steps=advance(this.sim,this.bodies,(t,n)=>({width:w,height:h,now:n,t,pulses:o.pulses,
+   local:(x,y)=>o.sampleLocalWaves(x/w,y/h,n),swell:(x,y)=>o.sample(x/w,y/h),size:b=>this.size(b)}),frameDt,now,this.cfg.drift,
+   dt=>{for(const b of this.bodies){const wave=b.wave,sea=b.sea,motion=Math.hypot(b.vx,b.vy)/200;
+     b.float=displayFloat(stepBuoyancy(b,{...sea,pitch:(sea.pitch||0)-wave.slopeY*F.waveTilt,roll:(sea.roll||0)+wave.slopeX*F.waveTilt,motion},wave.height,dt,o.reducedMotion),this.size(b),F);}});
+  this.ripples(frameDt,now);this.draw();
   this.frameMs=this.frameMs*.95+(performance.now()-t0)*.05;
   this.raf=requestAnimationFrame(t=>this.frame(t));
  }
- draw(dt,now){
-  const o=this.ocean,c=this.ctx,dpr=o.dpr;
-  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,this.canvas.width,this.canvas.height);
-  for(const b of this.bodies){
-   const size=this.size(b),wave=b.wave,sea=b.sea,motion=Math.hypot(b.vx,b.vy)/260;
-   const float=displayFloat(stepBuoyancy(b,{...sea,pitch:(sea.pitch||0)-wave.slopeY*320,roll:(sea.roll||0)+wave.slopeX*320,motion},wave.height,dt,o.reducedMotion),size);
-   b.float=float;
-   // Teile, die schnell durchs Wasser geschoben werden, wirken sparsam aufs Wasser zurück
-   const speed=Math.hypot(b.vx,b.vy);
-   if(speed>150&&now-b.lastWake>260&&this.wakeBudget>=1){this.wakeBudget-=1;b.lastWake=now;o.disturb(b.x/o.width,b.y/o.height,Math.min(.05,.012+speed*.00007)*b.kind.mass,2.6);}
-   const box=size*2.3,sx=Math.cos(float.roll*Math.PI/180)*(1+float.bob*-.006),sy=Math.cos(float.pitch*Math.PI/180)*(1+float.bob*-.006);
-   const place=(dx,dy)=>{c.setTransform(dpr,0,0,dpr,0,0);c.translate(b.x+dx,b.y+float.bob+dy);c.rotate(b.angle+float.roll*.006);c.scale(sx,sy);};
-   // Schatten fällt nach unten rechts auf den Grund (Sonne oben links), unter Wasser weich gestreut
-   const sh=b.sprite.shadow,k=box/b.sprite.img.width,off=size*(.16+(1-b.kind.float)*.05);
-   place(off,off*1.15);c.globalAlpha=.30;c.drawImage(sh,-sh.width*k/2,-sh.height*k/2,sh.width*k,sh.height*k);
-   place(0,0);
-   // Teile, die tiefer liegen, wirken etwas mehr vom Wasser überspült
-   c.globalAlpha=Math.max(.7,1-(1-b.kind.float)*.22-float.dip*.9);
-   c.drawImage(b.sprite.img,-box/2,-box/2,box,box);c.globalAlpha=1;
-  }
+ ripples(dt,now){
+  // gleitende Teile hinterlassen sparsam eine kleine Ripple (nur Optik, kaum Kraft)
+  const k=this.cfg.float.wake,o=this.ocean;this.wakeBudget=Math.min(k.perSecond,this.wakeBudget+dt*k.perSecond);
+  for(const b of this.bodies){const sp=Math.hypot(b.vx,b.vy);
+   if(sp>k.minSpeed&&now-b.lastWake>k.interval&&this.wakeBudget>=1){this.wakeBudget-=1;b.lastWake=now;this.disturb(b.x/o.width,b.y/o.height,k.amp*(.6+b.kind.mass*.5),k.radius);}}
  }
+ draw(){
+  const c=this.ctx,dpr=this.dpr;c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,this.canvas.width,this.canvas.height);
+  for(const b of this.bodies){
+   const size=this.size(b),f=b.float,box=size*2.3,k=box/b.sprite.img.width,pw=b.sprite.shadow.width*k,ph=b.sprite.shadow.height*k;
+   const sx=Math.cos(f.roll*Math.PI/180)*(1-f.bob*.01),sy=Math.cos(f.pitch*Math.PI/180)*(1-f.bob*.01);
+   const place=(dx,dy)=>{c.setTransform(dpr,0,0,dpr,0,0);c.translate(b.x+dx,b.y+f.bob+dy);c.rotate(b.angle+f.roll*.004);c.scale(sx,sy);};
+   // Schatten aufs Wasser: nach unten rechts, bei Hub (Teil höher) etwas weiter weg und weicher
+   const lift=-f.bob,off=size*(.1+(b.kind.float-.5)*.06)+lift*.6;
+   c.setTransform(dpr,0,0,dpr,0,0);c.translate(b.x+off,b.y+off*1.2);c.rotate(b.angle);c.scale(sx,sy);
+   c.globalAlpha=.34;c.drawImage(b.sprite.shadow,-pw/2,-ph/2,pw,ph);
+   // Benetzungsrand: helles Wasser, das sich am Teil wölbt (bei Eintauchen etwas stärker)
+   place(0,size*.03);c.globalAlpha=.26+Math.min(.2,f.dip*1.4)+(1-b.kind.float)*.12;c.drawImage(b.sprite.rim,-pw/2,-ph/2,pw,ph);
+   place(0,0);c.globalAlpha=1;c.drawImage(b.sprite.img,-box/2,-box/2,box,box);
+  }
+  c.globalAlpha=1;
+ }
+}
+
+// Fingerkraft des Wassers über den Adapter dämpfen (Core bleibt unverändert):
+// alle disturb()-Aufrufe von ocean.js (Tipp, Loslassen, motionWake) werden skaliert,
+// die Hintergrund-Wellen (Radius 12) separat; Wischtropfen weniger und schwächer.
+export function tuneWater(ocean,water){
+ const disturb=ocean.disturb.bind(ocean),splashes=ocean.splashes.bind(ocean);ocean.__originalDisturb=disturb;
+ ocean.disturb=(x,y,amplitude=.17,radius=4,withSplash=false,nearField=false)=>disturb(x,y,amplitude*(radius===12?water.ambient:water.input),radius,withSplash,nearField);
+ ocean.splashes=(x,y,power=1,count=8)=>{const n=Math.round(count*water.splashCount);if(n>0&&water.splash>0)splashes(x,y,power*water.splash,n);};
 }
