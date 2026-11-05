@@ -1,6 +1,7 @@
 // Zentrale Stellschrauben für Ocean Clean (Wasser-Eingabe und treibender Müll).
 // Zum Testen: URL-Parameter ?force=0..2 multipliziert die Fingerkraft aufs Wasser
 // UND die Wischströmung, die den Müll mitnimmt (1 = Standard, 0 = keine Reaktion).
+// ?spin=0..2 multipliziert nur die Drehung der PNG-Items (1 = Standard, 0 = ruhig).
 export const BASE_CONFIG=Object.freeze({
  water:Object.freeze({
   swell:72,          // Dünung (Original-Preset 85)
@@ -49,9 +50,12 @@ export const BASE_CONFIG=Object.freeze({
   drag:2.4,          // 1/s Wasserwiderstand
   inertia:1.0,       // zusätzliche Trägheit (Masse + inertia)
   maxSpeed:110,      // px/s
-  spin:.004,         // wie stark Strömungsstöße das Teil drehen
-  spinDrag:3.2,
-  maxSpin:.6,        // rad/s
+  // Drehung um die Hochachse: Ziel ∝ lokale Strömung (Wisch + Sog stecken in der
+  // Geschwindigkeit), jedes Teil mit eigenem spinBias. Ohne Strömung nur idleSpin.
+  spin:.016,         // rad/s je px/s Strömung (mal spinBias, etwa 0.4..1)
+  idleSpin:.07,      // rad/s leichte Drift ohne Strömung (mal spinBias)
+  spinDrag:2.4,      // 1/s wie schnell die Drehung der Strömung folgt (~0.4 s)
+  maxSpin:4.2,       // rad/s Deckel (starker Wisch: etwa eine Umdrehung in 1.5–2 s)
   repel:420,         // weiche gegenseitige Abstoßung
   edge:700           // weicher Rand
  }),
@@ -69,10 +73,16 @@ export function readForce(search=globalThis.location?.search||''){
  const v=parseFloat(new URLSearchParams(search).get('force'));
  return Number.isFinite(v)?clampN(v,0,2):1;
 }
-// Konfig mit ?force-Multiplikator auf Wasser-Eingabe und Kopplung.
-export function makeConfig(force=readForce()){
- const b=BASE_CONFIG;
- return{force,water:b.water,wake:{...b.wake,push:b.wake.push*force,pull:b.wake.pull*force,tap:b.wake.tap*force,spray:b.wake.spray*Math.min(1,force)},
+export function readSpin(search=globalThis.location?.search||''){
+ const v=parseFloat(new URLSearchParams(search).get('spin'));
+ return Number.isFinite(v)?clampN(v,0,2):1;
+}
+// Konfig mit ?force auf Wasser-Eingabe und Kopplung, ?spin nur auf die Drehung.
+// spin ist der zweite Parameter, damit makeConfig(force) in Tests unverändert bleibt.
+export function makeConfig(force=readForce(), spin=readSpin()){
+ const b=BASE_CONFIG,d=b.drift;
+ return{force,spin,water:b.water,wake:{...b.wake,push:b.wake.push*force,pull:b.wake.pull*force,tap:b.wake.tap*force,spray:b.wake.spray*Math.min(1,force)},
   flow:{...b.flow,carry:b.flow.carry*force,side:b.flow.side*force,tapSpeed:b.flow.tapSpeed*force,
-   suction:{...b.flow.suction,strength:b.flow.suction.strength*force,inward:b.flow.suction.inward*force}},drift:b.drift,float:b.float};
+   suction:{...b.flow.suction,strength:b.flow.suction.strength*force,inward:b.flow.suction.inward*force}},
+  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float};
 }

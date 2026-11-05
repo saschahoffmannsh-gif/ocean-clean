@@ -26,7 +26,7 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
   die Hintergrundwellen bleiben.
 - `src/swipe-flow.js`: lokales Wischströmungsfeld – Kapsel (Gauß, Radius 42 px, harte Grenze ~100 px) um die Fingerspur, klingt in ~0,5–1,1 s ab,
   trägt Teile in Wischrichtung plus leicht seitlich weg. Antippen = kleiner lokaler Schubs. Teile weit weg von der Spur bleiben ruhig.
-- Alle Stellschrauben: `src/config.js` (`wake`, `flow`, `drift`, `float`). Test-Multiplikator: `?force=0..2` (z. B. `?force=0.5`).
+- Alle Stellschrauben: `src/config.js` (`wake`, `flow`, `drift`, `float`). Test-Multiplikatoren: `?force=0..2` (z. B. `?force=0.5`) für die Strömung, `?spin=0..2` nur für die Drehung der Items.
 - Physik mit fester Schrittweite (1/120 s), gleiches Verhalten bei 30/60/120 fps (`tests/trash.test.mjs`: Teile >150 px von der Spur bewegen sich < 3 px).
 - `src/trash-physics.js`: Teile folgen der lokalen Wischströmung (Trägheit, Wasserwiderstand, Drehung, weiche Abstoßung, weicher Rand).
   Dünung und Restwellen lassen sie nur wippen/kippen (Original-`stepBuoyancy`, Hub ≤ 2,5 px), aber nicht wandern.
@@ -53,6 +53,13 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Renderer: `look` je Item (realistische relative Größen, nur Darstellung), freie 360°-Drehung, Schatten aus der
   Silhouette. Physik (`radius`, `mass`, `float`) unverändert.
 
+## Drehung mit der Strömung (v2026.11.05-1)
+- PNG-Items drehen sich um die Hochachse mit der lokalen Strömung (`drift.spin` .016 rad/s je px/s, mal `spinBias`).
+  Wischen und Sog stecken in derselben Geschwindigkeit: auf der Spur etwa eine viertel bis halbe Umdrehung beim Wisch,
+  seitlich und weit weg nur die leichte Drift (`idleSpin` .07 rad/s). Deckel `maxSpin` 4.2 rad/s, Folgen mit `spinDrag` 2.4/s.
+- `?spin=0..2` skaliert nur Drehgewinn, Ruhe-Drift und Deckel (1 = Standard). `?force` bleibt der Strömungs-Multiplikator.
+- Feste Physik-Schritte: gleiche Drehung bei 30/60/120 fps, wenn die Strömung gleich ist.
+
 ## Sog beim Wischen (v2026.11.04-7)
 - Enger Sog-Kern (Kielwasser) direkt unter der Fingerspur in `src/swipe-flow.js`, Parameter `flow.suction` in
   `src/config.js` (`radius` 30 px, `strength` .3, `inward` .15, `ahead` .35, `decay` .7 s; skaliert mit `?force`).
@@ -66,7 +73,7 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version unten neben Impressum (`v2026.11.04-7`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
+- Version unten neben Impressum (`v2026.11.05-1`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
 - v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
   `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
   aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.

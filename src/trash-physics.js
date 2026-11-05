@@ -1,6 +1,7 @@
 // Reine Physik für frei treibenden Müll (ohne DOM, testbar mit node --test).
 // Antrieb: nur das lokale Wischströmungsfeld (swipe-flow.js). Feste Schrittweite
-// (cfg.step) → gleiches Verhalten bei 30/60/120 fps.
+// (cfg.step) → gleiches Verhalten bei 30/60/120 fps. Die Drehung folgt derselben
+// Strömung (stärkerer Wisch/Sog → schnellere Drehung) und klingt mit ihr ab.
 import {BASE_CONFIG} from './config.js';
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
@@ -30,12 +31,16 @@ export function stepBodies(bodies,env,dt,cfg=BASE_CONFIG.drift,flowCfg=BASE_CONF
   if(d2>=min*min||d2<1e-6)continue;const d=Math.sqrt(d2),f=(1-d/min)*cfg.repel,ux=dx/d,uy=dy/d,ia=1/(a.kind.mass+cfg.inertia),ic=1/(c.kind.mass+cfg.inertia);
   a.ax-=ux*f*ia;a.ay-=uy*f*ia;c.ax+=ux*f*ic;c.ay+=uy*f*ic;
  }
- const damp=Math.exp(-cfg.drag*dt),sdamp=Math.exp(-cfg.spinDrag*dt);
+ const damp=Math.exp(-cfg.drag*dt),keep=Math.exp(-cfg.spinDrag*dt);
  for(const b of bodies){
   b.vx=(b.vx+b.ax*dt)*damp;b.vy=(b.vy+b.ay*dt)*damp;
   const sp=Math.hypot(b.vx,b.vy);if(sp>cfg.maxSpeed){b.vx*=cfg.maxSpeed/sp;b.vy*=cfg.maxSpeed/sp;}
   b.x=clamp(b.x+b.vx*dt,-20,w+20);b.y=clamp(b.y+b.vy*dt,-20,h+20);
-  b.spin=clamp((b.spin+Math.hypot(b.ax,b.ay)*b.spinBias*cfg.spin*dt)*sdamp,-cfg.maxSpin,cfg.maxSpin);b.angle+=b.spin*dt;
+  // Lokale Strömung (px/s, inkl. Sog) setzt die Ziel-Drehung. Exakt für konstantes
+  // Ziel über den festen Schritt: ω → Ziel + (ω−Ziel)·e^{−spinDrag·dt}. Ohne Strömung bleibt idleSpin.
+  const f=b.flow||{vx:0,vy:0},speed=Math.hypot(f.vx,f.vy);
+  const target=b.spinBias*((cfg.idleSpin||0)+speed*cfg.spin);
+  b.spin=clamp(target+(b.spin-target)*keep,-cfg.maxSpin,cfg.maxSpin);b.angle+=b.spin*dt;
  }
 }
 

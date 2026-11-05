@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {existsSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 import {TRASH,CATEGORIES,balancedOrder} from '../src/trash-catalog.js';
 import {createBody,advance,displayFloat} from '../src/trash-physics.js';
 import {SwipeFlow} from '../src/swipe-flow.js';
 import {wakeDrops} from '../src/swipe-input.js';
-import {BASE_CONFIG,makeConfig,readForce} from '../src/config.js';
+import {BASE_CONFIG,makeConfig,readForce,readSpin} from '../src/config.js';
 import {simulate} from './helpers/swipe-sim.mjs';
 import {probe} from './helpers/suction-probe.mjs';
 
@@ -80,6 +80,68 @@ test('suction: item on the stroke is pulled along 20–50 px extra, 50 px aside 
  const a=f.sample(120,400+BASE_CONFIG.flow.suction.radius+.01,20),b=new SwipeFlow({...BASE_CONFIG.flow,suction:null});b.addSegment(100,400,140,400,1/60,0);
  const a0=b.sample(120,400+BASE_CONFIG.flow.suction.radius+.01,20);assert.ok(Math.abs(a.vx-a0.vx)<1e-9&&Math.abs(a.vy-a0.vy)<1e-9,'außerhalb des Kerns wie bisher');
  assert.equal(makeConfig(2).flow.suction.strength,BASE_CONFIG.flow.suction.strength*2);assert.equal(makeConfig(0).flow.suction.inward,0);
+});
+
+// Feste Strömung, ein Teil (spinBias 0.7 bei rand()=0.5). Rückgabe: Drehung in rad.
+function flowTurn({vx=0,vy=0,seconds=1.5,fps=60,spin=1}={}){
+ const cfg=makeConfig(1,spin),b=createBody(TRASH[0],200,400,()=>.5),a0=b.angle,sim={};let peak=0;
+ const n=Math.round(seconds*fps);
+ for(let i=1;i<=n;i++){advance(sim,[b],(t,now)=>({width:390,height:844,now,t,flow:()=>({vx,vy,weight:vx||vy?1:0}),size:()=>25}),1/fps,i*1000/fps,cfg.drift,null,cfg.flow);peak=Math.max(peak,Math.abs(b.spin));}
+ return{d:b.angle-a0,peak};
+}
+// Waagerechter Wisch wie in der Sog-Probe, misst die Drehung statt der Verschiebung.
+function swipeTurn({suction=true,fps=60,offset=0,spin=1,dur=.6,len=300,seconds=3}={}){
+ const cfg=makeConfig(1,spin);if(!suction)cfg.flow={...cfg.flow,suction:null};
+ const y=422,x0=195,b=createBody(TRASH[0],x0,y+offset,()=>.5),a0=b.angle,field=new SwipeFlow(cfg.flow),sim={};
+ let last=null;const ax0=x0-len/2,frames=Math.round(seconds*fps);
+ for(let f=1;f<=frames;f++){const now=f*1000/fps;
+  if(now<=dur*1000){const p={x:ax0+len*(now/1000)/dur,y};
+   if(!last){field.addTap(p.x,p.y,now);last={...p,at:now};}
+   else if(Math.hypot(p.x-last.x,p.y-last.y)>=cfg.wake.minStep){field.addSegment(last.x,last.y,p.x,p.y,(now-last.at)/1000,now);last={...p,at:now};}}
+  advance(sim,[b],(t,n)=>({width:390,height:844,now:n,t,flow:(x,yy)=>field.sample(x,yy,n),size:()=>25}),1/fps,now,cfg.drift,null,cfg.flow);field.prune(now);}
+ return b.angle-a0;
+}
+
+test('?spin multiplier scales only rotation, clamped 0..2',()=>{
+ assert.equal(readSpin('?spin=0.5'),.5);assert.equal(readSpin('?spin=9'),2);assert.equal(readSpin('?spin=-1'),0);assert.equal(readSpin(''),1);
+ assert.equal(readSpin('?force=2&spin=0'),0);
+ const hi=makeConfig(1,2),lo=makeConfig(1,0),pushed=makeConfig(2);
+ assert.equal(hi.drift.spin,BASE_CONFIG.drift.spin*2);assert.equal(hi.drift.idleSpin,BASE_CONFIG.drift.idleSpin*2);assert.equal(hi.drift.maxSpin,BASE_CONFIG.drift.maxSpin*2);
+ assert.equal(hi.drift.spinDrag,BASE_CONFIG.drift.spinDrag);assert.equal(hi.flow.carry,BASE_CONFIG.flow.carry);
+ assert.equal(lo.drift.spin,0);assert.equal(lo.drift.maxSpin,0);
+ assert.equal(pushed.flow.carry,BASE_CONFIG.flow.carry*2);assert.equal(pushed.drift.spin,BASE_CONFIG.drift.spin);
+});
+
+test('items spin with the local current and only drift when it is calm',()=>{
+ const still=flowTurn({seconds:3}),slow=flowTurn({vx:80}),fast=flowTurn({vx:240});
+ console.log(`ruhig 3 s: ${(still.d*180/Math.PI).toFixed(1)}° | 80 px/s: ${(slow.d*180/Math.PI).toFixed(1)}° | 240 px/s: ${(fast.d*180/Math.PI).toFixed(1)}° (ω ${fast.peak.toFixed(2)} rad/s)`);
+ assert.ok(still.d>.08&&still.d<.22,'idle '+still.d);
+ assert.ok(slow.d>still.d*4,'slow '+slow.d);
+ assert.ok(fast.d>2.6&&fast.d<slow.d*3.4,'fast '+fast.d);
+ assert.ok(fast.peak>2&&fast.peak<=BASE_CONFIG.drift.maxSpin+1e-9,'peak '+fast.peak);
+ const off=flowTurn({vx:200,spin:0}),half=flowTurn({vx:120,spin:.5}),full=flowTurn({vx:120}),twice=flowTurn({vx:120,spin:2});
+ assert.ok(Math.abs(off.d)<1e-9,'spin=0 '+off.d);
+ assert.ok(Math.abs(twice.d/full.d-2)<.02&&Math.abs(half.d/full.d-.5)<.02,`scale ${half.d} ${full.d} ${twice.d}`);
+});
+
+test('flow spin matches at 30, 60 and 120 fps; a swipe turns the stroke, not the distance',()=>{
+ const angles=[30,60,120].map(fps=>flowTurn({vx:160,fps}).d);
+ assert.ok(Math.abs(angles[0]-angles[1])<1e-6&&Math.abs(angles[2]-angles[1])<1e-6,angles.join(','));
+ for(const fps of [60,120])for(const dur of [.35,.6]){
+  const on=swipeTurn({fps,dur}),off=swipeTurn({fps,dur,suction:false}),far=swipeTurn({fps,dur,offset:150}),side=swipeTurn({fps,dur,offset:50});
+  console.log(`${fps} fps, Wisch ${(300/dur).toFixed(0)} px/s | auf der Spur ${(on*180/Math.PI).toFixed(0)}° | ohne Sog ${(off*180/Math.PI).toFixed(0)}° | 50 px ${(side*180/Math.PI).toFixed(0)}° | 150 px ${(far*180/Math.PI).toFixed(1)}°`);
+  assert.ok(on>1.8,'on '+on);assert.ok(on-off>.35,'suction '+((on-off)*180/Math.PI));
+  assert.ok(side<on*.6,'side '+side);assert.ok(far<.25,'far '+far);
+ }
+ const a=swipeTurn({fps:60}),b=swipeTurn({fps:120});
+ assert.ok(Math.abs(a-b)<Math.abs(a)*.15,'fps-spin '+a+' '+b);
+ assert.ok(Math.abs(swipeTurn({spin:0}))<1e-9);
+});
+
+test('shipped page stays flat PNG items at v2026.11.05-1',()=>{
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../app.js',import.meta.url),'utf8');
+ assert.match(html,/v2026\.11\.05-1/);assert.match(html,/20261105-spin1/);assert.match(app,/20261105-spin1/);
+ assert.doesNotMatch(html+app,/items3d|mesh|buoy/i);
 });
 
 test('spawn order: all 4 categories about equally often',()=>{
