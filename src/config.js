@@ -4,9 +4,9 @@
 // ?spin=0..2 multipliziert nur die Drehung der PNG-Items (1 = Standard, 0 = ruhig).
 export const BASE_CONFIG=Object.freeze({
  water:Object.freeze({
-  swell:72,          // Dünung (Original-Preset 85)
+  swell:79,          // Dünung, etwas lebhafter (Original-Preset 85, vorher 72)
   light:65,
-  ambient:.7         // Faktor auf die Hintergrund-Wellen des Meeres
+  ambient:.86        // Faktor auf die Hintergrund-Wellen des Meeres
  }),
  // Wischen: EINE begrenzte Bugwelle entlang der Spur statt vieler Kreiswellen.
  // Eingabe direkt in die Wellen-Simulation (surface.disturb): vorn Druck, dicht
@@ -65,6 +65,15 @@ export const BASE_CONFIG=Object.freeze({
   waveTilt:220,      // Wellensteigung → Kippen (Original-Merge: 320)
   bandLift:3.5,      // Auftrieb aus der Wischwelle (nur Wippen, keine Wanderung)
   wake:Object.freeze({minSpeed:35,interval:450,amp:.01,radius:2.2,perSecond:2})
+ }),
+ // Ruhige Meeresunruhe, nur Darstellung (ändert b.x/b.y nicht): jedes Teil schaukelt
+ // mit eigener Phase hoch/runter und hin/her. Dezent, Periode mehrere Sekunden.
+ sway:Object.freeze({
+  bobAmp:7,          // px Auf und Ab
+  bobFreq:.2,        // Hz, eine Welle in 5 s
+  swayAmp:11,        // px hin und her
+  swayFreq:.12,      // Hz, eine Welle in etwa 8 s
+  scaleAmp:.045      // Größenatemzug mit dem Hub, Anteil
  })
 });
 
@@ -84,5 +93,5 @@ export function makeConfig(force=readForce(), spin=readSpin()){
  return{force,spin,water:b.water,wake:{...b.wake,push:b.wake.push*force,pull:b.wake.pull*force,tap:b.wake.tap*force,spray:b.wake.spray*Math.min(1,force)},
   flow:{...b.flow,carry:b.flow.carry*force,side:b.flow.side*force,tapSpeed:b.flow.tapSpeed*force,
    suction:{...b.flow.suction,strength:b.flow.suction.strength*force,inward:b.flow.suction.inward*force}},
-  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float};
+  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float,sway:b.sway};
 }

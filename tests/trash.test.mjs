@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync,readFileSync} from 'node:fs';
 import {TRASH,CATEGORIES,balancedOrder} from '../src/trash-catalog.js';
-import {createBody,advance,displayFloat} from '../src/trash-physics.js';
+import {createBody,advance,displayFloat,seaSway} from '../src/trash-physics.js';
 import {SwipeFlow} from '../src/swipe-flow.js';
 import {wakeDrops} from '../src/swipe-input.js';
 import {BASE_CONFIG,makeConfig,readForce,readSpin} from '../src/config.js';
@@ -151,9 +151,25 @@ test('left and right swipes spin in opposite directions',()=>{
  assert.ok(above*below<0,`seiten ${above} ${below}`);
 });
 
-test('shipped page stays flat PNG items at v2026.11.05-2',()=>{
+test('calm sea sway rocks items without carrying them away',()=>{
+ const cfg=BASE_CONFIG.sway,still=seaSway({swayPhase:0},0,{...cfg,bobAmp:0,swayAmp:0,scaleAmp:0});
+ assert.equal(still.x,0);assert.equal(still.y,0);assert.equal(still.scale,1);
+ const peak=seaSway({swayPhase:0},.25/cfg.bobFreq,cfg),other=seaSway({swayPhase:Math.PI},.25/cfg.bobFreq,cfg);
+ assert.ok(Math.abs(peak.y-cfg.bobAmp)<1e-6&&Math.abs(peak.scale-(1+cfg.scaleAmp))<1e-6,'hub '+peak.y);
+ assert.ok(peak.y*other.y<0,'gegenphase');
+ let xmax=0,ymax=0;for(let i=0;i<48;i++){const s=seaSway({swayPhase:i*.4},i*.31,cfg);xmax=Math.max(xmax,Math.abs(s.x));ymax=Math.max(ymax,Math.abs(s.y));
+  assert.ok(Math.abs(s.x)<=cfg.swayAmp+1e-9&&Math.abs(s.y)<=cfg.bobAmp+1e-9&&Math.abs(s.scale-1)<=cfg.scaleAmp+1e-9);}
+ assert.ok(xmax>cfg.swayAmp*.9&&ymax>cfg.bobAmp*.9,'amplitude');
+ const b=createBody(TRASH[0],200,400,()=>.5),sim={},x0=b.x,y0=b.y;
+ const envAt=(t,now)=>({width:390,height:844,now,t,flow:()=>({vx:0,vy:0,weight:0,swirl:0}),size:()=>25});
+ for(let i=1;i<=300;i++)advance(sim,[b],envAt,1/60,i*16.7);
+ assert.ok(Math.hypot(b.x-x0,b.y-y0)<3,'wandern '+Math.hypot(b.x-x0,b.y-y0).toFixed(2));
+ assert.equal(makeConfig().sway.bobAmp,cfg.bobAmp);assert.equal(makeConfig().water.swell,BASE_CONFIG.water.swell);
+});
+
+test('shipped page stays flat PNG items at v2026.11.05-3',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../app.js',import.meta.url),'utf8');
- assert.match(html,/v2026\.11\.05-2/);assert.match(html,/20261105-spin2/);assert.match(app,/20261105-spin2/);
+ assert.match(html,/v2026\.11\.05-3/);assert.match(html,/20261105-sway3/);assert.match(app,/20261105-sway3/);
  assert.doesNotMatch(html+app,/items3d|mesh|buoy/i);
 });
 

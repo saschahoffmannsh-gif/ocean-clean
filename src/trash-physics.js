@@ -7,6 +7,7 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
 export function createBody(kind,x,y,rand=Math.random){
  return{kind,x,y,vx:0,vy:0,angle:rand()*Math.PI*2,spin:(rand()-.5)*.08,spinBias:(rand()<.5?-1:1)*(.4+rand()*.6),
+  swayPhase:((x*.017+y*.013)%1+1)%1*Math.PI*2,
   heave:NaN,heaveSpeed:0,draft:0,pitch:0,roll:0,pitchSpeed:0,rollSpeed:0,lastWake:-1e9,
   wave:{height:0,slopeX:0,slopeY:0},sea:{lift:0,crest:0,pitch:0,roll:0}};
 }
@@ -56,6 +57,13 @@ export function advance(sim,bodies,envAt,frameDt,frameNow,cfg=BASE_CONFIG.drift,
  while(sim.acc>=cfg.step-1e-9){sim.acc-=cfg.step;sim.time=(sim.time||0)+cfg.step;
   const env=envAt(sim.time,frameNow-Math.max(0,sim.acc)*1000);stepBodies(bodies,env,cfg.step,cfg,flowCfg);onStep?.(cfg.step,env);n++;}
  return n;
+}
+
+// Ruhige Schaukel nur fürs Bild: y hoch/runter, x hin/her, leichte Größe.
+// Phase je Teil, Zeit t in Sekunden (dieselbe Physik-Uhr). Ändert die Position nicht.
+export function seaSway(body,t,cfg=BASE_CONFIG.sway){
+ const p=body.swayPhase||0,bob=Math.sin(t*cfg.bobFreq*Math.PI*2+p);
+ return{x:Math.sin(t*cfg.swayFreq*Math.PI*2+p*1.7+1.2)*cfg.swayAmp,y:bob*cfg.bobAmp,scale:1+bob*cfg.scaleAmp};
 }
 
 export function displayFloat(float,size,cfg=BASE_CONFIG.float){
