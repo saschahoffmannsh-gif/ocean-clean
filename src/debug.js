@@ -19,9 +19,9 @@ export function startDebug(app){
    `html/body     ${r(document.documentElement.getBoundingClientRect().height)}/${r(document.body.getBoundingClientRect().height)}  class=${document.documentElement.className}`,
    `container     ${r(root.top)}..${r(root.bottom)} (${r(root.width)}×${r(root.height)})`,
    `water canvas  css ${app.ocean.width}×${app.ocean.height} px ${gl.width}×${gl.height}`,
-   `trash canvas  px ${tc.width}×${tc.height}  field ${app.trash.w}×${r(app.trash.h)}`,
-   `säcke         ${(app.trash.bagGeom||[]).map(b=>b.label).join(' · ')}  lip ${r(app.trash.bagGeom?.[0]?.mouthTop??0)}`,
-   `gesammelt     ${Object.entries(app.trash.collected||{}).map(([k,v])=>k+' '+v).join('  ')}`,
+   `haufen canvas px ${tc.width}×${tc.height}  field ${app.trash.w}×${r(app.trash.h)}`,
+   `haufen        ${(()=>{const s=app.trash.stats?.()||{};return `n ${s.n??0}  frei ${s.free??0}  unten ${s.buried??0}  ${s.held?'hält '+s.held:'frei'}`;})()}`,
+   `finger        ${app.trash.finger?.active?'an':'aus'}  ${r(app.trash.finger?.x||0)},${r(app.trash.finger?.y||0)}`,
   ].join('\n');
   setTimeout(tick,500);};
  tick();

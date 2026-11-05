@@ -167,12 +167,14 @@ test('calm sea sway rocks items without carrying them away',()=>{
  assert.equal(makeConfig().sway.bobAmp,cfg.bobAmp);assert.equal(makeConfig().water.swell,BASE_CONFIG.water.swell);
 });
 
-test('shipped page sorts into bags at v2026.11.05-8',()=>{
+test('shipped page is the dig pile at v2026.11.05-9, without bags',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../app.js',import.meta.url),'utf8');
- const layer=readFileSync(new URL('../src/trash-layer.js',import.meta.url),'utf8'),phys=readFileSync(new URL('../src/trash-physics.js',import.meta.url),'utf8');
- assert.match(html,/v2026\.11\.05-8/);assert.match(html,/20261105-sacks8b/);assert.match(app,/20261105-sacks8b/);
- assert.match(html,/Plastik gelb/);assert.doesNotMatch(html+app+layer+phys,/LifeLayer|life-sim|layoutBoat|drawBoat|boat-layer|Förder/);
- assert.doesNotMatch(html+app,/items3d|mesh|buoy/i);
+ const layer=readFileSync(new URL('../src/pile-layer.js',import.meta.url),'utf8');
+ assert.match(html,/v2026\.11\.05-9/);assert.match(html,/20261105-dig9/);assert.match(app,/20261105-dig9/);
+ assert.match(html,/Durch den Haufen wühlen/);assert.match(html,/oben liegende Teile aufnehmen/i);
+ assert.match(app,/PileLayer/);assert.doesNotMatch(app,/TrashLayer|sort-bags|bag-draw|drawBags/);
+ assert.doesNotMatch(layer,/drawBags|layoutBags|sort-bags/);
+ assert.doesNotMatch(html+app+layer,/LifeLayer|life-sim|layoutBoat|drawBoat|boat-layer|Förder/);
  assert.equal(existsSync(new URL('../src/boat.js',import.meta.url)),false);
 });
 
