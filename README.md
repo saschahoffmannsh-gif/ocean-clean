@@ -1,8 +1,8 @@
 # Ocean Clean – Original-Meer
 
-## Wühlen im Haufen (v2026.11.05-10)
+## Wühlen im Haufen (v2026.11.05-11)
 
-Dichter Haufen aus genau drei Low-Poly-Netzen (PET-Flasche, Getränkedose, grüne Glasflasche), viele Exemplare, mit Tiefe. In Ruhe liegen die Teile still. Der Finger stößt nur an, was er berührt; Nachbarn rücken als feste Körper beiseite und fallen nicht durcheinander. Oben klar und greifbar, tiefer unter Wasser blau und weicher. Ein freies Teil lässt sich aufnehmen und bleibt dort liegen, wo man es ablegt. Keine Säcke. `water-13.0.0/` bleibt bytegleich.
+Alle Teile liegen auf der Wasserfläche. Nichts schwimmt darunter. Die drei Low-Poly-Netze (PET-Flasche, Getränkedose, grüne Glasflasche) stoßen sich als feste Kapseln: sie liegen nebeneinander und gehen nicht durcheinander. In Ruhe still. Der Finger schubst nur, was er berührt. Abgelegt bleibt liegen. Keine Säcke. `water-13.0.0/` bleibt bytegleich.
 
 ## Bisher
 
@@ -120,7 +120,7 @@ Regel (`src/sort-bags.js`, geprüft an der Öffnung):
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version oben rechts neben Impressum (`v2026.11.05-10`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`). Das Impressum sitzt unter dem Logo. In dieser Fassung gibt es keine Säcke.
+- Version oben rechts neben Impressum (`v2026.11.05-11`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`). Das Impressum sitzt unter dem Logo. In dieser Fassung gibt es keine Säcke.
 - v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
   `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
   aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.

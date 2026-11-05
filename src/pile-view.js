@@ -1,8 +1,8 @@
 // Transparentes WebGL über dem Meer: die drei Low-Poly-Netze, viele Instanzen.
 // Oberfläche klar, unter Wasser blau, weicher und durchscheinender. Fehlt WebGL,
 // bleibt das Canvas draussen und die Ebene zeichnet einfache Körper.
-import {getMesh,MESH_KEYS} from './trash-meshes.js?v=20261105-calm10';
-import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261105-calm10';
+import {getMesh,MESH_KEYS} from './trash-meshes.js?v=20261105-surf11';
+import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261105-surf11';
 
 const ATTRS={alpha:true,antialias:true,depth:true,stencil:false,premultipliedAlpha:true,powerPreference:'low-power',preserveDrawingBuffer:false};
 const VERT=`precision highp float;
@@ -159,7 +159,7 @@ export class PileView{
   gl.uniform3f(this.loc.cam,this.cssW*.34,Math.max(this.cssW,this.cssH)*.85,this.cssH*.18);
   for(const item of items){
    gl.uniformMatrix4fv(this.loc.model,false,modelMatrix(item.pose,pile.base));
-   gl.uniform1f(this.loc.depth,item.pose.depth);
+   gl.uniform1f(this.loc.depth,0);
    gl.uniform1f(this.loc.held,item.pose.held?1:0);
    const parts=this.meshes.get(item.key).parts;
    gl.depthMask(true);

@@ -1,8 +1,8 @@
-// Physik des Müllhaufens: Tiefe, Wühlen, Auftrieb, Greifen, Fallenlassen.
-// z = 0 ist die Oberfläche, negativ unter Wasser. Ohne DOM, testbar mit node --test.
-// Die Wischströmung ist nur ein schwacher Rest. Der Finger schiebt und hebt selbst.
+// Physik des Müllhaufens auf der Wasserfläche. Nichts liegt darunter.
+// Harte Kapseln: die Teile stoßen sich, gehen aber nicht durcheinander.
+// Ohne DOM, testbar mit node --test.
 import {BASE_CONFIG} from './config.js';
-import {SHEAR_X,SHEAR_Z} from './pile-pose.js';
+import {MESH_UNITS,SHEAR_X,SHEAR_Z} from './pile-pose.js';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
@@ -17,20 +17,20 @@ export function mulberry32(seed){
  return()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
 }
 
-export function createPileBody(kind,x,y,z,rand=Math.random,radiusScale=1){
- return{kind,x,y,z,vx:0,vy:0,vz:0,radius:kind.radius*radiusScale,
-  angle:rand()*Math.PI*2,spin:0,spinBias:(rand()<.5?-1:1)*(.55+rand()*.7),
-  swayPhase:((x*.017+y*.013)%1+1)%1*Math.PI*2,
-  held:false,prevZ:z,
-  heave:NaN,heaveSpeed:0,draft:0,pitch:0,roll:0,pitchSpeed:0,rollSpeed:0,
-  float:null,hitWater:false};
+// Kapsel in Pixeln, passend zum sichtbaren Netz (Länge entlang X, Dicke aus der Mitte).
+export function bodyShape(kind,radiusScale=1){
+ const px=30*radiusScale*MESH_UNITS;
+ return{halfLen:px*(kind.long||1)*.52,tube:Math.max(9,px*(kind.thick||1)*(kind.mid||.16)*1.35)+1};
 }
 
-export function layoutPile(w,h){
- const base=Math.max(28,Math.min(42,Math.min(w,h)/390*34));
- const pileR=Math.max(120,Math.min(220,Math.min(w,h)*.36));
- const n=Math.round(Math.max(42,Math.min(58,Math.min(w,h)/7.6)));
- return{cx:w*.5,cy:h*.47,pileR,n,base,radiusScale:base/30};
+export function createPileBody(kind,x,y,z,rand=Math.random,radiusScale=1){
+ const shape=bodyShape(kind,radiusScale);
+ return{kind,x,y,z:z>0?z:0,vx:0,vy:0,vz:0,radius:shape.tube+4,halfLen:shape.halfLen,tube:shape.tube,
+  angle:rand()*Math.PI*2,spin:0,spinBias:(rand()<.5?-1:1)*(.55+rand()*.7),
+  swayPhase:((x*.017+y*.013)%1+1)%1*Math.PI*2,
+  held:false,prevZ:0,
+  heave:NaN,heaveSpeed:0,draft:0,pitch:0,roll:0,pitchSpeed:0,rollSpeed:0,
+  float:null,hitWater:false};
 }
 
 function shuffle(a,rand){
@@ -38,133 +38,117 @@ function shuffle(a,rand){
  return a;
 }
 
-export function spawnPile({kinds=PILE_KINDS,n,cx,cy,pileR,thick,rand,radiusScale=1}){
+export function layoutPile(w,h){
+ const base=Math.max(28,Math.min(40,Math.min(w,h)/390*32));
+ const pileR=Math.max(130,Math.min(240,Math.min(w,h)*.4));
+ const n=Math.round(Math.max(18,Math.min(26,Math.min(w,h)/18)));
+ return{cx:w*.5,cy:h*.47,pileR,n,base,radiusScale:base/30};
+}
+
+export function spawnPile({kinds=PILE_KINDS,n,cx,cy,rand,radiusScale=1}){
  const order=[];
  while(order.length<n)for(const k of shuffle([0,1,2],rand))if(order.length<n)order.push(k);
- const anchors=Math.max(10,Math.round(n/3.1)),slots=[];
- for(let a=0;a<anchors;a++){
-  const t=(a+.5)/anchors,rad=pileR*(.05+.9*Math.sqrt(t));
-  const layers=rad<pileR*.36?4:rad<pileR*.66?3:2;
-  slots.push({rad,layers,ang:a*2.399963});
- }
- let total=slots.reduce((s,x)=>s+x.layers,0);
- while(total>n){const slot=slots[slots.length-1-(total%slots.length)];if(slot.layers>1){slot.layers--;total--;}else break;}
- while(total<n){slots[total%Math.min(5,slots.length)].layers++;total++;}
- const bodies=[];let idx=0;
- for(const slot of slots)for(let s=0;s<slot.layers&&idx<n;s++){
-  const kind=kinds[order[idx++]];
-  const j=(s===0?.12:.32)*kind.radius*radiusScale,jang=rand()*Math.PI*2;
-  const x=cx+Math.cos(slot.ang)*slot.rad+Math.cos(jang)*j*(.25+rand()*.75);
-  const y=cy+Math.sin(slot.ang)*slot.rad*.9+Math.sin(jang)*j*(.25+rand()*.75);
-  const z=-s*thick+(rand()-.5)*1.4;
-  bodies.push(createPileBody(kind,x,y,z,rand,radiusScale));
+ const bodies=[];
+ for(let i=0;i<n;i++){
+  const ang=i*2.399963,rad=14*Math.sqrt(i+.2);
+  const kind=kinds[order[i]];
+  bodies.push(createPileBody(kind,cx+Math.cos(ang)*rad,cy+Math.sin(ang)*rad*.92,0,rand,radiusScale));
  }
  return bodies;
 }
 
-export function isFree(body,bodies,cfg=BASE_CONFIG.pile){
- if(!body||body.held)return false;
- if(body.z<cfg.grabBand)return false;
- for(const other of bodies){
-  if(other===body||other.held)continue;
-  if(other.z<body.z+cfg.thick*.32)continue;
-  if(Math.hypot(other.x-body.x,other.y-body.y)<(other.radius+body.radius)*cfg.cover)return false;
- }
- return true;
+export function isFree(body){
+ return !!(body&&!body.held&&body.z>=-0.5);
 }
 
-// Abstand zum liegenden Teil: entlang der Längsachse eine Kapsel, seitlich der Radius.
-export function touchDistance(body,x,y,longPx=0){
- const dx=x-body.x,dy=y-body.y;
- if(!(longPx>0))return Math.hypot(dx,dy);
- const hx=Math.cos(body.angle),hy=Math.sin(body.angle);
- const along=dx*hx+dy*hy,side=-dx*hy+dy*hx;
- const half=longPx*(body.kind?.long||1)*.46;
- const ca=clamp(along,-half,half);
- return Math.hypot(along-ca,side);
+function axisPoint(body,t){
+ const hx=Math.cos(body.angle||0),hy=Math.sin(body.angle||0),L=body.halfLen||0;
+ return{x:body.x+hx*L*t,y:body.y+hy*L*t};
+}
+function closestOnAxis(body,x,y){
+ const hx=Math.cos(body.angle||0),hy=Math.sin(body.angle||0),L=body.halfLen||0;
+ if(L<1e-3)return{x:body.x,y:body.y};
+ const t=clamp(((x-body.x)*hx+(y-body.y)*hy)/L,-1,1);
+ return axisPoint(body,t);
 }
 
-// Sichtbare Mitte: das Netz steht über dem Auflagepunkt, die Scherung rückt es nach links oben.
+// Abstand vom Punkt zur Mittelachse der Kapsel.
+export function touchDistance(body,x,y){
+ const p=closestOnAxis(body,x,y);
+ return Math.hypot(x-p.x,y-p.y);
+}
+
 export function visualAnchor(body,longPx=0){
  const h=(longPx||0)*(body.kind?.mid||0)*(body.kind?.thick||1)+Math.max(0,body.z||0);
  return{x:body.x+h*SHEAR_X,y:body.y+h*SHEAR_Z};
 }
 
-function grabReach(body,cfg,longPx){
- const tube=longPx>0?longPx*(body.kind?.thick||1)*.4:0;
- return Math.max(body.radius*cfg.grabInner,tube);
+function segEnds(body){
+ const hx=Math.cos(body.angle||0),hy=Math.sin(body.angle||0),L=body.halfLen||0;
+ return{ax:body.x-hx*L,ay:body.y-hy*L,bx:body.x+hx*L,by:body.y+hy*L};
+}
+// Stabile nächste Punkte zweier Strecken (Ericson). pen > 0 = die Kapseln schneiden sich.
+export function capsulePair(a,c){
+ const A=segEnds(a),C=segEnds(c);
+ const d1x=A.bx-A.ax,d1y=A.by-A.ay,d2x=C.bx-C.ax,d2y=C.by-C.ay;
+ const rx=A.ax-C.ax,ry=A.ay-C.ay;
+ const aa=d1x*d1x+d1y*d1y,e=d2x*d2x+d2y*d2y,f=d2x*rx+d2y*ry;
+ let s,t;
+ if(aa<=1e-8&&e<=1e-8){s=0;t=0;}
+ else if(aa<=1e-8){s=0;t=clamp(f/e,0,1);}
+ else{
+  const cc=d1x*rx+d1y*ry;
+  if(e<=1e-8){t=0;s=clamp(-cc/aa,0,1);}
+  else{
+   const b=d1x*d2x+d1y*d2y,denom=aa*e-b*b;
+   s=denom>1e-8?clamp((b*f-cc*e)/denom,0,1):0;
+   t=(b*s+f)/e;
+   if(t<0){t=0;s=clamp(-cc/aa,0,1);}
+   else if(t>1){t=1;s=clamp((b-cc)/aa,0,1);}
+  }
+ }
+ const px=A.ax+d1x*s,py=A.ay+d1y*s,qx=C.ax+d2x*t,qy=C.ay+d2y*t;
+ let dx=qx-px,dy=qy-py,d=Math.hypot(dx,dy);
+ if(d<1e-3){
+  const nx=-d1y,ny=d1x,nl=Math.hypot(nx,ny)||1;
+  dx=nx/nl;dy=ny/nl;d=1;
+ }
+ const min=(a.tube||0)+(c.tube||0);
+ return{dx,dy,d,min,pen:min-d,ux:dx/d,uy:dy/d};
 }
 
-// Greift das oberste Teil, dessen Körper den Punkt trifft. Liegt dort nichts Freies, bleibt es beim Wühlen.
-export function grabTarget(x,y,bodies,cfg=BASE_CONFIG.pile,longPx=0){
+export function grabTarget(x,y,bodies){
  let best=null;
  for(const b of bodies){
-  if(b.held||b.z<cfg.grabBand)continue;
-  const p=visualAnchor(b,longPx);
-  const d=touchDistance({...b,x:p.x,y:p.y},x,y,longPx);
-  if(d>grabReach(b,cfg,longPx))continue;
-  // Verdeckt: ein klar höheres Teil liegt über derselben Stelle.
-  let covered=false;
-  for(const o of bodies){
-   if(o===b||o.held||o.z<b.z+cfg.thick*.32)continue;
-   const q=visualAnchor(o,longPx);
-   if(touchDistance({...o,x:q.x,y:q.y},x,y,longPx)<=grabReach(o,cfg,longPx)*.72){covered=true;break;}
-  }
-  if(covered)continue;
-  if(!best||b.z>best.b.z+1||(Math.abs(b.z-best.b.z)<=1&&d<best.d))best={b,d};
+  if(!isFree(b))continue;
+  const d=touchDistance(b,x,y);
+  if(d>(b.tube||0)*1.08)continue;
+  if(!best||d<best.d)best={b,d};
  }
  return best?.b??null;
 }
 
-export function ceiling(body,bodies,cfg=BASE_CONFIG.pile){
- let cap=0;
- for(const other of bodies){
-  if(other===body||other.held)continue;
-  if(other.z<=body.z+1.2)continue;
-  if(Math.hypot(other.x-body.x,other.y-body.y)>=(other.radius+body.radius)*cfg.cover)continue;
-  cap=Math.min(cap,other.z-cfg.thick);
- }
- return cap;
-}
+export function ceiling(){return 0;}
 
-export function countFree(bodies,cfg=BASE_CONFIG.pile){
+export function countFree(bodies){
  let free=0,buried=0;
- for(const b of bodies)if(isFree(b,bodies,cfg))free++;else buried++;
+ for(const b of bodies)if(isFree(b))free++;else buried++;
  return{free,buried};
 }
 
-// Feste Körper: gleiche Lage hält Abstand, verschiedene Lagen bleiben ein Stapel.
-// Korrektur direkt an der Position, damit nichts hindurchrutscht.
 function resolveContacts(bodies,cfg){
  for(let pass=0;pass<4;pass++){
   for(let i=0;i<bodies.length;i++)for(let j=i+1;j<bodies.length;j++){
    const a=bodies[i],c=bodies[j];
    if(a.held||c.held)continue;
-   let dx=c.x-a.x,dy=c.y-a.y,d2=dx*dx+dy*dy;
-   const stacked=Math.abs(a.z-c.z)>=cfg.thick*.62;
-   const min=(a.radius+c.radius)*(stacked?cfg.stackCore:cfg.solid);
-   if(d2>=min*min)continue;
-   let d=Math.sqrt(d2);
-   if(d<1e-3){dx=1;dy=0;d=1e-3;}
-   const ux=dx/d,uy=dy/d,corr=min-d;
+   const hit=capsulePair(a,c);
+   if(hit.pen<=.35)continue;
+   const push=hit.pen-.2;
    const ia=1/(a.kind.mass+cfg.inertia),ic=1/(c.kind.mass+cfg.inertia),share=ia+ic;
-   a.x-=ux*corr*(ia/share);a.y-=uy*corr*(ia/share);
-   c.x+=ux*corr*(ic/share);c.y+=uy*corr*(ic/share);
-   const rel=(c.vx-a.vx)*ux+(c.vy-a.vy)*uy;
-   if(rel<0){
-    a.vx+=ux*rel*(ia/share);a.vy+=uy*rel*(ia/share);
-    c.vx-=ux*rel*(ic/share);c.vy-=uy*rel*(ic/share);
-   }
+   a.x-=hit.ux*push*(ia/share);a.y-=hit.uy*push*(ia/share);
+   c.x+=hit.ux*push*(ic/share);c.y+=hit.uy*push*(ic/share);
+   a.vx=0;a.vy=0;c.vx=0;c.vy=0;
   }
- }
-}
-
-function clampSupport(bodies,cfg){
- const list=bodies.filter(b=>!b.held).sort((a,c)=>c.z-a.z);
- for(const b of list){
-  const cap=ceiling(b,bodies,cfg);
-  if(b.z>cap){b.z=cap;if(b.vz>0)b.vz=0;}
-  if(cap-b.z<2&&b.z<=cap){b.z=cap;b.vz=0;}
  }
 }
 
@@ -183,19 +167,19 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   }
   let ax=0,ay=0;
   b.bumpX=0;b.bumpY=0;
-  const exposure=clamp(1+b.z/(cfg.thick*1.7),.12,1);
   if(finger&&!hold){
-   const dx=b.x-finger.x,dy=b.y-finger.y,d=Math.hypot(dx,dy),R=b.radius+cfg.fingerR;
+   const p=closestOnAxis(b,finger.x,finger.y);
+   const dx=p.x-finger.x,dy=p.y-finger.y,d=Math.hypot(dx,dy),R=(b.tube||8)+cfg.fingerR;
    if(d<R){
     const pen=(R-d)/R,speed=Math.hypot(finger.vx,finger.vy);
     const rx=d>1e-3?dx/d:1,ry=d>1e-3?dy/d:0;
     let dirx=rx,diry=ry;
     if(speed>=22){
      const fx=finger.vx/speed,fy=finger.vy/speed,side=fx*dy-fy*dx,sign=side>=0?1:-1;
-     dirx=(-fy*sign)*.45+rx*.9;diry=(fx*sign)*.45+ry*.9;
+     dirx=(-fy*sign)*.4+rx*.95;diry=(fx*sign)*.4+ry*.95;
     }
     const norm=Math.hypot(dirx,diry)||1;
-    const mag=(speed>=22?cfg.nudge:cfg.dwell)*pen*exposure*Math.min(1,Math.max(speed,24)/240);
+    const mag=(speed>=22?cfg.nudge:cfg.dwell)*pen*Math.min(1,Math.max(speed,24)/240);
     b.bumpX=dirx/norm*mag;b.bumpY=diry/norm*mag;
    }
   }
@@ -204,7 +188,7 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   if(b.y<m+28)ay+=(m+28-b.y)/(m+28)*cfg.edge*inv;if(b.y>h-m)ay-=(b.y-(h-m))/m*cfg.edge*inv;
   let az;
   if(b.z>0)az=-cfg.gravity;
-  else{const cap=ceiling(b,bodies,cfg);az=(Math.min(0,cap)-b.z)*cfg.rise-b.vz*cfg.riseDamp;}
+  else az=0;
   b.ax=ax;b.ay=ay;b.az=az;
  }
  const damp=Math.exp(-cfg.drag*dt),zDamp=Math.exp(-cfg.riseDamp*.35*dt);
@@ -226,17 +210,13 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   }
   b.x=clamp(b.x+b.vx*dt,-30,w+30);b.y=clamp(b.y+b.vy*dt,-30,h+30);
   b.z+=b.vz*dt;
-  if(!b.held){
-   if(b.z>0&&b.vz>0){b.z=0;b.vz=0;}
-   if(b.z<cfg.floor){b.z=cfg.floor;b.vz=0;}
-  }
+  if(!b.held&&b.z<=0){b.z=0;b.vz=0;}
   b.hitWater=!b.held&&prev>3&&b.z<=0;
   b.prevZ=b.z;
   if(b.held){b.spin=b.spinBias*(cfg.holdSpin||.45);b.angle+=b.spin*dt;}
   else b.spin=0;
  }
  resolveContacts(bodies,cfg);
- clampSupport(bodies,cfg);
 }
 
 export function advancePile(sim,bodies,envAt,frameDt,frameNow,cfg=BASE_CONFIG.pile){

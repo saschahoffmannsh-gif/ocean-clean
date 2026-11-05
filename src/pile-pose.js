@@ -6,8 +6,8 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
 export const ROCK_GAIN=2.4;
 export const ROCK_LIMIT_DEG=28;
-export const SHEAR_X=-0.28;
-export const SHEAR_Z=-0.40;
+export const SHEAR_X=-0.12;
+export const SHEAR_Z=-0.16;
 // Mesh-Länge 1 → Pixel. Kleiner als die alten Sprites, damit der Haufen dicht bleibt und lesbar.
 export const MESH_UNITS=1.9;
 export const MURK_DEPTH=34;
@@ -19,14 +19,11 @@ export function waveRock(pitchDeg,rollDeg,gain=ROCK_GAIN,limitDeg=ROCK_LIMIT_DEG
  return{pitch:to(pitchDeg),roll:to(rollDeg)};
 }
 
-// Tiefe 0 = klar an der Oberfläche, 1 = tief und matt.
-export function submerge(z,held,murk=MURK_DEPTH){
- if(held||!(z<0))return 0;
- return clamp(-z/murk,0,1);
-}
+// In dieser Fassung liegt alles auf der Fläche. Keine Unterwasser-Tönung.
+export function submerge(){return 0;}
 
 export function itemPose(body,sway={x:0,y:0,scale:1}){
- const held=!!body.held,depth=submerge(body.z,held),amp=held?.15:1-depth*.7;
+ const held=!!body.held,depth=0,amp=held?.15:1;
  const rock=waveRock(body.pitch,body.roll);
  const bob=held?0:(body.float?.bob||0)*(1-depth*.55);
  const pose={

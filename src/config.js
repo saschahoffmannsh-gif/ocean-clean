@@ -89,37 +89,37 @@ export const BASE_CONFIG=Object.freeze({
   rejectHold:.55,    // s kein erneutes Saugen an demselben Sack
   maxAccel:240      // Deckel, der Sog reißt nie
  }),
- // Dichter Haufen (v2026.11.05-10). In Ruhe still. Der Finger stößt nur an,
- // was er berührt; Nachbarn rücken als feste Körper nach und bleiben liegen.
+ // Oberfläche (v2026.11.05-11). Alles liegt auf dem Wasser, nichts darunter.
+ // Harte Kapseln: die Körper berühren sich, gehen aber nicht durcheinander.
  pile:Object.freeze({
-  thick:13,          // px Höhenabstand einer Lage
-  cover:.62,         // Überlappung, ab der ein Teil ein anderes zudeckt
-  grabBand:-16,      // freigelegte zweite Lage darf noch mit, tiefer nicht
-  grabInner:.92,     // klarer Griff: auf dem Teil, nicht in der Lücke
-  fingerR:18,        // px Kontakt des Fingers
-  nudge:210,         // px/s Schubs bei vollem Kontakt, kein Schleudern
-  dwell:16,          // px/s ruhender Finger, kaum
-  rise:16,           // 1/s² Nachrücken nach oben, wenn die Decke weg ist
+  thick:13,
+  cover:.62,
+  grabBand:0,
+  grabInner:.92,
+  fingerR:16,        // px Kontakt des Fingers
+  nudge:340,         // px/s Schubs bei vollem Kontakt
+  dwell:14,
+  rise:16,
   riseDamp:8,
-  gravity:420,       // px/s² Fall über der Oberfläche
-  solid:.92,         // gleiche Lage: fast harter Abstand (Anteil der Radiensumme)
-  stackCore:.34,     // verschiedene Lagen dürfen sich stapeln, nicht denselben Punkt teilen
-  drag:11,           // schnell wieder still
-  maxSpeed:88,
-  holdLift:46,       // px über dem Wasser in der Hand
-  holdK:22,          // Folgefrequenz am Finger
-  ambient:0,         // abgelegte Teile treiben nicht mit der Strömung
+  gravity:520,
+  solid:1,           // Kapseln dürfen sich nicht schneiden
+  skin:1.5,          // px extra, damit die Netze sich nicht schneiden
+  drag:12,
+  maxSpeed:80,
+  holdLift:46,
+  holdK:22,
+  ambient:0,
   ambientCoupling:0,
   edge:500,
   inertia:.45,
-  idleSpin:0,        // in Ruhe keine Drehung
-  spin:.004,         // rad/s je px/s, nur solange sich etwas schiebt
-  maxSpin:.7,
+  idleSpin:0,
+  spin:.003,
+  maxSpin:.5,
   spinDrag:8,
-  holdSpin:.45,      // langsame Drehung nur in der Hand
-  gather:0,          // nichts zieht zum Haufen zurück; abgelegt bleibt liegen
-  floor:-72,
-  sway:Object.freeze({bobAmp:1.2,bobFreq:.16,swayAmp:1,swayFreq:.1,scaleAmp:.01})
+  holdSpin:.4,
+  gather:0,
+  floor:0,
+  sway:Object.freeze({bobAmp:.6,bobFreq:.14,swayAmp:.4,swayFreq:.09,scaleAmp:.006})
  })
 });
 
