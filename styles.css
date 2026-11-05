@@ -7,6 +7,7 @@
 .legal a{color:#eafffa;text-decoration:none;text-shadow:0 1px 4px #00506299}
 .legal a:hover,.legal a:focus-visible{opacity:1;text-decoration:underline}.legal:hover{opacity:.95}
 .error{position:absolute;z-index:7;left:20px;right:20px;bottom:40px;background:#f8faed;color:#153f43;border-radius:18px;padding:20px;margin:0}
+.life-layer{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;pointer-events:none}
 .trash-layer{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;pointer-events:none}
 
 /* Vollbild bis unter Notch/Dynamic Island und Home-Indicator (viewport-fit=cover).

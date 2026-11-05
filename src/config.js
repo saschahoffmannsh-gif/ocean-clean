@@ -74,6 +74,16 @@ export const BASE_CONFIG=Object.freeze({
   swayAmp:11,        // px hin und her
   swayFreq:.12,      // Hz, eine Welle in etwa 8 s
   scaleAmp:.045      // Größenatemzug mit dem Hub, Anteil
+ }),
+ // Meeresleben unter dem Müll. Zähler klein halten (Mobile). Geschwindigkeiten in life-sim.js.
+ life:Object.freeze({
+  counts:Object.freeze({sardine:7,brasse:2,makrele:2,schildkroete:1,qualle:2,seegras:6}),
+  grassAmp:.16,      // rad Wiegen ohne Strömung
+  grassWave:.65,     // rad/s
+  grassFlow:.4,      // zusätzliches Neigen mit der Wischströmung
+  grassMax:.5,       // rad Deckel
+  dodge:2.4,         // wie schnell Fische quer zur Strömung abdrehen
+  cohere:.55         // Zusammenhalt der Sardinen-Schule
  })
 });
 
@@ -93,5 +103,5 @@ export function makeConfig(force=readForce(), spin=readSpin()){
  return{force,spin,water:b.water,wake:{...b.wake,push:b.wake.push*force,pull:b.wake.pull*force,tap:b.wake.tap*force,spray:b.wake.spray*Math.min(1,force)},
   flow:{...b.flow,carry:b.flow.carry*force,side:b.flow.side*force,tapSpeed:b.flow.tapSpeed*force,
    suction:{...b.flow.suction,strength:b.flow.suction.strength*force,inward:b.flow.suction.inward*force}},
-  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float,sway:b.sway};
+  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float,sway:b.sway,life:b.life};
 }
