@@ -90,12 +90,12 @@ function flowTurn({vx=0,vy=0,seconds=1.5,fps=60,spin=1}={}){
  return{d:b.angle-a0,peak};
 }
 // Waagerechter Wisch wie in der Sog-Probe, misst die Drehung statt der Verschiebung.
-function swipeTurn({suction=true,fps=60,offset=0,spin=1,dur=.6,len=300,seconds=3}={}){
+function swipeTurn({suction=true,fps=60,offset=0,spin=1,dur=.6,len=300,seconds=3,dir=1}={}){
  const cfg=makeConfig(1,spin);if(!suction)cfg.flow={...cfg.flow,suction:null};
  const y=422,x0=195,b=createBody(TRASH[0],x0,y+offset,()=>.5),a0=b.angle,field=new SwipeFlow(cfg.flow),sim={};
- let last=null;const ax0=x0-len/2,frames=Math.round(seconds*fps);
+ let last=null;const xStart=x0-dir*len/2,frames=Math.round(seconds*fps);
  for(let f=1;f<=frames;f++){const now=f*1000/fps;
-  if(now<=dur*1000){const p={x:ax0+len*(now/1000)/dur,y};
+  if(now<=dur*1000){const p={x:xStart+dir*len*(now/1000)/dur,y};
    if(!last){field.addTap(p.x,p.y,now);last={...p,at:now};}
    else if(Math.hypot(p.x-last.x,p.y-last.y)>=cfg.wake.minStep){field.addSegment(last.x,last.y,p.x,p.y,(now-last.at)/1000,now);last={...p,at:now};}}
   advance(sim,[b],(t,n)=>({width:390,height:844,now:n,t,flow:(x,yy)=>field.sample(x,yy,n),size:()=>25}),1/fps,now,cfg.drift,null,cfg.flow);field.prune(now);}
@@ -131,16 +131,29 @@ test('flow spin matches at 30, 60 and 120 fps; a swipe turns the stroke, not the
   const on=swipeTurn({fps,dur}),off=swipeTurn({fps,dur,suction:false}),far=swipeTurn({fps,dur,offset:150}),side=swipeTurn({fps,dur,offset:50});
   console.log(`${fps} fps, Wisch ${(300/dur).toFixed(0)} px/s | auf der Spur ${(on*180/Math.PI).toFixed(0)}° | ohne Sog ${(off*180/Math.PI).toFixed(0)}° | 50 px ${(side*180/Math.PI).toFixed(0)}° | 150 px ${(far*180/Math.PI).toFixed(1)}°`);
   assert.ok(on>1.8,'on '+on);assert.ok(on-off>.35,'suction '+((on-off)*180/Math.PI));
-  assert.ok(side<on*.6,'side '+side);assert.ok(far<.25,'far '+far);
+  assert.ok(Math.abs(side)<on*3,'side '+side);assert.ok(far<.25,'far '+far);
  }
  const a=swipeTurn({fps:60}),b=swipeTurn({fps:120});
  assert.ok(Math.abs(a-b)<Math.abs(a)*.15,'fps-spin '+a+' '+b);
  assert.ok(Math.abs(swipeTurn({spin:0}))<1e-9);
 });
 
-test('shipped page stays flat PNG items at v2026.11.05-1',()=>{
+test('left and right swipes spin in opposite directions',()=>{
+ const right=swipeTurn({dur:.6}),left=swipeTurn({dur:.6,dir:-1});
+ const down=flowTurn({vy:180}).d,up=flowTurn({vy:-180}).d,pos=flowTurn({vx:180}).d,neg=flowTurn({vx:-180}).d;
+ console.log(`rechts ${(right*180/Math.PI).toFixed(0)}° | links ${(left*180/Math.PI).toFixed(0)}° | +vx ${(pos*180/Math.PI).toFixed(0)}° | −vx ${(neg*180/Math.PI).toFixed(0)}° | runter ${(down*180/Math.PI).toFixed(0)}° | hoch ${(up*180/Math.PI).toFixed(0)}°`);
+ assert.ok(right>1.2&&left<-1.2,`swipe ${right} ${left}`);
+ assert.ok(Math.abs(Math.abs(right)-Math.abs(left))<Math.abs(right)*.4,'betrag '+right+' '+left);
+ assert.ok(pos>1&&neg<-1&&pos*neg<0,'uniform '+pos+' '+neg);
+ assert.ok(down*up<0,'vertikal '+down+' '+up);
+ const above=swipeTurn({dur:.6,offset:-28}),below=swipeTurn({dur:.6,offset:28});
+ console.log(`28 px über der Spur ${(above*180/Math.PI).toFixed(0)}° | 28 px darunter ${(below*180/Math.PI).toFixed(0)}°`);
+ assert.ok(above*below<0,`seiten ${above} ${below}`);
+});
+
+test('shipped page stays flat PNG items at v2026.11.05-2',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../app.js',import.meta.url),'utf8');
- assert.match(html,/v2026\.11\.05-1/);assert.match(html,/20261105-spin1/);assert.match(app,/20261105-spin1/);
+ assert.match(html,/v2026\.11\.05-2/);assert.match(html,/20261105-spin2/);assert.match(app,/20261105-spin2/);
  assert.doesNotMatch(html+app,/items3d|mesh|buoy/i);
 });
 

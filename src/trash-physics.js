@@ -36,10 +36,12 @@ export function stepBodies(bodies,env,dt,cfg=BASE_CONFIG.drift,flowCfg=BASE_CONF
   b.vx=(b.vx+b.ax*dt)*damp;b.vy=(b.vy+b.ay*dt)*damp;
   const sp=Math.hypot(b.vx,b.vy);if(sp>cfg.maxSpeed){b.vx*=cfg.maxSpeed/sp;b.vy*=cfg.maxSpeed/sp;}
   b.x=clamp(b.x+b.vx*dt,-20,w+20);b.y=clamp(b.y+b.vy*dt,-20,h+20);
-  // Lokale Strömung (px/s, inkl. Sog) setzt die Ziel-Drehung. Exakt für konstantes
-  // Ziel über den festen Schritt: ω → Ziel + (ω−Ziel)·e^{−spinDrag·dt}. Ohne Strömung bleibt idleSpin.
-  const f=b.flow||{vx:0,vy:0},speed=Math.hypot(f.vx,f.vy);
-  const target=b.spinBias*((cfg.idleSpin||0)+speed*cfg.spin);
+  // Ziel-Drehung aus dem Vorzeichen der lokalen Strömung (swirl aus swipe-flow,
+  // sonst vx/−vy). Links und rechts drehen entgegengesetzt. Ohne Strömung nur idleSpin.
+  // Exakt für konstantes Ziel: ω → Ziel + (ω−Ziel)·e^{−spinDrag·dt}.
+  const f=b.flow||{vx:0,vy:0};
+  const signed=Number.isFinite(f.swirl)?f.swirl:((f.vx||0)*.92-(f.vy||0)*.38);
+  const target=b.spinBias*(cfg.idleSpin||0)+signed*cfg.spin;
   b.spin=clamp(target+(b.spin-target)*keep,-cfg.maxSpin,cfg.maxSpin);b.angle+=b.spin*dt;
  }
 }

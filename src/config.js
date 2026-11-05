@@ -50,9 +50,9 @@ export const BASE_CONFIG=Object.freeze({
   drag:2.4,          // 1/s Wasserwiderstand
   inertia:1.0,       // zusätzliche Trägheit (Masse + inertia)
   maxSpeed:110,      // px/s
-  // Drehung um die Hochachse: Ziel ∝ lokale Strömung (Wisch + Sog stecken in der
-  // Geschwindigkeit), jedes Teil mit eigenem spinBias. Ohne Strömung nur idleSpin.
-  spin:.016,         // rad/s je px/s Strömung (mal spinBias, etwa 0.4..1)
+  // Drehung um die Hochachse. Betrag ∝ Strömung (Wisch + Sog), Vorzeichen folgt
+  // der Wischrichtung (links ↔ rechts entgegengesetzt). Ohne Strömung nur idleSpin.
+  spin:.016,         // rad/s je px/s signierter Strömung (swirl)
   idleSpin:.07,      // rad/s leichte Drift ohne Strömung (mal spinBias)
   spinDrag:2.4,      // 1/s wie schnell die Drehung der Strömung folgt (~0.4 s)
   maxSpin:4.2,       // rad/s Deckel (starker Wisch: etwa eine Umdrehung in 1.5–2 s)

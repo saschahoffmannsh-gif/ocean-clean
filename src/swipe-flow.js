@@ -19,7 +19,7 @@ export class SwipeFlow{
  prune(now){const life=this.cfg.lifetime*1000;this.segments=this.segments.filter(s=>now-s.start<life);}
  // Strömung (px/s) und Kopplungsgewicht 0..1 am Punkt x,y
  sample(x,y,now){
-  const c=this.cfg,R=c.radius,cut=R*c.cutoff;let vx=0,vy=0,w=0,lift=0;
+  const c=this.cfg,R=c.radius,cut=R*c.cutoff;let vx=0,vy=0,w=0,lift=0,swirl=0,jet=false;
   for(const s of this.segments){
    const age=(now-s.start)/1000;if(age<0||age>c.lifetime)continue;
    // nächster Punkt auf dem Segment
@@ -37,8 +37,16 @@ export class SwipeFlow{
    // seitliche Verdrängung im Kern ausblenden (statt nach außen: leicht zur Mitte)
    const carry=dens*s.speed*c.carry*k+sv,side=dens*s.speed*c.side*k*(d/R)*(1-ks)-si;
    vx+=s.ux*carry+ox*inv*side;vy+=s.uy*carry+oy*inv*side;w=Math.max(w,k);lift+=dens*k*Math.min(1,s.speed/600);
+   // Drehsinn: Vorzeichen der Wischrichtung (kehrt sich bei Links/Rechts um) plus
+   // Scherung quer zur Spur (gegenüberliegende Seite dreht entgegengesetzt).
+   const along=dens*s.speed*c.carry*k+sv,sense=Math.abs(s.ux)>=Math.abs(s.uy)?Math.sign(s.ux):Math.sign(s.uy);
+   const sideSigned=ox*s.uy-oy*s.ux;
+   swirl+=sense*along+along*(-sideSigned)/(R*.5);jet=true;
   }
-  const sp=Math.hypot(vx,vy);if(sp>c.maxFlow){vx*=c.maxFlow/sp;vy*=c.maxFlow/sp;}
-  return{vx,vy,weight:w,lift:Math.min(1,lift)};
+  const sp=Math.hypot(vx,vy);
+  if(sp>c.maxFlow){const sc=c.maxFlow/sp;vx*=sc;vy*=sc;if(jet)swirl*=sc;}
+  // Antippen hat keine Spur: Vorzeichen aus der radialen Strömung.
+  if(!jet)swirl=vx*.92-vy*.38;
+  return{vx,vy,weight:w,lift:Math.min(1,lift),swirl};
  }
 }

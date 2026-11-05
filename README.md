@@ -53,8 +53,13 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Renderer: `look` je Item (realistische relative Größen, nur Darstellung), freie 360°-Drehung, Schatten aus der
   Silhouette. Physik (`radius`, `mass`, `float`) unverändert.
 
+## Drehrichtung folgt dem Wisch (v2026.11.05-2)
+- Das Vorzeichen kommt aus der Wischrichtung, nicht mehr aus einem festen `spinBias`.
+  Rechtswischen und Linkswischen drehen entgegengesetzt; oberhalb und unterhalb der Spur ebenfalls.
+  Betrag weiter über `drift.spin`, Ruhe-Drift und `?spin=0..2` wie in v2026.11.05-1.
+
 ## Drehung mit der Strömung (v2026.11.05-1)
-- PNG-Items drehen sich um die Hochachse mit der lokalen Strömung (`drift.spin` .016 rad/s je px/s, mal `spinBias`).
+- PNG-Items drehen sich um die Hochachse mit der lokalen Strömung (`drift.spin` .016 rad/s je px/s).
   Wischen und Sog stecken in derselben Geschwindigkeit: auf der Spur etwa eine viertel bis halbe Umdrehung beim Wisch,
   seitlich und weit weg nur die leichte Drift (`idleSpin` .07 rad/s). Deckel `maxSpin` 4.2 rad/s, Folgen mit `spinDrag` 2.4/s.
 - `?spin=0..2` skaliert nur Drehgewinn, Ruhe-Drift und Deckel (1 = Standard). `?force` bleibt der Strömungs-Multiplikator.
@@ -73,7 +78,7 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version unten neben Impressum (`v2026.11.05-1`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
+- Version unten neben Impressum (`v2026.11.05-2`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
 - v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
   `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
   aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.
