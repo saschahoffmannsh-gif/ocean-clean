@@ -19,14 +19,11 @@ export function waveRock(pitchDeg,rollDeg,gain=ROCK_GAIN,limitDeg=ROCK_LIMIT_DEG
  return{pitch:to(pitchDeg),roll:to(rollDeg)};
 }
 
-// Tiefe 0 = klar an der Oberfläche, 1 = tief und matt.
-export function submerge(z,held,murk=MURK_DEPTH){
- if(held||!(z<0))return 0;
- return clamp(-z/murk,0,1);
-}
+// In dieser Fassung liegt alles auf der Fläche. Keine Unterwasser-Tönung.
+export function submerge(){return 0;}
 
 export function itemPose(body,sway={x:0,y:0,scale:1}){
- const held=!!body.held,depth=submerge(body.z,held),amp=held?.15:1-depth*.7;
+ const held=!!body.held,depth=0,amp=held?.15:1;
  const rock=waveRock(body.pitch,body.roll);
  const bob=held?0:(body.float?.bob||0)*(1-depth*.55);
  const pose={
