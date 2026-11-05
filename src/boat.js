@@ -72,16 +72,6 @@ export function beltAccelerate(b,env,driftCfg){
  const gain=gainOf(b,driftCfg),r=env.size(b);
  const wall=layout.lipTop-r*0.15;
  if(b.y>wall){b.ay-=(b.y-wall)*c.hullK*gain;b.ay-=b.vy*c.hullDamp;}
- let slide=null;
- for(const bin of layout.bins){
-  const span=bin.belt.base.y-bin.belt.mouth.y,t=(b.y-bin.belt.mouth.y)/span;
-  if(t<0.22||t>1.05)continue;
-  const cx=bin.belt.mouth.x+(bin.belt.base.x-bin.belt.mouth.x)*t;
-  const half=(bin.belt.mouth.w+(bin.belt.base.w-bin.belt.mouth.w)*t)/2+r*0.12;
-  const dx=b.x-cx,overlap=half-Math.abs(dx);
-  if(overlap>0&&(!slide||overlap>slide.overlap))slide={overlap,sign:Math.sign(dx)||(bin.index&1?1:-1)};
- }
- if(slide)b.ax+=slide.sign*slide.overlap*c.slide*gain;
  if(b.rejectUntil>env.t)return;
  let best=null,bestD=c.suctionRadius;
  for(const bin of layout.bins){
@@ -94,18 +84,34 @@ export function beltAccelerate(b,env,driftCfg){
 }
 
 // Nach der Integration: liegt die Mitte im Maul, wird sortiert.
+// Liegt (x,y) auf dem wasserseitigen Teil des Bandes? Rückgabe: Fortschritt 0 am Maul.
+export function beltHit(bin,x,y,pad=4){
+ const span=bin.belt.base.y-bin.belt.mouth.y;if(span<1)return null;
+ const t=(y-bin.belt.mouth.y)/span;
+ if(t<-0.08||t>0.84)return null;
+ const tt=Math.max(0,Math.min(1,t));
+ const cx=bin.belt.mouth.x+(bin.belt.base.x-bin.belt.mouth.x)*tt;
+ const half=(bin.belt.mouth.w+(bin.belt.base.w-bin.belt.mouth.w)*tt)/2+pad;
+ if(Math.abs(x-cx)>half)return null;
+ return Math.max(0,t);
+}
+
 export function beltCapture(b,env){
  const c=env.beltCfg||BASE_CONFIG.boat,layout=env.belts;
  if(!layout||isCarried(b)||b.rejectUntil>env.t)return null;
  if(typeof b.fade==='number'&&b.fade<0.85)return null;
- let best=null,bestS=1;
+ let best=null,bestS=1,bestT=0;
  for(const bin of layout.bins){
   const ex=(b.x-bin.mouth.x)/bin.mouth.rx,ey=(b.y-bin.mouth.y)/bin.mouth.ry,s=ex*ex+ey*ey;
-  if(s<=1&&s<bestS){bestS=s;best=bin;}
+  if(s<=1&&s<bestS){bestS=s;best=bin;bestT=0;}
+ }
+ if(!best)for(const bin of layout.bins){
+  const t=beltHit(bin,b.x,b.y,6);if(t==null)continue;
+  const d=Math.abs(b.x-bin.cx);if(!best||d<bestS){best=bin;bestS=d;bestT=t;}
  }
  if(!best)return null;
  if(decideSort(b.kind.category,best.category)==='keep'){
-  b.mode='ride';b.rideBin=best.index;b.rideT=0;b.spin*=.25;
+  b.mode='ride';b.rideBin=best.index;b.rideT=bestT;b.spin*=.25;
   b.justCaught=true;b.caughtX=b.x;b.caughtY=b.y;return 'keep';
  }
  b.rejects=(b.rejects||0)+1;b.rejectUntil=env.t+c.rejectHold;b.bumpUntil=env.t+.32;b.bumpBin=best.index;

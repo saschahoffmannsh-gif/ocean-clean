@@ -59,7 +59,7 @@ test('light suction at the mouth pulls a nearby item in and leaves a far one',()
  const pulled=run('plastik',0,{x:mouth.x,y:mouth.y-50,seconds:2.8});
  assert.equal(pulled.b.collected,true,'sog sammelt passendes');
  const early=run('plastik',0,{x:mouth.x,y:mouth.y-50,seconds:1.55});
- assert.equal(early.b.mode,'ride','sog hat das maul erreicht');
+ assert.ok(early.b.mode==='ride'||early.b.mode==='throw'||early.b.collected,'sog hat das maul erreicht '+early.b.mode);
  const far=run('plastik',0,{x:mouth.x,y:mouth.y-220,seconds:1.8});
  assert.notEqual(far.b.collected,true);
  assert.ok(Math.hypot(far.b.x-mouth.x,far.b.y-(mouth.y-220))<12,'fern bleibt '+far.b.y);
@@ -78,10 +78,14 @@ test('belt capture matches at 60 and 120 fps and does not ride the wrong categor
  assert.ok(a.done&&b.done,'gefangen');
  assert.ok(Math.abs(a.done-b.done)<.05,JSON.stringify([a,b]));
  const cfg=makeConfig(),L=layoutBoat(390,844),bin=L.bins[2];
- const mid=createBody(kind('rest'),bin.cx,bin.mouth.y+(bin.belt.base.y-bin.mouth.y)*.55,()=>.5),sim={};
- for(let i=1;i<=60;i++)advance(sim,[mid],envAt(L,cfg),1/60,i*1000/60,cfg.drift,null,cfg.flow);
+ const y=bin.mouth.y+(bin.belt.base.y-bin.mouth.y)*.55;
+ const mid=createBody(kind('rest'),bin.cx,y,()=>.5),sim={};
+ for(let i=1;i<=40;i++)advance(sim,[mid],envAt(L,cfg),1/60,i*1000/60,cfg.drift,null,cfg.flow);
  assert.notEqual(mid.collected,true);
- assert.ok(Math.abs(mid.x-bin.cx)>18,'rutscht vom band '+mid.x);
+ assert.ok(mid.rejects>=1,'auf dem band abgewiesen');
+ assert.ok(mid.y<y-12,'zurück nach oben '+mid.y);
+ const on=run('glas',2,{x:L.bins[2].cx,y:L.bins[2].mouth.y+(L.bins[2].belt.base.y-L.bins[2].mouth.y)*.4,seconds:2});
+ assert.equal(on.b.collected,true,'richtiges teil auf dem band wird mitgenommen');
 });
 
 test('sorting rules are the documented categories and the page names them',()=>{

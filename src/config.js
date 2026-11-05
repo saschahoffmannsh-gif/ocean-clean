@@ -78,12 +78,12 @@ export const BASE_CONFIG=Object.freeze({
  // Bootsheck: leichter Sog nur am Maul, Bandgeschwindigkeit, Abweisen.
  // Wirkt nur, wenn die Physik ein Layout bekommt (env.belts). ?force ändert das nicht.
  boat:Object.freeze({
-  suctionRadius:68,  // px um das Maul, danach exakt kein Sog
-  suctionSpeed:104,  // px/s Zielgeschwindigkeit am Maul (deutlich unter einem Wisch)
-  suctionCoupling:4.4,
+  suctionRadius:78,  // px um das Maul, danach exakt kein Sog
+  suctionSpeed:120,  // px/s Zielgeschwindigkeit am Maul (deutlich unter einem Wisch)
+  suctionCoupling:4.8,
   hullK:26,          // Feder am Heck, damit Teile nicht unter die Boxen laufen
   hullDamp:6,
-  slide:16,          // seitlich vom Band runter, solange das Teil nicht im Maul ist
+  slide:0,           // unbenutzt: auf dem Band wird sortiert, nicht seitlich weggeschoben
   beltSpeed:176,     // px/s auf dem Band, gleiche Geschwindigkeit wie die Lamellen
   throwTime:.38,     // s Wurf in die Box
   throwHop:32,       // px Bogen nach oben, bevor das Teil in die Box fällt

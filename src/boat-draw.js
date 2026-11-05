@@ -86,11 +86,11 @@ function drawBelt(ctx,bin,time,speed,gap){
  const off=(time*speed)%gap;
  for(let dist=off-gap;dist<len;dist+=gap){
   if(dist<5||dist>len-3)continue;
-  const t=dist/len,p=beltPoint(bin,t),hw=p.w/2-4.5;
+  const t=dist/len,p=beltPoint(bin,t),hw=p.w/2-4.5,n=Math.round(dist/gap),hot=n%4===0;
   ctx.beginPath();ctx.moveTo(p.x-hw,p.y);ctx.lineTo(p.x+hw,p.y);
-  ctx.strokeStyle='rgba(28,34,40,.45)';ctx.lineWidth=3.4;ctx.stroke();
-  ctx.beginPath();ctx.moveTo(p.x-hw,p.y-1.15);ctx.lineTo(p.x+hw,p.y-1.15);
-  ctx.strokeStyle='rgba(236,242,246,.72)';ctx.lineWidth=1.35;ctx.stroke();
+  ctx.strokeStyle=hot?'rgba(12,16,20,.55)':'rgba(28,34,40,.4)';ctx.lineWidth=hot?4.2:3.2;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(p.x-hw,p.y-1.2);ctx.lineTo(p.x+hw,p.y-1.2);
+  ctx.strokeStyle=hot?'rgba(255,255,255,.96)':'rgba(226,234,240,.62)';ctx.lineWidth=hot?2.3:1.25;ctx.stroke();
  }
  const wash=ctx.createLinearGradient(0,m.y-6,0,m.y+len*.24);
  wash.addColorStop(0,'rgba(78,198,214,.62)');wash.addColorStop(1,'rgba(78,198,214,0)');
