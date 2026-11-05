@@ -1,5 +1,11 @@
 # Ocean Clean – Original-Meer
 
+## Wühlen im Haufen (v2026.11.05-9)
+
+Dichter Haufen aus genau drei Low-Poly-Netzen (PET-Flasche, Getränkedose, grüne Glasflasche), viele Exemplare, mit Tiefe. Oben auf der Fläche klar und greifbar, tiefer unter Wasser blau, weicher und von den oberen Teilen verdeckt. Der Finger schiebt beiseite und hebt etwas an; das Wasser stört sich lokal (`surface.disturb`, Bugwelle aus `SwipeInput`). Ein freies Teil oben lässt sich aufnehmen, folgt dem Finger und fällt beim Loslassen zurück auf Wasser oder Haufen. Keine Säcke in dieser Fassung (die Module von v2026.11.05-8 bleiben unbenutzt). Die alte Wischströmung trägt den Müll nur noch schwach. `water-13.0.0/` bleibt bytegleich.
+
+## Bisher
+
 Reines Original-Meer aus **Ocean Water 13.0.0** (Export aus Ocean Clean 13.0.0, Quellstand
 `55e004ca58e798537a2d28e510d6ae932e2c5947`) mit Kopfzeile „ocean clean“ und Impressum/Datenschutz.
 
@@ -114,7 +120,7 @@ Regel (`src/sort-bags.js`, geprüft an der Öffnung):
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version oben rechts neben Impressum (`v2026.11.05-8`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`). Das Impressum sitzt unter dem Logo, die Säcke bleiben unten frei.
+- Version oben rechts neben Impressum (`v2026.11.05-9`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`). Das Impressum sitzt unter dem Logo. In dieser Fassung gibt es keine Säcke.
 - v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
   `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
   aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.

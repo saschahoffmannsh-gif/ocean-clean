@@ -88,6 +88,38 @@ export const BASE_CONFIG=Object.freeze({
   rejectSide:42,     // px/s etwas zur Seite, damit es nicht auf der Lippe kleben bleibt
   rejectHold:.55,    // s kein erneutes Saugen an demselben Sack
   maxAccel:240      // Deckel, der Sog reißt nie
+ }),
+ // Dichter Haufen zum Wühlen (v2026.11.05-9). Die Wischströmung bleibt nur noch
+ // ein leiser Rest (ambient); der Finger schiebt und hebt direkt.
+ pile:Object.freeze({
+  thick:13,          // px Höhenabstand einer Lage
+  cover:.62,         // Überlappung, ab der ein Teil ein anderes zudeckt
+  grabBand:-16,      // freigelegte zweite Lage darf noch mit, tiefer nicht
+  grabInner:.92,     // klarer Griff: auf dem Teil, nicht in der Lücke
+  rummageRadius:56,
+  push:1280,         // px/s² seitlich vom Finger weg
+  dwell:90,          // px/s² ruhender Finger, nur leicht
+  dig:12,            // px, um die der Finger die Decke anhebt
+  rise:34,           // 1/s² Auftrieb zur freien Höhe
+  riseDamp:7.5,
+  gravity:420,       // px/s² Fall über der Oberfläche
+  separate:780,
+  stackOverlap:.84,  // verschiedene Tiefen dürfen sich stark überdecken
+  drag:3.6,
+  maxSpeed:240,
+  holdLift:46,       // px über dem Wasser in der Hand
+  holdK:22,          // Folgefrequenz am Finger
+  ambient:.07,       // Anteil der Wischströmung (Nebenbewegung)
+  ambientCoupling:.9,
+  edge:700,
+  inertia:.45,
+  idleSpin:.62,      // rad/s Drehung ohne Schub
+  spin:.011,         // rad/s je px/s
+  maxSpin:3.4,
+  spinDrag:2.3,
+  gather:90,         // nur außerhalb des Haufens zurück
+  floor:-72,
+  sway:Object.freeze({bobAmp:3.2,bobFreq:.2,swayAmp:3.6,swayFreq:.12,scaleAmp:.03})
  })
 });
 
@@ -107,5 +139,5 @@ export function makeConfig(force=readForce(), spin=readSpin()){
  return{force,spin,water:b.water,wake:{...b.wake,push:b.wake.push*force,pull:b.wake.pull*force,tap:b.wake.tap*force,spray:b.wake.spray*Math.min(1,force)},
   flow:{...b.flow,carry:b.flow.carry*force,side:b.flow.side*force,tapSpeed:b.flow.tapSpeed*force,
    suction:{...b.flow.suction,strength:b.flow.suction.strength*force,inward:b.flow.suction.inward*force}},
-  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float,sway:b.sway,sort:b.sort};
+  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float,sway:b.sway,sort:b.sort,pile:b.pile};
 }
