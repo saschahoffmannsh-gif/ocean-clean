@@ -1,11 +1,6 @@
 {
-  "note": "Meeresleben v2026.11.05-5. Strikte Draufsicht (Rücken / Glocke von oben), Magenta-Freisteller mit process_life.py. Seegras ist raus und liegt unter unused/. Seitliche Fischbögen ebenfalls unter unused/.",
+  "note": "Ab v2026.11.05-6 nicht mehr im Spiel. Alle Sprites und Bögen liegen unter unused/.",
   "view": "Vogelperspektive: Fische symmetrisch von oben, Kopf nach rechts; Schildkröte von oben, Kopf rechts; Qualle als Kreis von oben.",
   "unused": "asset-sources/life/unused/ — alte Seitenansichten und Seegras, nicht mehr im Spiel.",
-  "sheets": [
-    {"name": "sardine", "file": "asset-sources/life/sheets/sardine.jpg", "out": "assets/life/sardine.png", "role": "fish", "prompt": "Sardine, Dorsalansicht, zwei Augen oben, Kopf rechts."},
-    {"name": "makrele", "file": "asset-sources/life/sheets/makrele.jpg", "out": "assets/life/makrele.png", "role": "fish", "prompt": "Makrele, Dorsalansicht, Wellenstreifen spiegelbildlich, Kopf rechts."},
-    {"name": "schildkroete", "file": "asset-sources/life/sheets/schildkroete.jpg", "out": "assets/life/schildkroete.png", "role": "turtle", "prompt": "Meeresschildkröte, strikt von oben, Kopf rechts."},
-    {"name": "qualle", "file": "asset-sources/life/sheets/qualle.jpg", "out": "assets/life/qualle.png", "role": "jelly", "prompt": "Ohrenqualle als Kreis von oben, vier Gonaden, keine seitlichen Tentakel."}
-  ]
+  "sheets": []
 }

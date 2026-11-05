@@ -53,6 +53,10 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Renderer: `look` je Item (realistische relative Größen, nur Darstellung), freie 360°-Drehung, Schatten aus der
   Silhouette. Physik (`radius`, `mass`, `float`) unverändert.
 
+## Tiere wieder entfernt (v2026.11.05-6)
+- Fische, Schildkröte und Quallen sind aus dem Spiel. Sprites und Bögen liegen unter `asset-sources/life/unused/`.
+- Müll, Drehung, Schaukeln und Wasser bleiben.
+
 ## Unter Wasser, von oben (v2026.11.05-5)
 - Seegras ist raus (`asset-sources/life/unused/`). Sardinen und Makrelen, die Schildkröte und die Quallen sind von oben.
 - Sie liegen unter dem Müll und wirken unter der Oberfläche: durchscheinend, leicht unscharf, blau abgedunkelt, mit wandernden Lichtflecken. Kein Auflageschatten.
@@ -91,7 +95,7 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version unten neben Impressum (`v2026.11.05-5`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
+- Version unten neben Impressum (`v2026.11.05-6`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
 - v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
   `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
   aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.
