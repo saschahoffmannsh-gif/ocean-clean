@@ -75,13 +75,13 @@ export const BASE_CONFIG=Object.freeze({
   swayFreq:.12,      // Hz, eine Welle in etwa 8 s
   scaleAmp:.045      // Größenatemzug mit dem Hub, Anteil
  }),
- // Meeresleben unter dem Müll. Zähler klein halten (Mobile). Geschwindigkeiten in life-sim.js.
+ // Meeresleben unter der Oberfläche, unter dem Müll. Keine Pflanzen.
  life:Object.freeze({
-  counts:Object.freeze({sardine:7,brasse:2,makrele:2,schildkroete:1,qualle:2,seegras:6}),
-  grassAmp:.16,      // rad Wiegen ohne Strömung
-  grassWave:.65,     // rad/s
-  grassFlow:.4,      // zusätzliches Neigen mit der Wischströmung
-  grassMax:.5,       // rad Deckel
+  counts:Object.freeze({sardine:8,makrele:3,schildkroete:1,qualle:2}),
+  alpha:.8,          // durchscheinend, das Wasser scheint hindurch
+  blur:.65,          // px, leichte Unschärfe unter der Oberfläche
+  tint:.4,           // Stärke der blauen Abdunklung auf den Tieren
+  caustic:.42,       // wandernde Lichtflecken nur auf den Tieren
   dodge:2.4,         // wie schnell Fische quer zur Strömung abdrehen
   cohere:.55         // Zusammenhalt der Sardinen-Schule
  })

@@ -1,12 +1,11 @@
 {
-  "note": "Draufsicht- bzw. flach treibende Meereswesen für Ocean Clean. Bögen auf Magenta (#FF00FF), freigestellt mit process_life.py. Keine Fotos von Dritten; erzeugt als Spielsprites im Stil der Müll-Items (gemalt, Licht oben links, freigestellt).",
-  "view": "Spielsprites, Kopf nach rechts (Fische, Schildkröte), Seegras mit Wurzel unten, Qualle von oben.",
+  "note": "Meeresleben v2026.11.05-5. Strikte Draufsicht (Rücken / Glocke von oben), Magenta-Freisteller mit process_life.py. Seegras ist raus und liegt unter unused/. Seitliche Fischbögen ebenfalls unter unused/.",
+  "view": "Vogelperspektive: Fische symmetrisch von oben, Kopf nach rechts; Schildkröte von oben, Kopf rechts; Qualle als Kreis von oben.",
+  "unused": "asset-sources/life/unused/ — alte Seitenansichten und Seegras, nicht mehr im Spiel.",
   "sheets": [
-    {"name": "sardine", "file": "asset-sources/life/sheets/sardine.jpg", "out": "assets/life/sardine.png", "role": "fish", "prompt": "Kleine silbrige Sardine, flach, Kopf rechts."},
-    {"name": "brasse", "file": "asset-sources/life/sheets/brasse.jpg", "out": "assets/life/brasse.png", "role": "fish", "prompt": "Goldbrasse, flach, Kopf rechts, goldene Stirn."},
-    {"name": "makrele", "file": "asset-sources/life/sheets/makrele.jpg", "out": "assets/life/makrele.png", "role": "fish", "prompt": "Makrele von oben, Wellenstreifen auf dem Rücken, Kopf rechts."},
-    {"name": "schildkroete", "file": "asset-sources/life/sheets/schildkroete.jpg", "out": "assets/life/schildkroete.png", "role": "turtle", "prompt": "Grüne Meeresschildkröte, strikt von oben, Kopf rechts."},
-    {"name": "seegras", "file": "asset-sources/life/sheets/seegras.jpg", "out": "assets/life/seegras.png", "role": "grass", "prompt": "Seegrasbüschel, Blätter aus einer Wurzel, von oben."},
-    {"name": "qualle", "file": "asset-sources/life/sheets/qualle.jpg", "out": "assets/life/qualle.png", "role": "jelly", "prompt": "Ohrenqualle von oben, vier lila Gonaden, kurzer Mundarm-Saum."}
+    {"name": "sardine", "file": "asset-sources/life/sheets/sardine.jpg", "out": "assets/life/sardine.png", "role": "fish", "prompt": "Sardine, Dorsalansicht, zwei Augen oben, Kopf rechts."},
+    {"name": "makrele", "file": "asset-sources/life/sheets/makrele.jpg", "out": "assets/life/makrele.png", "role": "fish", "prompt": "Makrele, Dorsalansicht, Wellenstreifen spiegelbildlich, Kopf rechts."},
+    {"name": "schildkroete", "file": "asset-sources/life/sheets/schildkroete.jpg", "out": "assets/life/schildkroete.png", "role": "turtle", "prompt": "Meeresschildkröte, strikt von oben, Kopf rechts."},
+    {"name": "qualle", "file": "asset-sources/life/sheets/qualle.jpg", "out": "assets/life/qualle.png", "role": "jelly", "prompt": "Ohrenqualle als Kreis von oben, vier Gonaden, keine seitlichen Tentakel."}
   ]
 }

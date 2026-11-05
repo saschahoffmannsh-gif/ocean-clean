@@ -4,47 +4,31 @@
     "file": "asset-sources/life/sheets/sardine.jpg",
     "out": "assets/life/sardine.png",
     "role": "fish",
-    "prompt": "Kleine silbrige Sardine, flach, Kopf rechts.",
-    "bytes": 19592
-  },
-  {
-    "name": "brasse",
-    "file": "asset-sources/life/sheets/brasse.jpg",
-    "out": "assets/life/brasse.png",
-    "role": "fish",
-    "prompt": "Goldbrasse, flach, Kopf rechts, goldene Stirn.",
-    "bytes": 48674
+    "prompt": "Sardine, Dorsalansicht, zwei Augen oben, Kopf rechts.",
+    "bytes": 20357
   },
   {
     "name": "makrele",
     "file": "asset-sources/life/sheets/makrele.jpg",
     "out": "assets/life/makrele.png",
     "role": "fish",
-    "prompt": "Makrele von oben, Wellenstreifen auf dem R\u00fccken, Kopf rechts.",
-    "bytes": 22687
+    "prompt": "Makrele, Dorsalansicht, Wellenstreifen spiegelbildlich, Kopf rechts.",
+    "bytes": 23688
   },
   {
     "name": "schildkroete",
     "file": "asset-sources/life/sheets/schildkroete.jpg",
     "out": "assets/life/schildkroete.png",
     "role": "turtle",
-    "prompt": "Gr\u00fcne Meeresschildkr\u00f6te, strikt von oben, Kopf rechts.",
+    "prompt": "Meeresschildkr\u00f6te, strikt von oben, Kopf rechts.",
     "bytes": 63242
-  },
-  {
-    "name": "seegras",
-    "file": "asset-sources/life/sheets/seegras.jpg",
-    "out": "assets/life/seegras.png",
-    "role": "grass",
-    "prompt": "Seegrasb\u00fcschel, Bl\u00e4tter aus einer Wurzel, von oben.",
-    "bytes": 42806
   },
   {
     "name": "qualle",
     "file": "asset-sources/life/sheets/qualle.jpg",
     "out": "assets/life/qualle.png",
     "role": "jelly",
-    "prompt": "Ohrenqualle von oben, vier lila Gonaden, kurzer Mundarm-Saum.",
-    "bytes": 69030
+    "prompt": "Ohrenqualle als Kreis von oben, vier Gonaden, keine seitlichen Tentakel.",
+    "bytes": 77988
   }
 ]
