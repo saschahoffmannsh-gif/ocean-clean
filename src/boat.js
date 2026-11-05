@@ -73,6 +73,18 @@ export function beltAccelerate(b,env,driftCfg){
  const wall=layout.lipTop-r*0.15;
  if(b.y>wall){b.ay-=(b.y-wall)*c.hullK*gain;b.ay-=b.vy*c.hullDamp;}
  if(b.rejectUntil>env.t)return;
+ // Seitlich am Band: zur Mitte ziehen, damit ein Wisch in die Nähe reicht.
+ let side=null;
+ for(const bin of layout.bins){
+  const span=bin.belt.base.y-bin.belt.mouth.y,t=(b.y-bin.belt.mouth.y)/span;
+  if(t<-0.15||t>0.9)continue;
+  const tt=Math.max(0,Math.min(1,t));
+  const cx=bin.belt.mouth.x+(bin.belt.base.x-bin.belt.mouth.x)*tt;
+  const half=(bin.belt.mouth.w+(bin.belt.base.w-bin.belt.mouth.w)*tt)/2;
+  const dx=cx-b.x,ad=Math.abs(dx);
+  if(ad>half-4&&ad<half+42&&(!side||ad<side.ad))side={dx,ad,half};
+ }
+ if(side){const pull=c.guide*(1-(side.ad-side.half+4)/46)*gain;b.ax+=Math.sign(side.dx||1)*Math.max(0,pull);}
  let best=null,bestD=c.suctionRadius;
  for(const bin of layout.bins){
   const dx=bin.mouth.x-b.x,dy=bin.mouth.y-b.y,d=Math.hypot(dx,dy);

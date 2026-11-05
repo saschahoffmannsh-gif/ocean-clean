@@ -83,6 +83,7 @@ export const BASE_CONFIG=Object.freeze({
   suctionCoupling:4.8,
   hullK:26,          // Feder am Heck, damit Teile nicht unter die Boxen laufen
   hullDamp:6,
+  guide:140,         // Zug zur Bandmitte, wenn ein Teil seitlich am Band liegt
   slide:0,           // unbenutzt: auf dem Band wird sortiert, nicht seitlich weggeschoben
   beltSpeed:176,     // px/s auf dem Band, gleiche Geschwindigkeit wie die Lamellen
   throwTime:.38,     // s Wurf in die Box
