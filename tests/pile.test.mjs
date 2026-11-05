@@ -69,10 +69,12 @@ test('rummage pushes the surface aside and lets the piece below rise',()=>{
   const u=i/frames;finger.x=140+160*u;finger.vx=160/.55;finger.vy=0;
   advancePile(sim,[a,b],env,1/60,i*1000/60,cfg);
  }
- const moved=Math.hypot(a.x-x0,a.y-400);
- console.log(`wühlen oben Δ ${moved.toFixed(1)} px | unten z ${z0.toFixed(1)} → ${b.z.toFixed(1)} | unten Δ ${Math.hypot(b.x-204,b.y-y0).toFixed(1)}`);
- assert.ok(moved>22&&moved<160,'oben '+moved);
- run([a,b],1,{env:()=>world()});
+ const moved=Math.hypot(a.x-x0,a.y-400),under=Math.hypot(b.x-204,b.y-y0);
+ console.log(`wühlen oben Δ ${moved.toFixed(1)} px | unten z ${z0.toFixed(1)} → ${b.z.toFixed(1)} | unten Δ ${under.toFixed(1)}`);
+ assert.ok(moved>8&&moved<55,'oben '+moved);
+ assert.ok(under<moved*.9&&under<32,'unten bleibt im Stapel '+under);
+ assert.ok(b.z<z0+6,'nicht an die Oberfläche durchfallen '+b.z);
+ run([a,b],1.6,{env:()=>world()});
  console.log(`danach unten z ${b.z.toFixed(2)} frei ${isFree(b,[a,b],cfg)} oben z ${a.z.toFixed(2)}`);
  assert.ok(b.z>z0+6,'gehoben '+b.z);
  assert.ok(b.z<=1);
@@ -117,9 +119,46 @@ test('removing the lid lets buoyancy bring the lower item up',()=>{
  a.radius=b.radius=16;
  assert.ok(ceiling(b,[a,b],cfg)<=-cfg.thick+1);
  a.held=true;a.x=40;a.y=40;
- run([a,b],1.2);
+ run([a,b],1.8);
  console.log(`frei z ${b.z.toFixed(2)} Decke ${ceiling(b,[a,b],cfg).toFixed(2)}`);
  assert.ok(b.z>-3&&isFree(b,[a,b],cfg));
+});
+
+test('a dropped item stays where it was put, even outside the pile and in a current',()=>{
+ const a=createPileBody(kind,70,90,cfg.holdLift,()=>.4);
+ a.held=false;a.vx=40;a.vy=-30;a.vz=-80;
+ const finger={active:false,holding:false,x:0,y:0,vx:0,vy:0};
+ run([a],2,{env:t=>world({t,finger,cx:195,cy:420,pileR:130,flow:()=>({vx:240,vy:-80,weight:1})})});
+ console.log(`abgelegt bleibt ${a.x.toFixed(1)},${a.y.toFixed(1)} z ${a.z.toFixed(2)}`);
+ assert.ok(Math.hypot(a.x-70,a.y-90)<3,'weggeschwommen '+a.x+' '+a.y);
+ assert.ok(Math.abs(a.z)<.6,'liegt '+a.z);
+});
+
+test('a resting pile does not tumble or fall through itself',()=>{
+ const lay=layoutPile(390,844);
+ const bodies=spawnPile({n:lay.n,cx:lay.cx,cy:lay.cy,pileR:lay.pileR,thick:cfg.thick,rand:mulberry32(11),radiusScale:1});
+ const env=t=>world({t,cx:lay.cx,cy:lay.cy,pileR:lay.pileR,width:390,height:844});
+ run(bodies,2.4,{env});
+ const snap=bodies.map(b=>({x:b.x,y:b.y,z:b.z,a:b.angle}));
+ run(bodies,2.5,{env});
+ let drift=0,turn=0;
+ bodies.forEach((b,i)=>{
+  drift=Math.max(drift,Math.hypot(b.x-snap[i].x,b.y-snap[i].y));
+  turn=Math.max(turn,Math.abs(b.angle-snap[i].a));
+  assert.ok(Math.abs(b.z-snap[i].z)<.5,'z '+b.z);
+ });
+ console.log(`ruhe Drift ${drift.toFixed(2)} px | Drehung ${(turn*180/Math.PI).toFixed(2)}°`);
+ assert.ok(drift<1.5,'drift '+drift);
+ assert.ok(turn<.15,'drehen '+turn);
+ for(let i=0;i<bodies.length;i++)for(let j=i+1;j<bodies.length;j++){
+  const a=bodies[i],c=bodies[j],d=Math.hypot(a.x-c.x,a.y-c.y),gap=Math.abs(a.z-c.z);
+  if(gap<cfg.thick*.55)assert.ok(d>=(a.radius+c.radius)*cfg.solid*.88,'gleiche Lage '+d.toFixed(1));
+  else{
+   const lower=a.z<c.z?a:c,upper=a.z<c.z?c:a;
+   if(Math.hypot(lower.x-upper.x,lower.y-upper.y)<(lower.radius+upper.radius)*cfg.cover)
+    assert.ok(lower.z<=upper.z-cfg.thick+1.6,'durch '+lower.z.toFixed(1)+'/'+upper.z.toFixed(1));
+  }
+ }
 });
 
 test('pile pose: surface is clear, depth murks, held item stays lifted',()=>{

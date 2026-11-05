@@ -5,7 +5,6 @@ import {BASE_CONFIG} from './config.js';
 import {SHEAR_X,SHEAR_Z} from './pile-pose.js';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const STILL={vx:0,vy:0,weight:0};
 
 export const PILE_KINDS=Object.freeze([
  Object.freeze({key:'plastik:pet-flasche',category:'plastik',name:'pet-flasche',label:'PET-Flasche',mass:.34,long:1.08,thick:.84,radius:16,mid:.16}),
@@ -20,7 +19,7 @@ export function mulberry32(seed){
 
 export function createPileBody(kind,x,y,z,rand=Math.random,radiusScale=1){
  return{kind,x,y,z,vx:0,vy:0,vz:0,radius:kind.radius*radiusScale,
-  angle:rand()*Math.PI*2,spin:(rand()-.5)*.2,spinBias:(rand()<.5?-1:1)*(.55+rand()*.7),
+  angle:rand()*Math.PI*2,spin:0,spinBias:(rand()<.5?-1:1)*(.55+rand()*.7),
   swayPhase:((x*.017+y*.013)%1+1)%1*Math.PI*2,
   held:false,prevZ:z,
   heave:NaN,heaveSpeed:0,draft:0,pitch:0,roll:0,pitchSpeed:0,rollSpeed:0,
@@ -54,7 +53,7 @@ export function spawnPile({kinds=PILE_KINDS,n,cx,cy,pileR,thick,rand,radiusScale
  const bodies=[];let idx=0;
  for(const slot of slots)for(let s=0;s<slot.layers&&idx<n;s++){
   const kind=kinds[order[idx++]];
-  const j=(s===0?.28:.7)*kind.radius*radiusScale,jang=rand()*Math.PI*2;
+  const j=(s===0?.12:.32)*kind.radius*radiusScale,jang=rand()*Math.PI*2;
   const x=cx+Math.cos(slot.ang)*slot.rad+Math.cos(jang)*j*(.25+rand()*.75);
   const y=cy+Math.sin(slot.ang)*slot.rad*.9+Math.sin(jang)*j*(.25+rand()*.75);
   const z=-s*thick+(rand()-.5)*1.4;
@@ -134,19 +133,38 @@ export function countFree(bodies,cfg=BASE_CONFIG.pile){
  return{free,buried};
 }
 
-function separate(bodies,cfg){
- for(let i=0;i<bodies.length;i++)for(let j=i+1;j<bodies.length;j++){
-  const a=bodies[i],c=bodies[j];
-  if(a.held||c.held)continue;
-  let dx=c.x-a.x,dy=c.y-a.y,d2=dx*dx+dy*dy;
-  const allow=clamp(Math.abs(a.z-c.z)/cfg.thick,0,1);
-  const min=(a.radius+c.radius)*(1-cfg.stackOverlap*allow);
-  if(d2>=min*min)continue;
-  let d=Math.sqrt(d2);
-  if(d<1e-3){dx=1;dy=0;d=1e-3;}
-  const f=(1-d/min)*cfg.separate,ux=dx/d,uy=dy/d;
-  const ia=.95/(a.kind.mass+cfg.inertia),ic=.95/(c.kind.mass+cfg.inertia);
-  a.ax-=ux*f*ia;a.ay-=uy*f*ia;c.ax+=ux*f*ic;c.ay+=uy*f*ic;
+// Feste Körper: gleiche Lage hält Abstand, verschiedene Lagen bleiben ein Stapel.
+// Korrektur direkt an der Position, damit nichts hindurchrutscht.
+function resolveContacts(bodies,cfg){
+ for(let pass=0;pass<4;pass++){
+  for(let i=0;i<bodies.length;i++)for(let j=i+1;j<bodies.length;j++){
+   const a=bodies[i],c=bodies[j];
+   if(a.held||c.held)continue;
+   let dx=c.x-a.x,dy=c.y-a.y,d2=dx*dx+dy*dy;
+   const stacked=Math.abs(a.z-c.z)>=cfg.thick*.62;
+   const min=(a.radius+c.radius)*(stacked?cfg.stackCore:cfg.solid);
+   if(d2>=min*min)continue;
+   let d=Math.sqrt(d2);
+   if(d<1e-3){dx=1;dy=0;d=1e-3;}
+   const ux=dx/d,uy=dy/d,corr=min-d;
+   const ia=1/(a.kind.mass+cfg.inertia),ic=1/(c.kind.mass+cfg.inertia),share=ia+ic;
+   a.x-=ux*corr*(ia/share);a.y-=uy*corr*(ia/share);
+   c.x+=ux*corr*(ic/share);c.y+=uy*corr*(ic/share);
+   const rel=(c.vx-a.vx)*ux+(c.vy-a.vy)*uy;
+   if(rel<0){
+    a.vx+=ux*rel*(ia/share);a.vy+=uy*rel*(ia/share);
+    c.vx-=ux*rel*(ic/share);c.vy-=uy*rel*(ic/share);
+   }
+  }
+ }
+}
+
+function clampSupport(bodies,cfg){
+ const list=bodies.filter(b=>!b.held).sort((a,c)=>c.z-a.z);
+ for(const b of list){
+  const cap=ceiling(b,bodies,cfg);
+  if(b.z>cap){b.z=cap;if(b.vz>0)b.vz=0;}
+  if(cap-b.z<2&&b.z<=cap){b.z=cap;b.vz=0;}
  }
 }
 
@@ -163,45 +181,33 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
    b.az=(cfg.holdLift-b.z)*k*k-b.vz*2*k;
    continue;
   }
-  const time=env.t||0;
-  let ax=Math.sin(b.y*.013+time*.17)*1.6*inv,ay=Math.cos(b.x*.011-time*.15)*1.3*inv;
-  const cap0=ceiling(b,bodies,cfg);
-  let cap=cap0;
-  const exposure=clamp(1+b.z/(cfg.thick*2.4),.2,1);
+  let ax=0,ay=0;
+  b.bumpX=0;b.bumpY=0;
+  const exposure=clamp(1+b.z/(cfg.thick*1.7),.12,1);
   if(finger&&!hold){
-   const dx=b.x-finger.x,dy=b.y-finger.y,d=Math.hypot(dx,dy),R=cfg.rummageRadius;
+   const dx=b.x-finger.x,dy=b.y-finger.y,d=Math.hypot(dx,dy),R=b.radius+cfg.fingerR;
    if(d<R){
-    const t=1-d/R,wt=t*t,speed=Math.hypot(finger.vx,finger.vy);
+    const pen=(R-d)/R,speed=Math.hypot(finger.vx,finger.vy);
     const rx=d>1e-3?dx/d:1,ry=d>1e-3?dy/d:0;
-    if(speed>=36){
+    let dirx=rx,diry=ry;
+    if(speed>=22){
      const fx=finger.vx/speed,fy=finger.vy/speed,side=fx*dy-fy*dx,sign=side>=0?1:-1;
-     const px=-fy*sign,py=fx*sign;
-     const dirx=px*.8+rx*.32,diry=py*.8+ry*.32,norm=Math.hypot(dirx,diry)||1;
-     const push=cfg.push*wt*exposure*(.3+.7*Math.min(1,speed/460))*inv;
-     ax+=dirx/norm*push;ay+=diry/norm*push;
-    }else if(d>8){ax+=rx*cfg.dwell*wt*inv;ay+=ry*cfg.dwell*wt*inv;}
-    cap=Math.min(0,cap0+cfg.dig*wt*(speed<36?.4:.55+.45*Math.min(1,speed/480)));
+     dirx=(-fy*sign)*.45+rx*.9;diry=(fx*sign)*.45+ry*.9;
+    }
+    const norm=Math.hypot(dirx,diry)||1;
+    const mag=(speed>=22?cfg.nudge:cfg.dwell)*pen*exposure*Math.min(1,Math.max(speed,24)/240);
+    b.bumpX=dirx/norm*mag;b.bumpY=diry/norm*mag;
    }
-  }
-  const flow=env.flow?env.flow(b.x,b.y):STILL;
-  if(flow&&flow.weight>0){
-   const k=cfg.ambientCoupling*flow.weight*exposure;
-   ax+=(flow.vx*cfg.ambient-b.vx)*k;ay+=(flow.vy*cfg.ambient-b.vy)*k;
   }
   const m=b.radius*1.05;
   if(b.x<m)ax+=(m-b.x)/m*cfg.edge*inv;if(b.x>w-m)ax-=(b.x-(w-m))/m*cfg.edge*inv;
   if(b.y<m+28)ay+=(m+28-b.y)/(m+28)*cfg.edge*inv;if(b.y>h-m)ay-=(b.y-(h-m))/m*cfg.edge*inv;
-  if(env.cx!=null){
-   const gx=env.cx-b.x,gy=env.cy-b.y,gd=Math.hypot(gx,gy);
-   if(gd>env.pileR){const s=cfg.gather*(gd-env.pileR)/env.pileR;ax+=gx/gd*s;ay+=gy/gd*s;}
-  }
   let az;
   if(b.z>0)az=-cfg.gravity;
-  else az=(Math.min(0,cap)-b.z)*cfg.rise-b.vz*cfg.riseDamp;
+  else{const cap=ceiling(b,bodies,cfg);az=(Math.min(0,cap)-b.z)*cfg.rise-b.vz*cfg.riseDamp;}
   b.ax=ax;b.ay=ay;b.az=az;
  }
- separate(bodies,cfg);
- const damp=Math.exp(-cfg.drag*dt),spinKeep=Math.exp(-cfg.spinDrag*dt),zDamp=Math.exp(-cfg.riseDamp*.35*dt);
+ const damp=Math.exp(-cfg.drag*dt),zDamp=Math.exp(-cfg.riseDamp*.35*dt);
  for(const b of bodies){
   const prev=b.z;
   if(b.held){
@@ -211,6 +217,12 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
    b.vz=(b.vz+b.az*dt)*(b.z>0?Math.exp(-2.2*dt):zDamp);
    const sp=Math.hypot(b.vx,b.vy);
    if(sp>cfg.maxSpeed){b.vx*=cfg.maxSpeed/sp;b.vy*=cfg.maxSpeed/sp;}
+   const margin=b.radius*1.05,nearEdge=b.x<margin+8||b.x>w-margin-8||b.y<margin+36||b.y>h-margin-8;
+   if(b.bumpX||b.bumpY){
+    b.x+=b.bumpX*dt;b.y+=b.bumpY*dt;
+    b.vx=0;b.vy=0;
+    b.angle+=Math.sign(b.bumpX||b.spinBias||1)*Math.min(cfg.maxSpin,Math.hypot(b.bumpX,b.bumpY)*cfg.spin)*dt;
+   }else if(!nearEdge){b.vx=0;b.vy=0;}
   }
   b.x=clamp(b.x+b.vx*dt,-30,w+30);b.y=clamp(b.y+b.vy*dt,-30,h+30);
   b.z+=b.vz*dt;
@@ -220,12 +232,11 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   }
   b.hitWater=!b.held&&prev>3&&b.z<=0;
   b.prevZ=b.z;
-  const signed=b.vx*.9-b.vy*.34;
-  let target=b.spinBias*cfg.idleSpin+signed*cfg.spin;
-  if(b.held)target=b.spinBias*1.35;
-  b.spin=clamp(target+(b.spin-target)*spinKeep,-cfg.maxSpin,cfg.maxSpin);
-  b.angle+=b.spin*dt;
+  if(b.held){b.spin=b.spinBias*(cfg.holdSpin||.45);b.angle+=b.spin*dt;}
+  else b.spin=0;
  }
+ resolveContacts(bodies,cfg);
+ clampSupport(bodies,cfg);
 }
 
 export function advancePile(sim,bodies,envAt,frameDt,frameNow,cfg=BASE_CONFIG.pile){

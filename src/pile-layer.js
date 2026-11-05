@@ -2,10 +2,10 @@
 // lassen sich aufnehmen und wieder ablegen. Keine Säcke. Wasser bleibt im Originalmodul:
 // Störung nur über surface.disturb, die Wischwelle kommt aus SwipeInput.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261105-dig9';
-import {MESH_UNITS} from './pile-pose.js?v=20261105-dig9';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261105-dig9';
-import {PileView,fallbackColor} from './pile-view.js?v=20261105-dig9';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261105-calm10';
+import {MESH_UNITS} from './pile-pose.js?v=20261105-calm10';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261105-calm10';
+import {PileView,fallbackColor} from './pile-view.js?v=20261105-calm10';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
@@ -83,7 +83,7 @@ export class PileLayer{
  }
  up(e){
   if(e.pointerId!==this.pointerId)return;
-  if(this.held){this.held.held=false;this.held.vz=Math.min(this.held.vz,-80);this.held=null;}
+  if(this.held){this.held.held=false;this.held.vx=0;this.held.vy=0;this.held.vz=Math.min(this.held.vz,-80);this.held=null;}
   this.finger.active=false;this.finger.holding=false;this.finger.vx=0;this.finger.vy=0;this.pointerId=null;
  }
  splash(x,y,amp,radius,n=6){
