@@ -6,8 +6,8 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
 export const ROCK_GAIN=2.4;
 export const ROCK_LIMIT_DEG=28;
-export const SHEAR_X=-0.28;
-export const SHEAR_Z=-0.40;
+export const SHEAR_X=-0.12;
+export const SHEAR_Z=-0.16;
 // Mesh-Länge 1 → Pixel. Kleiner als die alten Sprites, damit der Haufen dicht bleibt und lesbar.
 export const MESH_UNITS=1.9;
 export const MURK_DEPTH=34;
