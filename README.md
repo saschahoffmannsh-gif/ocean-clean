@@ -41,7 +41,7 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
   - Restmüll: Badelatsche, Reifen, Fischernetz, Gummihandschuh, Einwegmaske (neu), Windel (neu)
 - Entfernt (Grenzfälle) → `asset-sources/trash/unused/`: Strohhalm, Wasserball, Zahnbürste, Styropor-Box, Karton,
   Zeitung, Pappbecher, Boje, altes Schraubglas (Metalldeckel dominierte).
-- Spawn: `balancedOrder()` – Kategorien reihum, alle 4 gleich oft (±1). Noch keine Körbe/Sortierlogik.
+- Spawn: `balancedOrder()` – Kategorien reihum, alle 4 gleich oft (±1). Sortiert wird in den vier Säcken unten (v2026.11.05-8).
 - Kontaktbogen `screenshots/trash-contact-v3.png`, Spielansicht `screenshots/categories-ingame.png`.
 
 ## Müll-Items v2: strikte Draufsicht (v2026.11.04-7)
@@ -53,24 +53,24 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Renderer: `look` je Item (realistische relative Größen, nur Darstellung), freie 360°-Drehung, Schatten aus der
   Silhouette. Physik (`radius`, `mass`, `float`) unverändert.
 
-## Sortieren am Bootsheck (v2026.11.05-7)
-Flaches Heck, zum größten Teil unter dem Bildrand: dunkler Rumpf, roter Wasserpass, vier Boxen. Die Böden sind nur ein schmaler Streifen, in der Farbe der Kategorie. Von jeder Box läuft ein Förderband ins Wasser (Lamellen und Rolle bewegen sich).
+## Sortieren in vier Säcken (v2026.11.05-8)
+Unten am Bildschirm liegen vier flache Müllsäcke in strikter Draufsicht, Öffnung jeweils nach oben zum Meer. Sie bleiben eine schmale Leiste (höchstens 64 px) und lassen das Meer frei. Kein Schiff, keine Förderbänder, keine Tiere. Die Fassung v2026.11.05-7 (Bootsheck) ist ersetzt. `water-13.0.0/` bleibt bytegleich.
 
 Von links nach rechts, Kategorien aus `src/trash-catalog.js`:
 
-| Band | Kategorie | Farbe |
+| Sack | Kategorie | Farbe |
 | --- | --- | --- |
 | Plastik | `plastik` | gelb |
-| Metall | `metall` | blau |
+| Metall | `metall` | blau-grau |
 | Glas | `glas` | grün |
-| Restmüll | `rest` | dunkelgrau |
+| Restmüll | `rest` | dunkelgrau / schwarz |
 
-Regeln (`decideSort` in `src/boat.js`, geprüft am Maul = Ellipse am wasserseitigen Bandende):
+Regel (`src/sort-bags.js`, geprüft an der Öffnung):
 
-- Kategorie = Band → das Teil wird aufgelegt, vom Band zur Box getragen und im Bogen hineingeworfen. Es zählt als eingesammelt; oben im Meer erscheint ein neues Teil.
-- Kategorie ≠ Band → Abweisen am Maul: Impuls zurück ins Wasser, kein Einsammeln, 0,85 s kein erneutes Greifen.
-- Leichter Sog nur im Umkreis des Mauls (deutlich schwächer als ein Wisch). Wischen und die bestehende Physik können ein Teil ins Maul schieben oder davon wegziehen.
-- Falsche Teile fahren nicht auf dem Band mit. Drehung, Schaukeln und das Wasser bleiben für alles, was frei treibt. Keine Tiere. `water-13.0.0/` bleibt bytegleich.
+- Es zählt die **Mitte** des Teils, nicht der Rand. Nur die Öffnung nimmt etwas an, der Sackkörper daneben ist eine Kante.
+- Mitte in der **passenden** Öffnung (Lippe überschritten): das Teil wird eingesammelt. Es dreht und schaukelt noch mit, schrumpft in das Loch, der Sack knittert einmal. Danach ist es weg.
+- Mitte in einer **falschen** Öffnung: es geht nicht hinein. Der Sack stößt es nach oben aus dem Feld (Rückstoß, etwas zur Seite). Es bleibt im Spiel. Dieser Sack saugt nicht nach, solange das Teil in seinem engen Feld bleibt (mindestens 0,55 s). Ein anderer, passender Sack gilt sofort.
+- Leichter Sog nur im Rechteck direkt vor der Öffnung (22 px hoch, nicht breiter als die Öffnung, außerhalb exakt 0). Er hilft dem letzten Stück und ist für jedes Gewicht gleich. Weiter oben bleibt nur Wischen, Drehung und Schaukeln. Im Sogfeld kommt eine kleine Drehung aus dem Zug zur Mitte dazu. `?force` ändert diesen Sog nicht.
 
 ## Tiere wieder entfernt (v2026.11.05-6)
 - Fische, Schildkröte und Quallen sind aus dem Spiel. Sprites und Bögen liegen unter `asset-sources/life/unused/`.
@@ -114,7 +114,7 @@ Regeln (`decideSort` in `src/boat.js`, geprüft am Maul = Ellipse am wasserseiti
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version oben neben Impressum (`v2026.11.05-7`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`). Das Impressum sitzt oben rechts, damit das Heck frei bleibt.
+- Version oben rechts neben Impressum (`v2026.11.05-8`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`). Das Impressum sitzt unter dem Logo, die Säcke bleiben unten frei.
 - v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
   `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
   aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.

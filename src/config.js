@@ -75,23 +75,19 @@ export const BASE_CONFIG=Object.freeze({
   swayFreq:.12,      // Hz, eine Welle in etwa 8 s
   scaleAmp:.045      // Größenatemzug mit dem Hub, Anteil
  }),
- // Bootsheck: leichter Sog nur am Maul, Bandgeschwindigkeit, Abweisen.
- // Wirkt nur, wenn die Physik ein Layout bekommt (env.belts). ?force ändert das nicht.
- boat:Object.freeze({
-  suctionRadius:78,  // px um das Maul, danach exakt kein Sog
-  suctionSpeed:120,  // px/s Zielgeschwindigkeit am Maul (deutlich unter einem Wisch)
-  suctionCoupling:4.8,
-  hullK:26,          // Feder am Heck, damit Teile nicht unter die Boxen laufen
-  hullDamp:6,
-  guide:140,         // Zug zur Bandmitte, wenn ein Teil seitlich am Band liegt
-  slide:0,           // unbenutzt: auf dem Band wird sortiert, nicht seitlich weggeschoben
-  beltSpeed:176,     // px/s auf dem Band, gleiche Geschwindigkeit wie die Lamellen
-  throwTime:.38,     // s Wurf in die Box
-  throwHop:32,       // px Bogen nach oben, bevor das Teil in die Box fällt
-  rejectSpeed:280,   // px/s zurück ins Wasser
-  rejectSide:84,
-  rejectHold:.85,    // s kein erneutes Greifen nach einer Abweisung
-  slatGap:16         // px Abstand der Lamellen
+ // Säcke: leichter Sog nur direkt vor der Öffnung. ?force ändert das nicht.
+ // Wirkt nur, wenn die Physik ein Layout bekommt (env.bags).
+ sort:Object.freeze({
+  reach:22,          // px über der Lippe, danach exakt 0
+  suction:52,        // px/s² nach unten, an der Lippe (leicht, gleich für jedes Gewicht)
+  inward:96,         // px/s² zur Mitte der Öffnung
+  swirl:48,          // px/s Scherung für die Drehung, nur im Sogfeld, seitlich der Mitte
+  dock:20,           // px Weichheit der Kante neben den Öffnungen
+  nudge:6,           // px, um die das Teil bei einem Fehlwurf sofort über der Lippe liegt
+  reject:200,        // px/s Rückstoß nach oben
+  rejectSide:42,     // px/s etwas zur Seite, damit es nicht auf der Lippe kleben bleibt
+  rejectHold:.55,    // s kein erneutes Saugen an demselben Sack
+  maxAccel:240      // Deckel, der Sog reißt nie
  })
 });
 
@@ -111,5 +107,5 @@ export function makeConfig(force=readForce(), spin=readSpin()){
  return{force,spin,water:b.water,wake:{...b.wake,push:b.wake.push*force,pull:b.wake.pull*force,tap:b.wake.tap*force,spray:b.wake.spray*Math.min(1,force)},
   flow:{...b.flow,carry:b.flow.carry*force,side:b.flow.side*force,tapSpeed:b.flow.tapSpeed*force,
    suction:{...b.flow.suction,strength:b.flow.suction.strength*force,inward:b.flow.suction.inward*force}},
-  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float,sway:b.sway,boat:b.boat};
+  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float,sway:b.sway,sort:b.sort};
 }

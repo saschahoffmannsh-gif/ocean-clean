@@ -20,7 +20,7 @@ export function startDebug(app){
    `container     ${r(root.top)}..${r(root.bottom)} (${r(root.width)}×${r(root.height)})`,
    `water canvas  css ${app.ocean.width}×${app.ocean.height} px ${gl.width}×${gl.height}`,
    `trash canvas  px ${tc.width}×${tc.height}  field ${app.trash.w}×${r(app.trash.h)}`,
-   `boot          heck ${r(app.trash.boat?.hullTop??0)}  maul ${r(app.trash.boat?.mouthY??0)}`,
+   `säcke         ${(app.trash.bagGeom||[]).map(b=>b.label).join(' · ')}  lip ${r(app.trash.bagGeom?.[0]?.mouthTop??0)}`,
    `gesammelt     ${Object.entries(app.trash.collected||{}).map(([k,v])=>k+' '+v).join('  ')}`,
   ].join('\n');
   setTimeout(tick,500);};
