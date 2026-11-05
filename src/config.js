@@ -74,6 +74,23 @@ export const BASE_CONFIG=Object.freeze({
   swayAmp:11,        // px hin und her
   swayFreq:.12,      // Hz, eine Welle in etwa 8 s
   scaleAmp:.045      // Größenatemzug mit dem Hub, Anteil
+ }),
+ // Bootsheck: leichter Sog nur am Maul, Bandgeschwindigkeit, Abweisen.
+ // Wirkt nur, wenn die Physik ein Layout bekommt (env.belts). ?force ändert das nicht.
+ boat:Object.freeze({
+  suctionRadius:68,  // px um das Maul, danach exakt kein Sog
+  suctionSpeed:104,  // px/s Zielgeschwindigkeit am Maul (deutlich unter einem Wisch)
+  suctionCoupling:4.4,
+  hullK:26,          // Feder am Heck, damit Teile nicht unter die Boxen laufen
+  hullDamp:6,
+  slide:16,          // seitlich vom Band runter, solange das Teil nicht im Maul ist
+  beltSpeed:176,     // px/s auf dem Band, gleiche Geschwindigkeit wie die Lamellen
+  throwTime:.38,     // s Wurf in die Box
+  throwHop:32,       // px Bogen nach oben, bevor das Teil in die Box fällt
+  rejectSpeed:280,   // px/s zurück ins Wasser
+  rejectSide:84,
+  rejectHold:.85,    // s kein erneutes Greifen nach einer Abweisung
+  slatGap:16         // px Abstand der Lamellen
  })
 });
 
@@ -93,5 +110,5 @@ export function makeConfig(force=readForce(), spin=readSpin()){
  return{force,spin,water:b.water,wake:{...b.wake,push:b.wake.push*force,pull:b.wake.pull*force,tap:b.wake.tap*force,spray:b.wake.spray*Math.min(1,force)},
   flow:{...b.flow,carry:b.flow.carry*force,side:b.flow.side*force,tapSpeed:b.flow.tapSpeed*force,
    suction:{...b.flow.suction,strength:b.flow.suction.strength*force,inward:b.flow.suction.inward*force}},
-  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float,sway:b.sway};
+  drift:{...d,spin:d.spin*spin,idleSpin:d.idleSpin*spin,maxSpin:d.maxSpin*spin},float:b.float,sway:b.sway,boat:b.boat};
 }

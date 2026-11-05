@@ -53,6 +53,25 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Renderer: `look` je Item (realistische relative Größen, nur Darstellung), freie 360°-Drehung, Schatten aus der
   Silhouette. Physik (`radius`, `mass`, `float`) unverändert.
 
+## Sortieren am Bootsheck (v2026.11.05-7)
+Flaches Heck, zum größten Teil unter dem Bildrand: dunkler Rumpf, roter Wasserpass, vier Boxen. Die Böden sind nur ein schmaler Streifen, in der Farbe der Kategorie. Von jeder Box läuft ein Förderband ins Wasser (Lamellen und Rolle bewegen sich).
+
+Von links nach rechts, Kategorien aus `src/trash-catalog.js`:
+
+| Band | Kategorie | Farbe |
+| --- | --- | --- |
+| Plastik | `plastik` | gelb |
+| Metall | `metall` | blau |
+| Glas | `glas` | grün |
+| Restmüll | `rest` | dunkelgrau |
+
+Regeln (`decideSort` in `src/boat.js`, geprüft am Maul = Ellipse am wasserseitigen Bandende):
+
+- Kategorie = Band → das Teil wird aufgelegt, vom Band zur Box getragen und im Bogen hineingeworfen. Es zählt als eingesammelt; oben im Meer erscheint ein neues Teil.
+- Kategorie ≠ Band → Abweisen am Maul: Impuls zurück ins Wasser, kein Einsammeln, 0,85 s kein erneutes Greifen.
+- Leichter Sog nur im Umkreis des Mauls (deutlich schwächer als ein Wisch). Wischen und die bestehende Physik können ein Teil ins Maul schieben oder davon wegziehen.
+- Falsche Teile fahren nicht auf dem Band mit. Drehung, Schaukeln und das Wasser bleiben für alles, was frei treibt. Keine Tiere. `water-13.0.0/` bleibt bytegleich.
+
 ## Tiere wieder entfernt (v2026.11.05-6)
 - Fische, Schildkröte und Quallen sind aus dem Spiel. Sprites und Bögen liegen unter `asset-sources/life/unused/`.
 - Müll, Drehung, Schaukeln und Wasser bleiben.
@@ -95,7 +114,7 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Unterer Rand robust: Das Wasser ist absichtlich höher als jede mögliche Viewport-Höhe
   (`max(100vh,100lvh,--play-h) + Safe-Areas + 80px`) und ragt unten über den Bildschirm. Spielfeld (Rand der Teile), Impressum
   und Fehlermeldung richten sich nach `--play-h` (sichtbare Höhe; in der iOS-Home-Bildschirm-App die echte Bildschirmhöhe).
-- Version unten neben Impressum (`v2026.11.05-6`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`).
+- Version oben neben Impressum (`v2026.11.05-7`), Diagnose-Overlay mit `?debug=1` (`src/debug.js`). Das Impressum sitzt oben rechts, damit das Heck frei bleibt.
 - v4 – iOS-26-Home-Bildschirm-Bug: In der Standalone-App (black-translucent + viewport-fit=cover) sind `innerHeight`,
   `100%`, `100dvh` um die Statusleiste zu kurz, nur `100vh`/`100lvh` stimmen. `html,body{height:100%;overflow:hidden}`
   aus ocean.css schnitt daher unten ab (Streifen). Fix in `styles.css`: in Standalone (`html.standalone` bzw.

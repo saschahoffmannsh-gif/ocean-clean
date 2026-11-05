@@ -167,9 +167,9 @@ test('calm sea sway rocks items without carrying them away',()=>{
  assert.equal(makeConfig().sway.bobAmp,cfg.bobAmp);assert.equal(makeConfig().water.swell,BASE_CONFIG.water.swell);
 });
 
-test('shipped page stays flat PNG items at v2026.11.05-6',()=>{
+test('shipped page stays flat PNG items at v2026.11.05-7',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../app.js',import.meta.url),'utf8');
- assert.match(html,/v2026\.11\.05-6/);assert.match(html,/20261105-nolife6/);assert.match(app,/20261105-nolife6/);
+ assert.match(html,/v2026\.11\.05-7/);assert.match(html,/20261105-boat7/);assert.match(app,/20261105-boat7/);
  assert.doesNotMatch(app,/LifeLayer|life-sim|life-layer/);
  assert.doesNotMatch(html+app,/items3d|mesh|buoy/i);
 });
