@@ -59,6 +59,23 @@ Veröffentlichung: GitHub Pages aus `main` (Root), `.nojekyll`. Keine externen V
 - Teile auf der Spur werden zusätzlich ~25–32 px in Wischrichtung mitgezogen und zur Spurmitte gehalten statt
   seitlich weggeschoben; ab 30 px Seitenabstand exakt wie vorher, Höchstgeschwindigkeit unverändert.
 
+## 3D-Prototyp (nur `?items3d=1`)
+
+Standard und Live-Verhalten bleiben die PNG-Sprites von **v2026.11.04-7**. Der Schalter
+ändert die sichtbare Versionszeile nicht, solange er aus ist.
+
+- `http://localhost:8000/?items3d=1` (auch `true` / `on`) legt ein transparentes WebGL-Canvas
+  über die Müll-Sprites und unter die Gischt. Physik, Sog, Vollbild und Wasserordner bleiben.
+- Echte Low-Poly-Netze, keine Billboards: PET-Flasche, Getränkedose, grüne Glasflasche, Reifen
+  (`src/trash-meshes.js`). Alle übrigen 20 Items bleiben PNG. Die Netze liegen in der Draufsicht
+  (leicht schräg, damit das Volumen lesbar ist) und haben ungefähr die Sprite-Größe.
+- Position aus der 2D-Physik. Drehung um die Hochachse und Schaukeln/Neigen aus der bestehenden
+  Wellenlage (`src/trash-pose.js`: `waveRock`, `itemPose`). Reduced-Motion: keine Extra-Drehung,
+  Auftrieb bleibt flach.
+- Fehlt WebGL oder geht der Kontext verloren, wird das 3D-Canvas entfernt und die PNGs bleiben
+  (Versionszeile dann `v2026.11.04-7 · PNG`, bei laufendem 3D `· 3D`).
+- Keine Körbe, keine Sortierlogik, keine Bojen. `water-13.0.0/` bytegleich unverändert.
+
 ## Vollbild / Web-App
 
 - `viewport-fit=cover`: Wasser und Müll-Canvas füllen das ganze Display (hinter Notch/Dynamic Island und Home-Indicator),
