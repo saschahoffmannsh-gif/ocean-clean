@@ -20,6 +20,7 @@ export function startDebug(app){
    `container     ${r(root.top)}..${r(root.bottom)} (${r(root.width)}×${r(root.height)})`,
    `water canvas  css ${app.ocean.width}×${app.ocean.height} px ${gl.width}×${gl.height}`,
    `trash canvas  px ${tc.width}×${tc.height}  field ${app.trash.w}×${r(app.trash.h)}`,
+   `items3d       ${app.trash.view3d?.active?'netz':(new URLSearchParams(location.search).get('items3d')?'png-fallback':'aus')}`,
   ].join('\n');
   setTimeout(tick,500);};
  tick();

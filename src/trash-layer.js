@@ -45,7 +45,7 @@ export class TrashLayer{
   const o=this.ocean,dpr=Math.min(devicePixelRatio||1,2),w=Math.round(o.width*dpr),h=Math.round(o.height*dpr);this.dpr=dpr;
   if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}
   const ph=this.playH();if(this.w&&this.bodies.length){const sx=o.width/this.w,sy=ph/this.h;for(const b of this.bodies){b.x*=sx;b.y*=sy;}}
-  this.w=o.width;this.h=ph;
+  this.w=o.width;this.h=ph;this.view3d?.resize();
  }
  spawn(){
   const n=this.count??Math.round(Math.max(26,Math.min(38,this.w*this.h/10500))),order=balancedOrder(n,this.rand);
@@ -68,7 +68,7 @@ export class TrashLayer{
      const tiltX=band.vx*.02,tiltY=band.vy*.02;
      b.float=displayFloat(stepBuoyancy(b,{...sea,pitch:(sea.pitch||0)-wave.slopeY*F.waveTilt-tiltY,roll:(sea.roll||0)+wave.slopeX*F.waveTilt+tiltX,motion},wave.height+(band.lift||0)*F.bandLift*.1,dt,o.reducedMotion),this.size(b),F);}},this.cfg.flow);
   this.input.flow.prune(now);
-  this.ripples(frameDt,now);this.draw();
+  this.ripples(frameDt,now);this.draw();this.view3d?.render(now);
   this.frameMs=this.frameMs*.95+(performance.now()-t0)*.05;
   this.raf=requestAnimationFrame(t=>this.frame(t));
  }
@@ -88,6 +88,8 @@ export class TrashLayer{
    const lift=-f.bob,off=size*(.1+(b.kind.float-.5)*.06)+lift*.6;
    c.setTransform(dpr,0,0,dpr,0,0);c.translate(b.x+off,b.y+off*1.2);c.rotate(b.angle);c.scale(sx,sy);
    c.globalAlpha=.34;c.drawImage(b.sprite.shadow,-pw/2,-ph/2,pw,ph);
+   // 3D-Prototyp (?items3d=1): Schatten bleibt, das PNG weicht dem Netz. Sonst unverändert.
+   if(this.view3d?.handles(b))continue;
    // Benetzungsrand: helles Wasser, das sich am Teil wölbt (bei Eintauchen etwas stärker)
    place(0,size*.03);c.globalAlpha=.26+Math.min(.2,f.dip*1.4)+(1-b.kind.float)*.12;c.drawImage(b.sprite.rim,-pw/2,-ph/2,pw,ph);
    place(0,0);c.globalAlpha=1;c.drawImage(b.sprite.img,-box/2,-box/2,box,box);

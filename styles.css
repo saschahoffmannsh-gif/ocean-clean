@@ -8,6 +8,8 @@
 .legal a:hover,.legal a:focus-visible{opacity:1;text-decoration:underline}.legal:hover{opacity:.95}
 .error{position:absolute;z-index:7;left:20px;right:20px;bottom:40px;background:#f8faed;color:#153f43;border-radius:18px;padding:20px;margin:0}
 .trash-layer{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;pointer-events:none}
+/* 3D-Prototyp (?items3d=1): transparentes WebGL über den Sprites, unter der Gischt. */
+.trash-items3d{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;pointer-events:none;background:transparent}
 
 /* Vollbild bis unter Notch/Dynamic Island und Home-Indicator (viewport-fit=cover).
    Überschreibt nur die Spalten-Begrenzung (620 px) aus water-13.0.0/ocean.css. */
