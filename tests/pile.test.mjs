@@ -142,9 +142,25 @@ test('a finger slide does not plow the pile and a dropped one stays put',()=>{
  const low=createPileBody(kind,200,400,0,()=>.2),high=createPileBody(kind,200,400,40,()=>.3);
  assert.equal(grabTarget(200,400,[low,high]),high);
  const dropped=createPileBody(kind,60,100,0,()=>.2);dropped.vx=50;
- run([dropped],1.5,{env:t=>world({t,flow:()=>({vx:200,vy:40,weight:1})})});
+ run([dropped],1.5);
  assert.ok(Math.hypot(dropped.x-60,dropped.y-100)<2,'bleibt nicht');
  assert.ok(dropped.z<1);
+});
+
+test('open-water current carries a free item and lets it settle',()=>{
+ const near=createPileBody(kind,200,400,0,()=>.4),far=createPileBody(kind,40,700,0,()=>.4);
+ const held=createPileBody(kind,200,460,0,()=>.4);held.held=true;
+ const flow=(x,y)=>Math.hypot(x-200,y-400)<90?{vx:160,vy:0,weight:1}:{vx:0,vy:0,weight:0};
+ const env=t=>world({t,flow,finger:{active:true,holding:true,x:held.x,y:held.y,vx:0,vy:0}});
+ run([near,far,held],.7,{env});
+ assert.ok(near.x-200>12,'Strömung trägt nicht '+near.x.toFixed(1));
+ assert.ok(Math.abs(near.y-400)<10);
+ assert.ok(Math.hypot(far.x-40,far.y-700)<2,'weit weg mitgezogen');
+ assert.ok(Math.hypot(held.x-200,held.y-460)<1,'gehalten schwimmt');
+ assert.ok(near.z>=-0.05&&far.z>=-0.05);
+ const x=near.x,y=near.y;
+ run([near],1.1);
+ assert.ok(Math.hypot(near.x-x,near.y-y)<2,'schwimmt weiter');
 });
 
 test('clear grab follows the finger and the drop stays on the pile height it lands on',()=>{

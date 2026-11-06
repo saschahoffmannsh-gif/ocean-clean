@@ -1,5 +1,9 @@
 # Ocean Clean – Original-Meer
 
+## Strömung ohne Schatten (v2026.11.06-8)
+
+Keine Schatten unter den Teilen. Ohne Berührung liegt das Wasser still: keine Dünung und keine Hintergrundwelle. Auf offenem Wasser nimmt die Strömung vom Finger freie Teile in der Nähe mit; sie bleiben wieder liegen, wenn das Wasser ruhig ist. Auf einem Gegenstand hebt der Finger ihn an.
+
 ## Finger genau auf dem Gegenstand (v2026.11.06-7)
 
 Der Treffer und das gehaltene Teil sitzen auf dem Finger, ohne Versatz nach oben.

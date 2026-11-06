@@ -4,7 +4,8 @@ import {existsSync,readFileSync} from 'node:fs';
 import {TRASH,CATEGORIES,balancedOrder} from '../src/trash-catalog.js';
 import {createBody,advance,displayFloat,seaSway} from '../src/trash-physics.js';
 import {SwipeFlow} from '../src/swipe-flow.js';
-import {wakeDrops} from '../src/swipe-input.js';
+import {wakeDrops,tuneWater,IDLE_SWELL} from '../src/swipe-input.js';
+import {sampleSeaMotion} from '../water-13.0.0/core/buoyancy.js';
 import {BASE_CONFIG,makeConfig,readForce,readSpin} from '../src/config.js';
 import {simulate} from './helpers/swipe-sim.mjs';
 import {probe} from './helpers/suction-probe.mjs';
@@ -167,10 +168,33 @@ test('calm sea sway rocks items without carrying them away',()=>{
  assert.equal(makeConfig().sway.bobAmp,cfg.bobAmp);assert.equal(makeConfig().water.swell,BASE_CONFIG.water.swell);
 });
 
-test('shipped page is the stacked pile at v2026.11.06-7, without bags',()=>{
+test('idle water does not roll or push a current',()=>{
+ const seen=[];
+ const ocean={
+  settings:{swell:79,light:65},
+  surface:{advance(dt,settings){seen.push(settings.swell);}},
+  disturb(...args){seen.push(args);},
+  splashes(){seen.push('splash');},
+  sample(){return this.settings.swell;}
+ };
+ tuneWater(ocean,{ambient:.86});
+ ocean.disturb(.1,.91,.02,12);
+ ocean.disturb(.4,.5,.23,5,true);
+ ocean.splashes();
+ ocean.surface.advance(.016,{swell:79,light:65},[]);
+ assert.deepEqual(seen,[IDLE_SWELL]);
+ assert.equal(ocean.settings.swell,0);
+ assert.equal(ocean.sample(.5,.5),IDLE_SWELL);
+ const sea=sampleSeaMotion(.4,.62,{width:390,height:844,camera:{x:0,y:-.1},time:4.2,swell:IDLE_SWELL});
+ assert.ok(Math.abs(sea.lift)<1e-6&&Math.abs(sea.pitch)<1e-4&&Math.abs(sea.roll)<1e-4,'Restwelle '+sea.lift);
+ const moved=sampleSeaMotion(.4,.62,{width:390,height:844,camera:{x:0,y:-.1},time:4.2,swell:79});
+ assert.ok(Math.abs(moved.lift)>Math.abs(sea.lift)+.2);
+});
+
+test('shipped page is the stacked pile at v2026.11.06-8, without bags',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../app.js',import.meta.url),'utf8');
  const layer=readFileSync(new URL('../src/pile-layer.js',import.meta.url),'utf8');
- assert.match(html,/v2026\.11\.06-7/);assert.match(html,/20261106-v7/);assert.match(app,/20261106-v7/);
+ assert.match(html,/v2026\.11\.06-8/);assert.match(html,/20261106-v8/);assert.match(app,/20261106-v8/);
  assert.match(html,/Finger hebt Gegenstände an/);assert.doesNotMatch(html,/wühlen/i);
  assert.match(app,/PileLayer/);assert.doesNotMatch(app,/TrashLayer|sort-bags|bag-draw|drawBags/);
  assert.doesNotMatch(layer,/drawBags|layoutBags|sort-bags/);

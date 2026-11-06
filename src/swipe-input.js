@@ -22,11 +22,12 @@ export class SwipeInput{
  local(e){const r=this.ocean.canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
  drop(x,y,amp,radius){const o=this.ocean;o.surface.disturb(x/o.width,y/o.height,amp,radius);}
  down(e){
-  if(e.button>0)return;const p=this.local(e),now=performance.now(),w=this.cfg.wake;
+  if(e.button>0||this.carrying?.())return;const p=this.local(e),now=performance.now(),w=this.cfg.wake;
   this.pointers.set(e.pointerId,{...p,at:now});this.flow.addTap(p.x,p.y,now);
   if(w.tap)this.drop(p.x,p.y,w.tap,w.tapRadius);
  }
  move(e){
+  if(this.carrying?.()){this.pointers.delete(e.pointerId);return;}
   const s=this.pointers.get(e.pointerId);if(!s)return;
   const p=this.local(e),now=performance.now(),w=this.cfg.wake,d=Math.hypot(p.x-s.x,p.y-s.y);
   if(d<w.minStep)return;
@@ -38,12 +39,24 @@ export class SwipeInput{
  }
 }
 
-// ocean.js-eigene Wisch-/Tipp-Impulse (motionWake, Tipp-, Loslass-Tropfen) und ihre
-// Gischt abfangen – sie erzeugen die vielen Kreiswellen. Die Hintergrund-Wellen des
-// Meeres (Radius 12) bleiben, leicht gedämpft. Core bleibt unverändert.
-export function tuneWater(ocean,water){
+// Wind, der die fest eingebaute Restwelle (.08 + swell/100·1.8) genau aufhebt.
+// Dieselbe Zahl löscht die Streifenverschiebung der Canvas-Ersatzzeichnung.
+export const IDLE_SWELL=-.08/.018;
+
+// ocean.js-eigene Wisch-/Tipp-Impulse (motionWake, Tipp-, Loslass-Tropfen), ihre
+// Gischt und die Hintergrundwelle (Radius 12, alle ~2 s) abfangen. Übrig bleibt
+// nur, was der Finger über surface.disturb ins Wasser schreibt. Core bleibt unverändert.
+export function tuneWater(ocean){
  const disturb=ocean.disturb.bind(ocean),splashes=ocean.splashes.bind(ocean);
  ocean.__originalDisturb=disturb;ocean.__originalSplashes=splashes;
- ocean.disturb=(x,y,amplitude=.17,radius=4,withSplash=false,nearField=false)=>{if(radius===12)disturb(x,y,amplitude*water.ambient,radius,withSplash,nearField);};
+ ocean.disturb=()=>{};
  ocean.splashes=()=>{};
+ ocean.settings.swell=0;
+ const advance=ocean.surface.advance.bind(ocean.surface);
+ ocean.surface.advance=(dt,settings,vortices)=>advance(dt,{...settings,swell:IDLE_SWELL},vortices);
+ const sample=ocean.sample.bind(ocean);
+ ocean.sample=(x,y)=>{
+  const saved=ocean.settings.swell;ocean.settings.swell=IDLE_SWELL;
+  try{return sample(x,y);}finally{ocean.settings.swell=saved;}
+ };
 }

@@ -3,7 +3,7 @@
 // Ohne DOM, testbar mit node --test.
 import {BASE_CONFIG} from './config.js';
 import {MESH_UNITS,SHEAR_X,SHEAR_Z} from './pile-pose.js';
-import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v7';
+import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v8';
 
 export {PILE_KINDS};
 
@@ -217,6 +217,15 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   let ax=0,ay=0;
   const sup=b.held?{z:b.z,ox:0,oy:0}:supportOf(b,bodies);
   b.support=sup.z;b.downhill=Math.hypot(sup.ox,sup.oy);
+  b.flowW=0;
+  if(!b.held&&env.flow&&isFree(b,bodies)){
+   const f=env.flow(b.x,b.y);
+   if(f&&f.weight>0.03){
+    b.flowW=f.weight;
+    const k=(cfg.flowCoupling||16)*f.weight*inv;
+    ax+=(f.vx-b.vx)*k;ay+=(f.vy-b.vy)*k;
+   }
+  }
   if(!b.held&&sup.z>1&&b.downhill>Math.max(4,b.tube*.5)&&b.z<sup.z+(b.stackH||16)){
    ax+=sup.ox/b.downhill*cfg.roll;ay+=sup.oy/b.downhill*cfg.roll;
   }
@@ -238,7 +247,7 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
    b.vx=(b.vx+b.ax*dt)*damp;b.vy=(b.vy+b.ay*dt)*damp;
    const sp=Math.hypot(b.vx,b.vy);
    if(sp>cfg.maxSpeed){b.vx*=cfg.maxSpeed/sp;b.vy*=cfg.maxSpeed/sp;}
-   if(b.downhill<Math.max(3.5,b.tube*.42)&&b.z<=(b.support||0)+1.2){b.vx=0;b.vy=0;}
+   if((b.flowW||0)<0.03&&b.downhill<Math.max(3.5,b.tube*.42)&&b.z<=(b.support||0)+1.2){b.vx=0;b.vy=0;}
   }
   b.x=clamp(b.x+b.vx*dt,-30,w+30);b.y=clamp(b.y+b.vy*dt,-30,h+30);
   if(!b.held){

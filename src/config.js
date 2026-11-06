@@ -4,9 +4,9 @@
 // ?spin=0..2 multipliziert nur die Drehung der PNG-Items (1 = Standard, 0 = ruhig).
 export const BASE_CONFIG=Object.freeze({
  water:Object.freeze({
-  swell:79,          // Dünung, etwas lebhafter (Original-Preset 85, vorher 72)
+  swell:0,           // keine Dünung im Leerlauf; tuneWater löscht auch die Restwelle
   light:65,
-  ambient:.86        // Faktor auf die Hintergrund-Wellen des Meeres
+  ambient:0          // keine Hintergrundwelle, solange der Finger das Wasser nicht berührt
  }),
  // Wischen: EINE begrenzte Bugwelle entlang der Spur statt vieler Kreiswellen.
  // Eingabe direkt in die Wellen-Simulation (surface.disturb): vorn Druck, dicht
@@ -89,7 +89,7 @@ export const BASE_CONFIG=Object.freeze({
   rejectHold:.55,    // s kein erneutes Saugen an demselben Sack
   maxAccel:240      // Deckel, der Sog reißt nie
  }),
- // Haufen auf dem Wasser (v2026.11.06-7). Nichts sinkt unter die Fläche.
+ // Haufen auf dem Wasser (v2026.11.06-8). Nichts sinkt unter die Fläche.
  // Teile liegen aufeinander. Berührung schiebt nur leicht; ohne Halt rollen sie herunter.
  pile:Object.freeze({
   thick:16,
@@ -117,9 +117,10 @@ export const BASE_CONFIG=Object.freeze({
   maxSpin:2.2,
   spinDrag:8,
   holdSpin:.4,
+  flowCoupling:18,   // 1/s, freie Teile nehmen die lokale Wischströmung an
   gather:0,
   floor:0,
-  sway:Object.freeze({bobAmp:.8,bobFreq:.14,swayAmp:.5,swayFreq:.09,scaleAmp:.008})
+  sway:Object.freeze({bobAmp:0,bobFreq:.14,swayAmp:0,swayFreq:.09,scaleAmp:0})
  })
 });
 

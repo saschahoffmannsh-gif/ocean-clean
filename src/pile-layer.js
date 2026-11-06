@@ -1,12 +1,13 @@
-// Dichter 3D-Müllhaufen auf dem offenen Meer. Der Finger wühlt, freie Teile oben
-// lassen sich aufnehmen und wieder ablegen. Keine Säcke. Wasser bleibt im Originalmodul:
+// Dichter 3D-Müllhaufen auf dem offenen Meer. Der Finger hebt freie Teile an
+// und legt sie woanders ab. Auf offenem Wasser trägt die Wischströmung mit.
+// Keine Säcke. Wasser bleibt im Originalmodul:
 // Störung nur über surface.disturb, die Wischwelle kommt aus SwipeInput.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v7';
-import {loadItemMeshes} from './item-mesh.js?v=20261106-v7';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-v7';
-import {PileView,fallbackColor} from './pile-view.js?v=20261106-v7';
-import {pointerPoint} from './pile-pose.js?v=20261106-v7';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v8';
+import {loadItemMeshes} from './item-mesh.js?v=20261106-v8';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-v8';
+import {PileView,fallbackColor} from './pile-view.js?v=20261106-v8';
+import {pointerPoint} from './pile-pose.js?v=20261106-v8';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
@@ -28,6 +29,7 @@ export class PileLayer{
   if(this.view?.canvas)this.ocean.spray.before(this.view.canvas);
   this.ocean.root.append(this.fx);
   if(this.view?.active)this.canvas=this.view.canvas;
+  if(this.input)this.input.carrying=()=>!!this.held;
   this.resize();this.spawn();this.rest();
   this.bind();
   this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(this.ocean.root);
@@ -79,6 +81,8 @@ export class PileLayer{
   const hit=grabTarget(p.x,p.y,this.bodies);
   this.finger.x=p.x;this.finger.y=p.y;this.finger.vx=0;this.finger.vy=0;this.finger.at=now;
   if(!hit){this.held=null;this.finger.active=false;this.finger.holding=false;return;}
+  const segs=this.input?.flow?.segments;
+  if(segs?.length&&segs[segs.length-1].tap)segs.pop();
   hit.held=true;hit.vx=0;hit.vy=0;
   this.held=hit;this.finger.active=true;this.finger.holding=true;
   this.splash(hit.x,hit.y,.11,3.5,8);
@@ -125,15 +129,7 @@ export class PileLayer{
  swayOf(b){return seaSway(b,this.sim.time||0,this.cfg.pile.sway);}
  draw(){
   const dpr=this.dpr,s=this.sctx;s.setTransform(1,0,0,1,0,0);s.clearRect(0,0,this.shadow.width,this.shadow.height);s.setTransform(dpr,0,0,dpr,0,0);
-  for(const b of this.bodies){
-   const lift=Math.max(0,b.z),len=(b.halfLen||18)+(b.tube||10),wid=Math.max(8,b.tube||10);
-   s.save();s.translate(b.x+3,b.y+6);s.rotate(b.angle);
-   s.fillStyle=`rgba(2,14,24,${b.held?.1:.2})`;s.beginPath();s.ellipse(0,lift*.04,len*1.25,wid*1.35,0,0,7);s.fill();
-   s.fillStyle=`rgba(1,10,18,${b.held?.16:.34})`;s.beginPath();s.ellipse(0,2,len*.78,wid*.9,0,0,7);s.fill();
-   s.fillStyle=`rgba(0,8,14,${b.held?.2:.42})`;s.beginPath();s.ellipse(1,3,len*.42,wid*.5,0,0,7);s.fill();
-   s.restore();
-   if(!this.view?.active)this.flat(s,b);
-  }
+  if(!this.view?.active)for(const b of this.bodies)this.flat(s,b);
   const f=this.fctx;f.setTransform(1,0,0,1,0,0);f.clearRect(0,0,this.fx.width,this.fx.height);f.setTransform(dpr,0,0,dpr,0,0);
   if(this.finger.active){
    const g=f.createRadialGradient(this.finger.x,this.finger.y,2,this.finger.x,this.finger.y,34);
