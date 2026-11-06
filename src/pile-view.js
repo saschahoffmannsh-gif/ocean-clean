@@ -1,7 +1,7 @@
 // Die 24 GLB-Teile über dem Meer. Jedes zeigt nur sein gemaltes Draufsicht-Bild
 // (baseColor, Alpha-Maske). Kein Atlas, keine Normal- oder Metallkarte.
-import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-v4';
-import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-v4';
+import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-v5';
+import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-v5';
 
 const ATTRS={alpha:true,antialias:true,depth:true,stencil:false,premultipliedAlpha:true,powerPreference:'low-power',preserveDrawingBuffer:false};
 const VERT=`precision highp float;
@@ -128,7 +128,7 @@ export class PileView{
   this.gl=gl||gl2;if(!this.gl)return;
   this.program=link(this.gl,gl?1:2);if(!this.program)return;
   const g=this.gl;
-  if(!gl)g.getExtension('OES_element_index_uint');
+  if(gl)g.getExtension('OES_element_index_uint');
   this.meshes=new Map();
   for(const key of MESH_KEYS){
    const mesh=getMesh(key);

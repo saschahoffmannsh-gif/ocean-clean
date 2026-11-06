@@ -1,5 +1,9 @@
 # Ocean Clean – Original-Meer
 
+## Originalnetze, Draco (v2026.11.06-5)
+
+Die 24 Teile sind die ursprünglichen hochauflösenden Tripo-Netze mit den originalen UVs und dem Atlas. Nur Draco-komprimiert, sonst unverändert. Kamera bleibt die senkrechte Draufsicht. `water-13.0.0/` bleibt bytegleich.
+
 ## Gemalte Draufsicht (v2026.11.06-4)
 
 Dieselben 24 flachen GLBs, senkrecht von oben. Jedes Teil trägt nur sein eigenes gemaltes Bild (PNG, Alpha-Maske), nicht mehr den gemeinsamen Tripo-Atlas. `water-13.0.0/` bleibt bytegleich.

@@ -1,4 +1,7 @@
 import {parseGlb} from './glb-parse.js';
+import {dracoReady} from './draco-decode.js';
+
+const draco=await dracoReady();
 
 // Die 24 GLB-Teile. Geometrie bleibt wie geliefert (keine Vereinfachung).
 // Die Dateien liegen schon mit dem Gesicht nach oben: +Y ist die Dicke,
@@ -59,7 +62,7 @@ export async function loadItemMeshes(fetchImpl=globalThis.fetch){
  if(cache.size>=ITEM_DEFS.length)return cache;
  await Promise.all(ITEM_DEFS.map(async item=>{
   if(cache.has(item.key))return;
-  const url=new URL('../assets/items3d/'+item.file+'?v=20261106-v4',import.meta.url);
+  const url=new URL('../assets/items3d/'+item.file+'?v=20261106-v5',import.meta.url);
   const res=await fetchImpl(url);
   if(!res.ok)throw new Error('Müllmodell fehlt: '+item.file);
   cache.set(item.key,buildItem(new Uint8Array(await res.arrayBuffer()),item));
@@ -83,6 +86,7 @@ export function buildItem(bytes,item){
  const parsed=parse(bytes);
  const pos=parsed.positions.slice();
  const nrm=parsed.normals.slice();
+ layIfSideways(pos,nrm);
  yawLongAxis(pos,nrm);
  placeAndScale(pos,item.span);
  const indices=parsed.indices.length&&parsed.indices.every?.(i=>i<65536)!==false&&maxIndex(parsed.indices)<65536
@@ -105,7 +109,21 @@ export function buildItem(bytes,item){
 
 function maxIndex(idx){let m=0;for(let i=0;i<idx.length;i++)if(idx[i]>m)m=idx[i];return m;}
 
-function parse(bytes){return parseGlb(bytes);}
+function parse(bytes){return parseGlb(bytes,draco);}
+
+// Nur wenn das Teil klar auf der Seite liegt (dünnste Achse ist nicht Y).
+// Dreht die Geometrie, lässt die UVs an den Vertices.
+function layIfSideways(pos,nrm){
+ const size=extents(pos).size;
+ const thin=size[0]<size[2]?0:2;
+ if(size[thin]>=size[1]*.75)return;
+ const spin=thin===2?(x,y,z)=>[x,z,-y]:(x,y,z)=>[-y,x,z];
+ map3(pos,spin);
+ map3(nrm,(x,y,z)=>{
+  const o=spin(x,y,z),l=Math.hypot(o[0],o[1],o[2])||1;
+  return[o[0]/l,o[1]/l,o[2]/l];
+ });
+}
 
 // +Y bleibt oben. Liegt die Silhouette längs Z, dreht sie um die Hochachse auf X.
 function yawLongAxis(pos,nrm){

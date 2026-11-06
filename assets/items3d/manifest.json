@@ -2,289 +2,193 @@
   {
     "file": "plastik-pet-flasche.glb",
     "label": "PET-Flasche",
-    "mb": 0.351,
-    "verts": 5718,
-    "tris": 10000,
-    "tris_before": 63578,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.488,
+    "verts": 35956,
+    "tris": 63578,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "plastik-tuete.glb",
-    "label": "Tüte",
-    "mb": 0.465,
-    "verts": 7101,
-    "tris": 12000,
-    "tris_before": 128327,
-    "tex": [
-      256,
-      256
-    ]
+    "label": "T\u00fcte",
+    "mb": 0.678,
+    "verts": 73780,
+    "tris": 128327,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "plastik-becher.glb",
     "label": "Becher",
-    "mb": 0.449,
-    "verts": 6875,
-    "tris": 11999,
-    "tris_before": 122876,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.666,
+    "verts": 69893,
+    "tris": 122876,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "plastik-sixpack-ring.glb",
     "label": "Sixpack-Ring",
-    "mb": 0.359,
-    "verts": 5955,
-    "tris": 10000,
-    "tris_before": 66350,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.509,
+    "verts": 37381,
+    "tris": 66350,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "plastik-kanister.glb",
     "label": "Kanister",
-    "mb": 0.411,
-    "verts": 6509,
-    "tris": 9999,
-    "tris_before": 71150,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.527,
+    "verts": 45996,
+    "tris": 71150,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "plastik-waschmittelflasche.glb",
     "label": "Waschmittel",
-    "mb": 0.419,
-    "verts": 6818,
-    "tris": 10000,
-    "tris_before": 82320,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.561,
+    "verts": 52894,
+    "tris": 82320,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "metall-dose.glb",
     "label": "Dose",
-    "mb": 0.338,
-    "verts": 5232,
-    "tris": 7999,
-    "tris_before": 48962,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.459,
+    "verts": 31499,
+    "tris": 48962,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "metall-konservendose.glb",
     "label": "Konservendose",
-    "mb": 0.456,
-    "verts": 6911,
-    "tris": 11999,
-    "tris_before": 107502,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.618,
+    "verts": 61724,
+    "tris": 107502,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "metall-spraydose.glb",
     "label": "Spraydose",
-    "mb": 0.306,
-    "verts": 4765,
-    "tris": 8000,
-    "tris_before": 48944,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.453,
+    "verts": 29488,
+    "tris": 48944,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "metall-kronkorken.glb",
     "label": "Kronkorken",
-    "mb": 0.405,
-    "verts": 5818,
-    "tris": 10000,
-    "tris_before": 83938,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.548,
+    "verts": 48207,
+    "tris": 83938,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "metall-alu-schale.glb",
     "label": "Alu-Schale",
-    "mb": 0.526,
-    "verts": 8060,
-    "tris": 13999,
-    "tris_before": 148951,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.734,
+    "verts": 80947,
+    "tris": 148951,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "metall-fischdose.glb",
     "label": "Fischdose",
-    "mb": 0.463,
-    "verts": 7420,
-    "tris": 11999,
-    "tris_before": 103293,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.614,
+    "verts": 61235,
+    "tris": 103293,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "glas-gruene-flasche.glb",
-    "label": "grüne Flasche",
-    "mb": 0.222,
-    "verts": 3490,
-    "tris": 6000,
-    "tris_before": 27516,
-    "tex": [
-      256,
-      256
-    ]
+    "label": "gr\u00fcne Flasche",
+    "mb": 0.387,
+    "verts": 16434,
+    "tris": 27516,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "glas-schraubglas.glb",
     "label": "Schraubglas",
-    "mb": 0.319,
-    "verts": 5546,
-    "tris": 8000,
-    "tris_before": 42376,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.435,
+    "verts": 28451,
+    "tris": 42376,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "glas-bierflasche.glb",
     "label": "Bierflasche",
-    "mb": 0.216,
-    "verts": 3392,
-    "tris": 5999,
-    "tris_before": 27400,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.388,
+    "verts": 15959,
+    "tris": 27400,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "glas-flaschenpost.glb",
     "label": "Flaschenpost",
-    "mb": 0.286,
-    "verts": 4689,
-    "tris": 7999,
-    "tris_before": 54490,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.465,
+    "verts": 31534,
+    "tris": 54490,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "glas-parfuemflakon.glb",
-    "label": "Parfümflakon",
-    "mb": 0.423,
-    "verts": 6416,
-    "tris": 12000,
-    "tris_before": 103068,
-    "tex": [
-      256,
-      256
-    ]
+    "label": "Parf\u00fcmflakon",
+    "mb": 0.599,
+    "verts": 55142,
+    "tris": 103068,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "glas-medizinflasche.glb",
     "label": "Medizinflasche",
-    "mb": 0.216,
-    "verts": 3543,
-    "tris": 6000,
-    "tris_before": 38088,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.415,
+    "verts": 22261,
+    "tris": 38088,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "rest-reifen.glb",
     "label": "Reifen",
-    "mb": 0.498,
-    "verts": 7857,
-    "tris": 14000,
-    "tris_before": 171502,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.816,
+    "verts": 92495,
+    "tris": 171502,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "rest-badelatsche.glb",
     "label": "Badelatsche",
-    "mb": 0.297,
-    "verts": 4619,
-    "tris": 8000,
-    "tris_before": 43360,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.437,
+    "verts": 25037,
+    "tris": 43360,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "rest-handschuh.glb",
     "label": "Handschuh",
-    "mb": 0.355,
-    "verts": 5508,
-    "tris": 10000,
-    "tris_before": 77403,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.524,
+    "verts": 42466,
+    "tris": 77403,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "rest-fischernetz.glb",
     "label": "Fischernetz",
-    "mb": 0.54,
-    "verts": 8064,
-    "tris": 13999,
-    "tris_before": 150200,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.723,
+    "verts": 81241,
+    "tris": 150200,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "rest-maske.glb",
     "label": "Einwegmaske",
-    "mb": 0.283,
-    "verts": 4505,
-    "tris": 7999,
-    "tris_before": 40243,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.425,
+    "verts": 22740,
+    "tris": 40243,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   },
   {
     "file": "rest-windel.glb",
     "label": "Windel",
-    "mb": 0.364,
-    "verts": 5501,
-    "tris": 10000,
-    "tris_before": 63984,
-    "tex": [
-      256,
-      256
-    ]
+    "mb": 0.484,
+    "verts": 35105,
+    "tris": 63984,
+    "note": "original high-poly mesh+UVs, Draco-compressed only"
   }
 ]

@@ -1,6 +1,7 @@
 // Minimal glTF 2.0 binary reader for the trash items.
-// One mesh, POSITION / NORMAL / TEXCOORD_0, embedded JPEG images.
-// No simplification: indices are copied as authored.
+// One mesh, POSITION / NORMAL / TEXCOORD_0, embedded images.
+// KHR_draco_mesh_compression wird nur entpackt, nicht neu vernetzt.
+import {decodeDracoMesh} from './draco-decode.js';
 
 const COMPS={SCALAR:1,VEC2:2,VEC3:3,VEC4:4};
 
@@ -59,7 +60,7 @@ function imageBytes(json,bin,textureIndex){
  return bin.slice(start,start+bv.byteLength);
 }
 
-export function parseGlb(buffer){
+export function parseGlb(buffer,draco){
  const u8=viewOf(buffer);
  if(u8.length<20||u8[0]!==0x67||u8[1]!==0x6c||u8[2]!==0x54||u8[3]!==0x46)throw new Error('not a GLB');
  const jsonChunk=chunk(u8,12);
@@ -75,17 +76,24 @@ export function parseGlb(buffer){
  let baseIndex=0;
  for(const prim of mesh.primitives){
   if((prim.mode??4)!==4)throw new Error('only triangles');
-  const pa=accessor(json,bin,prim.attributes.POSITION);
-  const na=accessor(json,bin,prim.attributes.NORMAL);
-  const ta=accessor(json,bin,prim.attributes.TEXCOORD_0);
-  const ia=accessor(json,bin,prim.indices);
-  const pos=readArray(bin,pa,new Float32Array(pa.count*3),3);
-  const nrm=readArray(bin,na,new Float32Array(na.count*3),3);
-  const uv=readArray(bin,ta,new Float32Array(ta.count*2),2);
-  const idx=readArray(bin,ia,new Uint32Array(ia.count),1);
+  let pos,nrm,uv,idx;
+  if(prim.extensions?.KHR_draco_mesh_compression){
+   if(!draco)throw new Error('Draco-Decoder nicht bereit');
+   const decoded=decodeDracoMesh(draco,bin,json,prim);
+   pos=decoded.positions;nrm=decoded.normals;uv=decoded.uvs;idx=decoded.indices;
+  }else{
+   const pa=accessor(json,bin,prim.attributes.POSITION);
+   const na=accessor(json,bin,prim.attributes.NORMAL);
+   const ta=accessor(json,bin,prim.attributes.TEXCOORD_0);
+   const ia=accessor(json,bin,prim.indices);
+   pos=readArray(bin,pa,new Float32Array(pa.count*3),3);
+   nrm=readArray(bin,na,new Float32Array(na.count*3),3);
+   uv=readArray(bin,ta,new Float32Array(ta.count*2),2);
+   idx=readArray(bin,ia,new Uint32Array(ia.count),1);
+  }
   lists.pos.push(pos);lists.nrm.push(nrm);lists.uv.push(uv);
   for(let i=0;i<idx.length;i++)lists.idx.push(idx[i]+baseIndex);
-  baseIndex+=pa.count;
+  baseIndex+=pos.length/3;
   positions=pos;normals=nrm;uvs=uv;indices=idx;
  }
  if(mesh.primitives.length>1){
