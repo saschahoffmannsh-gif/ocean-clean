@@ -147,20 +147,29 @@ test('a finger slide does not plow the pile and a dropped one stays put',()=>{
  assert.ok(dropped.z<1);
 });
 
-test('open-water current carries a free item and lets it settle',()=>{
+test('open-water current carries, swirls and bumps, then settles',()=>{
  const near=createPileBody(kind,200,400,0,()=>.4),far=createPileBody(kind,40,700,0,()=>.4);
- const held=createPileBody(kind,200,460,0,()=>.4);held.held=true;
- const flow=(x,y)=>Math.hypot(x-200,y-400)<90?{vx:160,vy:0,weight:1}:{vx:0,vy:0,weight:0};
+ const held=createPileBody(kind,200,500,0,()=>.4);held.held=true;
+ const ahead=createPileBody(kind,200,400,0,()=>.2);
+ near.angle=0;ahead.angle=0;far.angle=0;
+ ahead.x=near.x+near.halfLen+ahead.halfLen+near.tube+ahead.tube+10;
+ const aheadX=ahead.x,spin0=near.angle;
+ const flow=(x,y)=>Math.hypot(x-200,y-400)<78?{vx:150,vy:0,weight:1,swirl:110}:{vx:0,vy:0,weight:0,swirl:0};
  const env=t=>world({t,flow,finger:{active:true,holding:true,x:held.x,y:held.y,vx:0,vy:0}});
- run([near,far,held],.7,{env});
- assert.ok(near.x-200>12,'Strömung trägt nicht '+near.x.toFixed(1));
- assert.ok(Math.abs(near.y-400)<10);
+ run([near,ahead,far,held],.65,{env});
+ assert.ok(near.x-200>28,'Strömung trägt nicht '+near.x.toFixed(1));
+ assert.ok(Math.abs(near.y-400)<14);
+ assert.ok(near.angle-spin0>.18,'dreht nicht '+(near.angle-spin0).toFixed(2));
+ assert.ok(ahead.x-aheadX>4,'Nachbar wird nicht angestoßen '+ahead.x.toFixed(1));
  assert.ok(Math.hypot(far.x-40,far.y-700)<2,'weit weg mitgezogen');
- assert.ok(Math.hypot(held.x-200,held.y-460)<1,'gehalten schwimmt');
- assert.ok(near.z>=-0.05&&far.z>=-0.05);
+ assert.ok(Math.hypot(held.x-200,held.y-500)<1,'gehalten schwimmt');
+ assert.ok(near.z>=-0.05&&near.z<18&&ahead.z>=-0.05&&far.z>=-0.05);
+ run([near,ahead],1.15);
  const x=near.x,y=near.y;
- run([near],1.1);
+ run([near],.7);
+ assert.ok(Math.hypot(near.vx,near.vy)<1,'bleibt in Fahrt');
  assert.ok(Math.hypot(near.x-x,near.y-y)<2,'schwimmt weiter');
+ assert.ok(near.z<1.5);
 });
 
 test('clear grab follows the finger and the drop stays on the pile height it lands on',()=>{

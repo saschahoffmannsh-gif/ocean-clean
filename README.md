@@ -2,7 +2,7 @@
 
 ## Strömung ohne Schatten (v2026.11.06-8)
 
-Keine Schatten unter den Teilen. Ohne Berührung liegt das Wasser still: keine Dünung und keine Hintergrundwelle. Auf offenem Wasser nimmt die Strömung vom Finger freie Teile in der Nähe mit; sie bleiben wieder liegen, wenn das Wasser ruhig ist. Auf einem Gegenstand hebt der Finger ihn an.
+Keine Schatten unter den Teilen. Ohne Berührung liegt das Wasser still: keine Dünung und keine Hintergrundwelle. Auf offenem Wasser treiben freie Teile mit der Strömung, drehen sich darin und stoßen Nachbarn an; danach gleiten sie kurz aus und bleiben liegen. Auf einem Gegenstand hebt der Finger ihn an.
 
 ## Finger genau auf dem Gegenstand (v2026.11.06-7)
 

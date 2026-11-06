@@ -117,7 +117,11 @@ export const BASE_CONFIG=Object.freeze({
   maxSpin:2.2,
   spinDrag:8,
   holdSpin:.4,
-  flowCoupling:18,   // 1/s, freie Teile nehmen die lokale Wischströmung an
+  flowCoupling:34,   // 1/s, freie Teile nehmen die lokale Wischströmung schnell an
+  flowSpeed:120,     // px/s, zügiges Treiben, kein Wegschleudern
+  flowSpin:.011,     // rad/s je Einheit Drall aus der Strömung
+  glide:.4,          // s Ausgleiten, nachdem die Strömung nachlässt
+  settle:6.5,        // 1/s, das Ausgleiten kommt zur Ruhe
   gather:0,
   floor:0,
   sway:Object.freeze({bobAmp:0,bobFreq:.14,swayAmp:0,swayFreq:.09,scaleAmp:0})

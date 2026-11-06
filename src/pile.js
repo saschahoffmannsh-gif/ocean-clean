@@ -3,7 +3,7 @@
 // Ohne DOM, testbar mit node --test.
 import {BASE_CONFIG} from './config.js';
 import {MESH_UNITS,SHEAR_X,SHEAR_Z} from './pile-pose.js';
-import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v8';
+import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v8b';
 
 export {PILE_KINDS};
 
@@ -194,10 +194,19 @@ function resolveContacts(bodies,cfg){
    if(a.held||c.held||!near(a,c)||!sameBand(a,c))continue;
    const hit=capsulePair(a,c);
    if(hit.pen<=2.2)continue;
-   const push=Math.min(.4,(hit.pen-1.6)*.22);
+   const lively=Math.hypot(a.vx,a.vy)>16||Math.hypot(c.vx,c.vy)>16||(a.flowW||0)>0.08||(c.flowW||0)>0.08;
+   const push=lively?Math.min(1.2,(hit.pen-1.6)*.45):Math.min(.4,(hit.pen-1.6)*.22);
    const ia=1/(a.kind.mass+cfg.inertia),ic=1/(c.kind.mass+cfg.inertia),share=ia+ic;
    a.x-=hit.ux*push*(ia/share);a.y-=hit.uy*push*(ia/share);
    c.x+=hit.ux*push*(ic/share);c.y+=hit.uy*push*(ic/share);
+   if(!lively)continue;
+   const rel=(a.vx-c.vx)*hit.ux+(a.vy-c.vy)*hit.uy;
+   if(rel>12){
+    const kick=Math.min(34,rel*.5);
+    a.vx-=hit.ux*kick*(ia/share);a.vy-=hit.uy*kick*(ia/share);
+    c.vx+=hit.ux*kick*(ic/share);c.vy+=hit.uy*kick*(ic/share);
+    a.glide=Math.max(a.glide||0,.26);c.glide=Math.max(c.glide||0,.32);
+   }
   }
  }
 }
@@ -217,13 +226,14 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   let ax=0,ay=0;
   const sup=b.held?{z:b.z,ox:0,oy:0}:supportOf(b,bodies);
   b.support=sup.z;b.downhill=Math.hypot(sup.ox,sup.oy);
-  b.flowW=0;
+  b.flowW=0;b.flowSpin=0;
   if(!b.held&&env.flow&&isFree(b,bodies)){
    const f=env.flow(b.x,b.y);
    if(f&&f.weight>0.03){
-    b.flowW=f.weight;
-    const k=(cfg.flowCoupling||16)*f.weight*inv;
+    b.flowW=f.weight;b.glide=cfg.glide||.4;
+    const k=(cfg.flowCoupling||32)*f.weight*inv;
     ax+=(f.vx-b.vx)*k;ay+=(f.vy-b.vy)*k;
+    b.flowSpin=(f.swirl||0)*(cfg.flowSpin||.01)*f.weight;
    }
   }
   if(!b.held&&sup.z>1&&b.downhill>Math.max(4,b.tube*.5)&&b.z<sup.z+(b.stackH||16)){
@@ -233,21 +243,31 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   if(b.x<m)ax+=(m-b.x)/m*cfg.edge*inv;if(b.x>w-m)ax-=(b.x-(w-m))/m*cfg.edge*inv;
   if(b.y<m+28)ay+=(m+28-b.y)/(m+28)*cfg.edge*inv;if(b.y>h-m)ay-=(b.y-(h-m))/m*cfg.edge*inv;
   const fall=cfg.fall||46;
-  if(b.z>sup.z+.4)b.vz+=(-fall-b.vz)*Math.min(1,dt*3.2);
+  if((b.flowW||0)>0.08){
+   const hop=(b.support||0)+5.5*Math.min(1,b.flowW);
+   b.vz=(hop-b.z)*7-b.vz*.4;
+  }else if(b.z>sup.z+.4)b.vz+=(-fall-b.vz)*Math.min(1,dt*3.2);
   else b.vz=(sup.z-b.z)*5;
   b.ax=ax;b.ay=ay;b.az=0;
  }
  for(const b of bodies){
   const prev=b.z;
+  const inFlow=(b.flowW||0)>0.03;
   const grounded=!b.held&&b.z<=(b.support||0)+1.2;
-  const damp=Math.exp(-(grounded?cfg.drag*1.55:cfg.drag*.5)*dt);
+  const damp=Math.exp(-(inFlow?cfg.drag*.42:grounded?cfg.drag*1.55:cfg.drag*.5)*dt);
   if(b.held){
    b.vx+=b.ax*dt;b.vy+=b.ay*dt;b.vz+=b.az*dt;
   }else{
    b.vx=(b.vx+b.ax*dt)*damp;b.vy=(b.vy+b.ay*dt)*damp;
-   const sp=Math.hypot(b.vx,b.vy);
-   if(sp>cfg.maxSpeed){b.vx*=cfg.maxSpeed/sp;b.vy*=cfg.maxSpeed/sp;}
-   if((b.flowW||0)<0.03&&b.downhill<Math.max(3.5,b.tube*.42)&&b.z<=(b.support||0)+1.2){b.vx=0;b.vy=0;}
+   const cap=inFlow?(cfg.flowSpeed||120):cfg.maxSpeed,sp=Math.hypot(b.vx,b.vy);
+   if(sp>cap){b.vx*=cap/sp;b.vy*=cap/sp;}
+   const calm=b.downhill<Math.max(3.5,b.tube*.42)&&b.z<=(b.support||0)+1.2;
+   if(!inFlow&&calm){
+    if((b.glide||0)>0){
+     b.glide-=dt;b.vx*=Math.exp(-(cfg.settle||6.5)*dt);b.vy*=Math.exp(-(cfg.settle||6.5)*dt);
+     if(b.glide<=0||Math.hypot(b.vx,b.vy)<8){b.vx=0;b.vy=0;b.glide=0;}
+    }else{b.vx=0;b.vy=0;}
+   }
   }
   b.x=clamp(b.x+b.vx*dt,-30,w+30);b.y=clamp(b.y+b.vy*dt,-30,h+30);
   if(!b.held){
@@ -260,7 +280,13 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   b.prevZ=b.z;
   const moving=Math.hypot(b.vx,b.vy);
   if(b.held){b.spin=b.spinBias*(cfg.holdSpin||.4);b.angle+=b.spin*dt;b.pitch*=.8;b.roll*=.8;}
-  else if(moving>8||b.vz<-8){
+  else if((b.flowW||0)>0.03||Math.abs(b.spin||0)>.04){
+   const target=clamp(b.flowSpin||0,-(cfg.maxSpin||2.2),cfg.maxSpin||2.2);
+   b.spin+=(target-b.spin)*Math.min(1,dt*8);b.angle+=b.spin*dt;
+   const lean=Math.min(11,moving*.07+Math.abs(b.spin)*.8);
+   b.roll=lean*Math.sign(b.spin||b.vx||b.spinBias||1);
+   b.pitch=lean*.3*Math.sign(b.vy||1);
+  }else if(moving>8||b.vz<-8){
    b.angle+=Math.sign(b.vx||b.spinBias||1)*Math.min(cfg.maxSpin,moving*cfg.spin+Math.abs(b.vz)*.018)*dt;
    const lean=Math.min(9,moving*.11);
    b.roll=lean*Math.sign(b.vx||b.spinBias||1);

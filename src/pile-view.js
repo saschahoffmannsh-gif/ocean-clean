@@ -1,7 +1,7 @@
 // Die 24 GLB-Teile über dem Meer. Jedes zeigt nur sein gemaltes Draufsicht-Bild
 // (baseColor, Alpha-Maske). Kein Atlas, keine Normal- oder Metallkarte.
-import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-v8';
-import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-v8';
+import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-v8b';
+import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-v8b';
 
 const ATTRS={alpha:true,antialias:true,depth:true,stencil:false,premultipliedAlpha:true,powerPreference:'low-power',preserveDrawingBuffer:false};
 const VERT=`precision highp float;
