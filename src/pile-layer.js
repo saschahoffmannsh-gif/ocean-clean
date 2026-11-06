@@ -2,10 +2,11 @@
 // lassen sich aufnehmen und wieder ablegen. Keine Säcke. Wasser bleibt im Originalmodul:
 // Störung nur über surface.disturb, die Wischwelle kommt aus SwipeInput.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261106-q3';
-import {MESH_UNITS} from './pile-pose.js?v=20261106-q3';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-q3';
-import {PileView,fallbackColor} from './pile-view.js?v=20261106-q3';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261106-glb';
+import {MESH_UNITS} from './pile-pose.js?v=20261106-glb';
+import {loadItemMeshes} from './item-mesh.js?v=20261106-glb';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-glb';
+import {PileView,fallbackColor} from './pile-view.js?v=20261106-glb';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
@@ -21,7 +22,8 @@ export class PileLayer{
   this.view=null;this.canvas=this.shadow;
  }
  async init(){
-  try{this.view=new PileView();}catch(error){console.warn('Ocean Clean: 3D nicht verfügbar.',error);this.view=null;}
+  await loadItemMeshes();
+  try{this.view=new PileView();await this.view.warm();}catch(error){console.warn('Ocean Clean: 3D nicht verfügbar.',error);this.view=null;}
   this.ocean.spray.before(this.shadow);
   if(this.view?.canvas)this.ocean.spray.before(this.view.canvas);
   this.ocean.root.append(this.fx);

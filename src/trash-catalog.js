@@ -1,7 +1,6 @@
-// Müll-Sprites (assets/trash/<kategorie>-<name>.png, 256 px @2x), strikte Draufsicht.
-// v3: genau 4 Sortier-Kategorien à 6 Items (asset-sources/trash/metadata.json).
-// radius: Größe für die Physik, look: Darstellungsgröße (lange Seite, realistische Verhältnisse),
-// mass: Trägheit, float: wie hoch das Teil im Wasser liegt (1 = obenauf).
+// Die 24 Müllarten. Im Spiel liegen die GLBs aus assets/items3d/ (keine PNG-Sprites).
+// radius, mass, float, look bleiben die Maße der früheren 2D-Physiktests.
+// v3: genau 4 Kategorien à 6 Items.
 export const CATEGORIES=Object.freeze(['plastik','metall','glas','rest']);
 export const CATEGORY_LABELS=Object.freeze({plastik:'Plastik',metall:'Metall',glas:'Glas',rest:'Restmüll'});
 export const TRASH=Object.freeze([
@@ -9,7 +8,7 @@ export const TRASH=Object.freeze([
  ['metall','kronkorken',0.42,0.15,0.6,0.4],['metall','dose',0.75,0.5,0.8,0.68],['metall','konservendose',0.8,0.7,0.65,0.62],['metall','spraydose',0.85,0.6,0.8,0.8],['metall','alu-schale',0.9,0.2,0.9,0.9],['metall','fischdose',0.75,0.5,0.75,0.7],
  ['glas','gruene-flasche',1.0,0.9,0.7,1.0],['glas','schraubglas',0.82,0.85,0.65,0.68],['glas','bierflasche',1.0,0.9,0.7,1.0],['glas','flaschenpost',0.95,0.8,0.75,0.95],['glas','parfuemflakon',0.7,0.6,0.65,0.58],['glas','medizinflasche',0.7,0.6,0.65,0.58],
  ['rest','badelatsche',0.85,0.45,0.95,0.9],['rest','reifen',1.1,1.2,0.7,1.25],['rest','fischernetz',1.1,0.8,0.5,1.2],['rest','handschuh',0.8,0.3,0.7,0.9],['rest','maske',0.85,0.15,0.6,0.85],['rest','windel',1.0,0.6,0.6,1.0]
-].map(([category,name,radius,mass,float,look])=>Object.freeze({category,name,radius,mass,float,look,src:`./assets/trash/${category}-${name}.png?v=20261105-sacks8b`})));
+].map(([category,name,radius,mass,float,look])=>Object.freeze({category,name,radius,mass,float,look,src:`./assets/items3d/${category}-${name}.glb`})));
 // Spawn-Reihenfolge: Kategorien reihum (je Runde gemischt), innerhalb der Kategorie ohne Wiederholung
 // bis alle 6 dran waren → alle 4 Kategorien kommen gleich oft vor (±1).
 export function balancedOrder(n,rand=Math.random){

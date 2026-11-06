@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync,existsSync} from 'node:fs';
 import {PILE_KINDS,advancePile,countFree,createPileBody,grabTarget,isFree,layoutPile,mulberry32,spawnPile} from '../src/pile.js';
-import {getMesh,MESH_KEYS} from '../src/trash-meshes.js';
+import {getMesh,MESH_KEYS} from '../src/item-mesh.js';
 import {itemPose,submerge,waveRock} from '../src/pile-pose.js';
 import {BASE_CONFIG,makeConfig} from '../src/config.js';
 
@@ -21,26 +22,36 @@ function aboveWater(bodies){
  for(const b of bodies)if(!b.held)assert.ok(b.z>=-0.05,'unter Wasser '+b.z);
 }
 
-test('twenty distinct trash meshes, one per kind',()=>{
- assert.equal(PILE_KINDS.length,20);
+test('twenty-four textured glb items, one per kind, triangles unchanged',()=>{
+ assert.equal(PILE_KINDS.length,24);
  assert.deepEqual(MESH_KEYS,[...PILE_KINDS.map(k=>k.key)]);
  const count={};
  for(const k of PILE_KINDS)count[k.category]=(count[k.category]||0)+1;
- assert.deepEqual(count,{plastik:6,glas:4,gummi:3,metall:3,rest:4});
- for(const key of MESH_KEYS){
+ assert.deepEqual(count,{plastik:6,metall:6,glas:6,rest:6});
+ const manifest=JSON.parse(readFileSync(new URL('../assets/items3d/manifest.json',import.meta.url)));
+ assert.equal(manifest.length,24);
+ assert.equal(existsSync(new URL('../src/trash-meshes.js',import.meta.url)),false);
+ assert.equal(existsSync(new URL('../assets/trash',import.meta.url)),false);
+ for(const row of manifest){
+  const file=row.file.replace(/\.glb$/,'');
+  const category=file.slice(0,file.indexOf('-'));
+  const key=category+':'+file.slice(category.length+1);
   const mesh=getMesh(key);
-  assert.ok(mesh&&mesh.parts.length>=1,key);
-  assert.ok(mesh.collider.tube>0.03&&mesh.collider.stackH>0.04,key);
-  let tris=0;
-  for(const part of mesh.parts){
-   assert.equal(part.positions.length,part.normals.length);
-   assert.ok(part.indices.length>=12);
-   tris+=part.indices.length/3;
-   for(let i=0;i<part.positions.length;i++)assert.ok(Number.isFinite(part.positions[i]),key);
-  }
-  assert.ok(tris>40&&tris<4000,key+' tris '+tris);
+  assert.ok(mesh,key);
+  assert.equal(mesh.tris,row.tris,key);
+  assert.equal(mesh.positions.length,mesh.normals.length);
+  assert.equal(mesh.uvs.length,mesh.positions.length/3*2);
+  assert.ok(mesh.images.base.length>1000&&mesh.images.normal.length>1000&&mesh.images.mr.length>1000,key);
+  assert.ok(mesh.collider.tube>0.04&&mesh.collider.stackH>0.02,key);
+  for(let i=0;i<mesh.positions.length;i++)assert.ok(Number.isFinite(mesh.positions[i]),key);
+  let minY=Infinity;for(let i=1;i<mesh.positions.length;i+=3)minY=Math.min(minY,mesh.positions[i]);
+  assert.ok(Math.abs(minY)<1e-4,'sitzt nicht auf y=0 '+key);
  }
- assert.ok(getMesh('gummi:reifen').collider.tube>getMesh('glas:medizinflasche').collider.tube);
+ const tire=getMesh('rest:reifen').collider,vial=getMesh('glas:medizinflasche').collider,ring=getMesh('plastik:sixpack-ring').collider,pet=getMesh('plastik:pet-flasche').collider;
+ assert.ok(tire.tube>vial.tube,'Reifen größer als Fläschchen');
+ assert.ok(ring.stackH<ring.tube*.45,'Sixpack liegt flach');
+ assert.ok(pet.halfLen>pet.tube*.35,'Flasche ist lang');
+ assert.ok(tire.halfLen<tire.tube*.4,'Reifen ist rund');
 });
 
 test('a settled pile is stacked above the water and then sits still',()=>{

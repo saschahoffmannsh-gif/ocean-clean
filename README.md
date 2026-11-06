@@ -1,8 +1,12 @@
 # Ocean Clean – Original-Meer
 
+## Texturierte GLB-Teile (v2026.11.06-2)
+
+Genau 24 Müllmodelle aus `assets/items3d/*.glb` (Manifest daneben). Jedes bringt Position, Normale, UV und drei 512er-JPEGs mit (Farbe, Normal, Metallic/Roughness). Die Dreiecke bleiben wie geliefert. Die alten Verfahrensnetze und die PNG-Sprites im Spiel sind weg. Die Teile liegen als Teppich über die ganze Wasserfläche, in Lagen, nichts darunter. Berührung schiebt. Ohne Halt kippen, rutschen und rollen sie und bleiben dann ruhig liegen. Abgelegt bleibt liegen. Keine Säcke. `water-13.0.0/` bleibt bytegleich.
+
 ## Wühlen im Teppich (v2026.11.06-1)
 
-Zwanzig erkennbare Müllteile (Plastik, Glas, Gummi, Metall, Restmüll) liegen als Teppich über die ganze Wasserfläche, in mehreren Lagen übereinander, nichts darunter. Glatte Normalen, klare Farben, weiche Auflage-Schatten. Berührung schiebt. Ohne Halt kippen, rutschen und rollen die Teile und bleiben dann ruhig liegen. Abgelegt bleibt liegen. Keine Säcke. `water-13.0.0/` bleibt bytegleich.
+Zwanzig erkennbare Müllteile (Plastik, Glas, Gummi, Metall, Restmüll) lagen als Teppich über die ganze Wasserfläche. Diese Verfahrensnetze sind in v2026.11.06-2 durch die GLBs ersetzt.
 
 ## Bisher
 

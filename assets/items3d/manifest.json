@@ -1,0 +1,218 @@
+[
+  {
+    "file": "plastik-pet-flasche.glb",
+    "label": "PET-Flasche",
+    "mb": 0.405,
+    "verts": 1617,
+    "tris": 2800,
+    "tris_before": 63578,
+    "bytes": 404596
+  },
+  {
+    "file": "plastik-tuete.glb",
+    "label": "Tüte",
+    "mb": 0.496,
+    "verts": 3252,
+    "tris": 6020,
+    "tris_before": 128327,
+    "bytes": 495540
+  },
+  {
+    "file": "plastik-becher.glb",
+    "label": "Becher",
+    "mb": 0.464,
+    "verts": 2617,
+    "tris": 5076,
+    "tris_before": 122876,
+    "bytes": 463892
+  },
+  {
+    "file": "plastik-sixpack-ring.glb",
+    "label": "Sixpack-Ring",
+    "mb": 0.413,
+    "verts": 1873,
+    "tris": 2800,
+    "tris_before": 66350,
+    "bytes": 412788
+  },
+  {
+    "file": "plastik-kanister.glb",
+    "label": "Kanister",
+    "mb": 0.442,
+    "verts": 2317,
+    "tris": 4037,
+    "tris_before": 71150,
+    "bytes": 441832
+  },
+  {
+    "file": "plastik-waschmittelflasche.glb",
+    "label": "Waschmittel",
+    "mb": 0.441,
+    "verts": 2296,
+    "tris": 4012,
+    "tris_before": 82320,
+    "bytes": 440888
+  },
+  {
+    "file": "metall-dose.glb",
+    "label": "Dose",
+    "mb": 0.392,
+    "verts": 1377,
+    "tris": 2363,
+    "tris_before": 48962,
+    "bytes": 391644
+  },
+  {
+    "file": "metall-konservendose.glb",
+    "label": "Konservendose",
+    "mb": 0.439,
+    "verts": 2205,
+    "tris": 4137,
+    "tris_before": 107502,
+    "bytes": 439456
+  },
+  {
+    "file": "metall-spraydose.glb",
+    "label": "Spraydose",
+    "mb": 0.393,
+    "verts": 1376,
+    "tris": 2505,
+    "tris_before": 48944,
+    "bytes": 393332
+  },
+  {
+    "file": "metall-kronkorken.glb",
+    "label": "Kronkorken",
+    "mb": 0.42,
+    "verts": 1855,
+    "tris": 3489,
+    "tris_before": 83938,
+    "bytes": 420472
+  },
+  {
+    "file": "metall-alu-schale.glb",
+    "label": "Alu-Schale",
+    "mb": 0.46,
+    "verts": 2707,
+    "tris": 4500,
+    "tris_before": 148951,
+    "bytes": 459868
+  },
+  {
+    "file": "metall-fischdose.glb",
+    "label": "Fischdose",
+    "mb": 0.449,
+    "verts": 2457,
+    "tris": 4241,
+    "tris_before": 103293,
+    "bytes": 448760
+  },
+  {
+    "file": "glas-gruene-flasche.glb",
+    "label": "grüne Flasche",
+    "mb": 0.368,
+    "verts": 919,
+    "tris": 1600,
+    "tris_before": 27516,
+    "bytes": 367848
+  },
+  {
+    "file": "glas-schraubglas.glb",
+    "label": "Schraubglas",
+    "mb": 0.392,
+    "verts": 1461,
+    "tris": 2200,
+    "tris_before": 42376,
+    "bytes": 392392
+  },
+  {
+    "file": "glas-bierflasche.glb",
+    "label": "Bierflasche",
+    "mb": 0.367,
+    "verts": 887,
+    "tris": 1600,
+    "tris_before": 27400,
+    "bytes": 366820
+  },
+  {
+    "file": "glas-flaschenpost.glb",
+    "label": "Flaschenpost",
+    "mb": 0.389,
+    "verts": 1348,
+    "tris": 2200,
+    "tris_before": 54490,
+    "bytes": 388780
+  },
+  {
+    "file": "glas-parfuemflakon.glb",
+    "label": "Parfümflakon",
+    "mb": 0.422,
+    "verts": 1904,
+    "tris": 3499,
+    "tris_before": 103068,
+    "bytes": 422164
+  },
+  {
+    "file": "glas-medizinflasche.glb",
+    "label": "Medizinflasche",
+    "mb": 0.367,
+    "verts": 888,
+    "tris": 1600,
+    "tris_before": 38088,
+    "bytes": 366860
+  },
+  {
+    "file": "rest-reifen.glb",
+    "label": "Reifen",
+    "mb": 0.454,
+    "verts": 2514,
+    "tris": 4500,
+    "tris_before": 171502,
+    "bytes": 453672
+  },
+  {
+    "file": "rest-badelatsche.glb",
+    "label": "Badelatsche",
+    "mb": 0.387,
+    "verts": 1288,
+    "tris": 2200,
+    "tris_before": 43360,
+    "bytes": 386856
+  },
+  {
+    "file": "rest-handschuh.glb",
+    "label": "Handschuh",
+    "mb": 0.403,
+    "verts": 1559,
+    "tris": 2799,
+    "tris_before": 77403,
+    "bytes": 402708
+  },
+  {
+    "file": "rest-fischernetz.glb",
+    "label": "Fischernetz",
+    "mb": 0.463,
+    "verts": 2806,
+    "tris": 4499,
+    "tris_before": 150200,
+    "bytes": 463024
+  },
+  {
+    "file": "rest-maske.glb",
+    "label": "Einwegmaske",
+    "mb": 0.388,
+    "verts": 1310,
+    "tris": 2200,
+    "tris_before": 40243,
+    "bytes": 387544
+  },
+  {
+    "file": "rest-windel.glb",
+    "label": "Windel",
+    "mb": 0.403,
+    "verts": 1558,
+    "tris": 2800,
+    "tris_before": 63984,
+    "bytes": 402680
+  }
+]

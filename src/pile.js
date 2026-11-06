@@ -3,35 +3,11 @@
 // Ohne DOM, testbar mit node --test.
 import {BASE_CONFIG} from './config.js';
 import {MESH_UNITS,SHEAR_X,SHEAR_Z} from './pile-pose.js';
-import {colliderOf} from './trash-meshes.js';
+import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-glb';
+
+export {PILE_KINDS};
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-
-const kind=(category,name,label,mass,fit=1)=>Object.freeze({
- key:`${category}:${name}`,category,name,label,mass,fit,long:fit,thick:fit,radius:16,mid:.16
-});
-export const PILE_KINDS=Object.freeze([
- kind('plastik','pet-flasche','PET-Flasche',.34,1),
- kind('plastik','tuete','Plastiktüte',.22,.95),
- kind('plastik','becher','Plastikbecher',.28,.85),
- kind('plastik','sixpack-ring','Sixpack-Ring',.18,.9),
- kind('plastik','kanister','Kanister',.7,1.05),
- kind('plastik','waschmittelflasche','Waschmittelflasche',.55,1),
- kind('glas','gruene-flasche','Glasflasche',.62,1),
- kind('glas','schraubglas','Schraubglas',.7,.9),
- kind('glas','bierflasche','Bierflasche',.6,1),
- kind('glas','medizinflasche','Medizinfläschchen',.25,.62),
- kind('gummi','reifen','Autoreifen',1.1,1.32),
- kind('gummi','badelatsche','Badelatsche',.3,.95),
- kind('gummi','handschuh','Gummihandschuh',.22,.85),
- kind('metall','dose','Getränkedose',.45,.9),
- kind('metall','konservendose','Konservendose',.55,.82),
- kind('metall','spraydose','Spraydose',.4,.78),
- kind('rest','fischernetz','Fischernetz',.4,.9),
- kind('rest','maske','Einwegmaske',.12,.8),
- kind('rest','windel','Windel',.35,1),
- kind('rest','karton','Karton',.5,1.05)
-]);
 
 export function mulberry32(seed){
  let s=seed|0;
@@ -42,7 +18,7 @@ export function mulberry32(seed){
 export function bodyShape(kind,radiusScale=1){
  const px=30*radiusScale*MESH_UNITS*(kind.fit||1);
  const c=colliderOf(kind.key)||{halfLen:.2,tube:.08,stackH:.12};
- return{halfLen:Math.max(3,c.halfLen*px),tube:Math.max(5,c.tube*px),stackH:Math.max(8,c.stackH*px)};
+ return{halfLen:Math.max(0,c.halfLen*px),tube:Math.max(4,c.tube*px),stackH:Math.max(3,c.stackH*px)};
 }
 
 export function createPileBody(kind,x,y,z,rand=Math.random,radiusScale=1){
@@ -64,7 +40,8 @@ export function layoutPile(w,h){
  const base=Math.max(26,Math.min(36,Math.min(w,h)/390*30));
  const grid=carpetGrid(w,h);
  const cells=grid.cols*grid.rows;
- const n=Math.min(116,cells*2+Math.round(cells*.35));
+ // Zwei Lagen über die ganze Fläche. Deckel, damit ein breiter Monitor nicht hunderte Netze zeichnet.
+ const n=Math.min(260,cells*2+Math.round(cells*.35));
  return{cx:w*.5,cy:h*.5,pileR:Math.min(w,h),n,base,radiusScale:base/30,width:w,height:h};
 }
 

@@ -12,7 +12,7 @@ import {probe} from './helpers/suction-probe.mjs';
 test('trash catalog: 4 categories x 6 sprites, category in file name, files exist',()=>{
  assert.equal(TRASH.length,24);assert.deepEqual(CATEGORIES,['plastik','metall','glas','rest']);
  for(const c of CATEGORIES)assert.equal(TRASH.filter(t=>t.category===c).length,6,c);
- for(const t of TRASH){const f=t.src.split('?')[0];assert.match(f,new RegExp(`/${t.category}-${t.name}\\.png$`));assert.ok(existsSync(new URL('..'+f.slice(1),import.meta.url)),t.src);assert.ok(t.look>.3&&t.look<=1.3,'look '+t.name);}
+ for(const t of TRASH){const f=t.src.split('?')[0];assert.match(f,new RegExp(`/${t.category}-${t.name}\\.glb$`));assert.ok(existsSync(new URL('..'+f.slice(1),import.meta.url)),t.src);assert.ok(t.look>.3&&t.look<=1.3,'look '+t.name);}
  assert.equal(new Set(TRASH.map(t=>t.src)).size,TRASH.length);
 });
 
@@ -167,10 +167,10 @@ test('calm sea sway rocks items without carrying them away',()=>{
  assert.equal(makeConfig().sway.bobAmp,cfg.bobAmp);assert.equal(makeConfig().water.swell,BASE_CONFIG.water.swell);
 });
 
-test('shipped page is the stacked pile at v2026.11.06-1, without bags',()=>{
+test('shipped page is the stacked pile at v2026.11.06-2, without bags',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../app.js',import.meta.url),'utf8');
  const layer=readFileSync(new URL('../src/pile-layer.js',import.meta.url),'utf8');
- assert.match(html,/v2026\.11\.06-1/);assert.match(html,/20261106-q3/);assert.match(app,/20261106-q3/);
+ assert.match(html,/v2026\.11\.06-2/);assert.match(html,/20261106-glb/);assert.match(app,/20261106-glb/);
  assert.match(html,/Durch den Haufen wühlen/);assert.match(html,/oben liegende Teile aufnehmen/i);
  assert.match(app,/PileLayer/);assert.doesNotMatch(app,/TrashLayer|sort-bags|bag-draw|drawBags/);
  assert.doesNotMatch(layer,/drawBags|layoutBags|sort-bags/);
