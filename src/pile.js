@@ -17,15 +17,16 @@ export function mulberry32(seed){
  return()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
 }
 
-// Kapsel in Pixeln, passend zum sichtbaren Netz (Länge entlang X, Dicke aus der Mitte).
+// Kapsel in Pixeln. tube ist die Auflage, stackH die Höhe, auf der das nächste Teil liegt.
 export function bodyShape(kind,radiusScale=1){
  const px=30*radiusScale*MESH_UNITS;
- return{halfLen:px*(kind.long||1)*.52,tube:Math.max(9,px*(kind.thick||1)*(kind.mid||.16)*1.35)+1};
+ const tube=Math.max(7,px*(kind.thick||1)*(kind.mid||.16)*.78);
+ return{halfLen:px*(kind.long||1)*.4,tube,stackH:Math.max(26,tube*2.6)};
 }
 
 export function createPileBody(kind,x,y,z,rand=Math.random,radiusScale=1){
  const shape=bodyShape(kind,radiusScale);
- return{kind,x,y,z:z>0?z:0,vx:0,vy:0,vz:0,radius:shape.tube+4,halfLen:shape.halfLen,tube:shape.tube,
+ return{kind,x,y,z:z>0?z:0,vx:0,vy:0,vz:0,radius:shape.tube+4,halfLen:shape.halfLen,tube:shape.tube,stackH:shape.stackH,
   angle:rand()*Math.PI*2,spin:0,spinBias:(rand()<.5?-1:1)*(.55+rand()*.7),
   swayPhase:((x*.017+y*.013)%1+1)%1*Math.PI*2,
   held:false,prevZ:0,
@@ -41,24 +42,40 @@ function shuffle(a,rand){
 export function layoutPile(w,h){
  const base=Math.max(28,Math.min(40,Math.min(w,h)/390*32));
  const pileR=Math.max(130,Math.min(240,Math.min(w,h)*.4));
- const n=Math.round(Math.max(18,Math.min(26,Math.min(w,h)/18)));
+ const n=Math.round(Math.max(26,Math.min(34,Math.min(w,h)/13)));
  return{cx:w*.5,cy:h*.47,pileR,n,base,radiusScale:base/30};
 }
 
 export function spawnPile({kinds=PILE_KINDS,n,cx,cy,rand,radiusScale=1}){
  const order=[];
  while(order.length<n)for(const k of shuffle([0,1,2],rand))if(order.length<n)order.push(k);
- const bodies=[];
- for(let i=0;i<n;i++){
-  const ang=i*2.399963,rad=14*Math.sqrt(i+.2);
-  const kind=kinds[order[i]];
-  bodies.push(createPileBody(kind,cx+Math.cos(ang)*rad,cy+Math.sin(ang)*rad*.92,0,rand,radiusScale));
+ const spread=64*radiusScale,bodies=[];
+ let g=0;
+ while(bodies.length<n&&g<48){
+  const ang=g*2.399963,rad=g===0?0:Math.min(120*radiusScale,spread*(.5+.58*Math.sqrt(g)));
+  const room=n-bodies.length,stack=g<3?Math.min(4,room):g<8?Math.min(3,room):Math.min(2,room);
+  const x0=cx+Math.cos(ang)*rad,y0=cy+Math.sin(ang)*rad*.9;
+  for(let s=0;s<stack&&bodies.length<n;s++){
+   const kind=kinds[order[bodies.length]];
+   const b=createPileBody(kind,x0,y0,0,rand,radiusScale);
+   b.z=s*b.stackH*.96;
+   b.x+=(rand()-.5)*1.6;b.y+=(rand()-.5)*1.6;
+   bodies.push(b);
+  }
+  g++;
  }
  return bodies;
 }
 
-export function isFree(body){
- return !!(body&&!body.held&&body.z>=-0.5);
+export function isFree(body,bodies){
+ if(!body||body.held)return false;
+ if(!bodies)return body.z>=-0.5;
+ for(const other of bodies){
+  if(other===body||other.held)continue;
+  if(other.z<body.z+(body.stackH||12)*.4)continue;
+  if(touchDistance(other,body.x,body.y)<(other.tube||8)*.85)return false;
+ }
+ return true;
 }
 
 function axisPoint(body,t){
@@ -120,10 +137,10 @@ export function capsulePair(a,c){
 export function grabTarget(x,y,bodies){
  let best=null;
  for(const b of bodies){
-  if(!isFree(b))continue;
+  if(b.held)continue;
   const d=touchDistance(b,x,y);
-  if(d>(b.tube||0)*1.08)continue;
-  if(!best||d<best.d)best={b,d};
+  if(d>(b.tube||0)*1.15)continue;
+  if(!best||b.z>best.b.z+1||(Math.abs(b.z-best.b.z)<=1&&d<best.d))best={b,d};
  }
  return best?.b??null;
 }
@@ -132,22 +149,42 @@ export function ceiling(){return 0;}
 
 export function countFree(bodies){
  let free=0,buried=0;
- for(const b of bodies)if(isFree(b))free++;else buried++;
+ for(const b of bodies)if(isFree(b,bodies))free++;else buried++;
  return{free,buried};
 }
 
+// Höchste Auflage unter der Mitte. ox/oy zeigt vom Auflagemittel weg (bergab).
+export function supportOf(body,bodies){
+ let z=0,sx=0,sy=0,w=0;
+ for(const other of bodies){
+  if(other===body||other.held)continue;
+  const foot=other.z+(other.stackH||0);
+  if(foot>body.z+3)continue;
+  const d=touchDistance(other,body.x,body.y),reach=(other.tube||8)*.88;
+  if(d>reach)continue;
+  if(foot>z)z=foot;
+  const wt=Math.max(.08,1-d/reach);
+  sx+=(body.x-other.x)*wt;sy+=(body.y-other.y)*wt;w+=wt;
+ }
+ return{z,ox:w?sx/w:0,oy:w?sy/w:0};
+}
+
+function sameBand(a,c){
+ const overlap=Math.min(a.z+(a.stackH||0),c.z+(c.stackH||0))-Math.max(a.z,c.z);
+ return overlap>Math.min(a.stackH||1,c.stackH||1)*.42;
+}
+
 function resolveContacts(bodies,cfg){
- for(let pass=0;pass<4;pass++){
+ for(let pass=0;pass<2;pass++){
   for(let i=0;i<bodies.length;i++)for(let j=i+1;j<bodies.length;j++){
    const a=bodies[i],c=bodies[j];
-   if(a.held||c.held)continue;
+   if(a.held||c.held||!sameBand(a,c))continue;
    const hit=capsulePair(a,c);
-   if(hit.pen<=.35)continue;
-   const push=hit.pen-.2;
+   if(hit.pen<=.6)continue;
+   const push=Math.min(.65,hit.pen*.4);
    const ia=1/(a.kind.mass+cfg.inertia),ic=1/(c.kind.mass+cfg.inertia),share=ia+ic;
    a.x-=hit.ux*push*(ia/share);a.y-=hit.uy*push*(ia/share);
    c.x+=hit.ux*push*(ic/share);c.y+=hit.uy*push*(ic/share);
-   a.vx=0;a.vy=0;c.vx=0;c.vy=0;
   }
  }
 }
@@ -167,54 +204,70 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   }
   let ax=0,ay=0;
   b.bumpX=0;b.bumpY=0;
+  const sup=b.held?{z:b.z,ox:0,oy:0}:supportOf(b,bodies);
+  b.support=sup.z;b.downhill=Math.hypot(sup.ox,sup.oy);
   if(finger&&!hold){
    const p=closestOnAxis(b,finger.x,finger.y);
    const dx=p.x-finger.x,dy=p.y-finger.y,d=Math.hypot(dx,dy),R=(b.tube||8)+cfg.fingerR;
-   if(d<R){
+   let buried=false;
+   for(const other of bodies){
+    if(other===b||other.held||other.z<b.z+(b.stackH||12)*.35)continue;
+    if(touchDistance(other,p.x,p.y)<(other.tube||8)){buried=true;break;}
+   }
+   if(!buried&&d<R){
     const pen=(R-d)/R,speed=Math.hypot(finger.vx,finger.vy);
     const rx=d>1e-3?dx/d:1,ry=d>1e-3?dy/d:0;
     let dirx=rx,diry=ry;
     if(speed>=22){
      const fx=finger.vx/speed,fy=finger.vy/speed,side=fx*dy-fy*dx,sign=side>=0?1:-1;
-     dirx=(-fy*sign)*.4+rx*.95;diry=(fx*sign)*.4+ry*.95;
+     dirx=(-fy*sign)*.35+rx*.9;diry=(fx*sign)*.35+ry*.9;
     }
     const norm=Math.hypot(dirx,diry)||1;
-    const mag=(speed>=22?cfg.nudge:cfg.dwell)*pen*Math.min(1,Math.max(speed,24)/240);
+    const mag=(speed>=22?cfg.nudge:cfg.dwell)*pen*Math.min(1,Math.max(speed,24)/220);
     b.bumpX=dirx/norm*mag;b.bumpY=diry/norm*mag;
    }
+  }
+  if(!b.held&&sup.z>1&&b.downhill>8&&b.z<sup.z+(b.stackH||16)){
+   ax+=sup.ox/b.downhill*cfg.roll;ay+=sup.oy/b.downhill*cfg.roll;
   }
   const m=b.radius*1.05;
   if(b.x<m)ax+=(m-b.x)/m*cfg.edge*inv;if(b.x>w-m)ax-=(b.x-(w-m))/m*cfg.edge*inv;
   if(b.y<m+28)ay+=(m+28-b.y)/(m+28)*cfg.edge*inv;if(b.y>h-m)ay-=(b.y-(h-m))/m*cfg.edge*inv;
-  let az;
-  if(b.z>0)az=-cfg.gravity;
-  else az=0;
-  b.ax=ax;b.ay=ay;b.az=az;
+  const fall=cfg.fall||46;
+  if(b.z>sup.z+.4)b.vz+=(-fall-b.vz)*Math.min(1,dt*3.2);
+  else b.vz=(sup.z-b.z)*5;
+  b.ax=ax;b.ay=ay;b.az=0;
  }
- const damp=Math.exp(-cfg.drag*dt),zDamp=Math.exp(-cfg.riseDamp*.35*dt);
+ const damp=Math.exp(-cfg.drag*dt);
  for(const b of bodies){
   const prev=b.z;
   if(b.held){
    b.vx+=b.ax*dt;b.vy+=b.ay*dt;b.vz+=b.az*dt;
   }else{
    b.vx=(b.vx+b.ax*dt)*damp;b.vy=(b.vy+b.ay*dt)*damp;
-   b.vz=(b.vz+b.az*dt)*(b.z>0?Math.exp(-2.2*dt):zDamp);
    const sp=Math.hypot(b.vx,b.vy);
    if(sp>cfg.maxSpeed){b.vx*=cfg.maxSpeed/sp;b.vy*=cfg.maxSpeed/sp;}
    const margin=b.radius*1.05,nearEdge=b.x<margin+8||b.x>w-margin-8||b.y<margin+36||b.y>h-margin-8;
    if(b.bumpX||b.bumpY){
     b.x+=b.bumpX*dt;b.y+=b.bumpY*dt;
-    b.vx=0;b.vy=0;
-    b.angle+=Math.sign(b.bumpX||b.spinBias||1)*Math.min(cfg.maxSpin,Math.hypot(b.bumpX,b.bumpY)*cfg.spin)*dt;
-   }else if(!nearEdge){b.vx=0;b.vy=0;}
+    b.vx=b.bumpX*.3;b.vy=b.bumpY*.3;
+   }else if(b.downhill<6&&b.z<=(b.support||0)+.8&&!nearEdge){b.vx=0;b.vy=0;}
   }
   b.x=clamp(b.x+b.vx*dt,-30,w+30);b.y=clamp(b.y+b.vy*dt,-30,h+30);
-  b.z+=b.vz*dt;
-  if(!b.held&&b.z<=0){b.z=0;b.vz=0;}
+  if(!b.held){
+   b.z+=b.vz*dt;
+   const floor=b.support||0;
+   if(b.z<floor){b.z=floor;b.vz=0;}
+   if(b.z<0){b.z=0;b.vz=0;}
+  }else b.z+=b.vz*dt;
   b.hitWater=!b.held&&prev>3&&b.z<=0;
   b.prevZ=b.z;
-  if(b.held){b.spin=b.spinBias*(cfg.holdSpin||.45);b.angle+=b.spin*dt;}
-  else b.spin=0;
+  const moving=Math.hypot(b.vx,b.vy);
+  if(b.held){b.spin=b.spinBias*(cfg.holdSpin||.4);b.angle+=b.spin*dt;}
+  else if(moving>8||b.vz<-8){
+   b.angle+=Math.sign(b.vx||b.spinBias||1)*Math.min(cfg.maxSpin,moving*cfg.spin+Math.abs(b.vz)*.018)*dt;
+   b.spin=0;
+  }else b.spin=0;
  }
  resolveContacts(bodies,cfg);
 }

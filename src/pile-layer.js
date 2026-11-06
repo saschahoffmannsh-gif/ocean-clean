@@ -2,10 +2,10 @@
 // lassen sich aufnehmen und wieder ablegen. Keine Säcke. Wasser bleibt im Originalmodul:
 // Störung nur über surface.disturb, die Wischwelle kommt aus SwipeInput.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261105-surf11';
-import {MESH_UNITS} from './pile-pose.js?v=20261105-surf11';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261105-surf11';
-import {PileView,fallbackColor} from './pile-view.js?v=20261105-surf11';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261105-heap12';
+import {MESH_UNITS} from './pile-pose.js?v=20261105-heap12';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261105-heap12';
+import {PileView,fallbackColor} from './pile-view.js?v=20261105-heap12';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
@@ -49,7 +49,7 @@ export class PileLayer{
  }
  rest(){
   const env=this.env(0);env.finger=null;const sim={};
-  for(let i=1;i<=150;i++)advancePile(sim,this.bodies,()=>env,1/60,i*16.7,this.cfg.pile);
+  for(let i=1;i<=240;i++)advancePile(sim,this.bodies,()=>env,1/60,i*16.7,this.cfg.pile);
   this.sim={};
  }
  env(t){

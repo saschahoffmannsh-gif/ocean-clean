@@ -89,37 +89,37 @@ export const BASE_CONFIG=Object.freeze({
   rejectHold:.55,    // s kein erneutes Saugen an demselben Sack
   maxAccel:240      // Deckel, der Sog reißt nie
  }),
- // Oberfläche (v2026.11.05-11). Alles liegt auf dem Wasser, nichts darunter.
- // Harte Kapseln: die Körper berühren sich, gehen aber nicht durcheinander.
+ // Haufen auf dem Wasser (v2026.11.05-12). Nichts sinkt unter die Fläche.
+ // Teile liegen aufeinander. Berührung schiebt nur leicht; ohne Halt rollen sie herunter.
  pile:Object.freeze({
-  thick:13,
-  cover:.62,
+  thick:16,
+  cover:.55,
   grabBand:0,
   grabInner:.92,
-  fingerR:16,        // px Kontakt des Fingers
-  nudge:340,         // px/s Schubs bei vollem Kontakt
-  dwell:14,
-  rise:16,
-  riseDamp:8,
+  fingerR:14,
+  nudge:190,
+  dwell:12,
+  fall:46,           // px/s sichtbares Herunterrollen, kein Sprung
+  roll:80,           // px/s² den Hang hinunter, nur am Rand der Auflage
   gravity:520,
-  solid:1,           // Kapseln dürfen sich nicht schneiden
-  skin:1.5,          // px extra, damit die Netze sich nicht schneiden
-  drag:12,
-  maxSpeed:80,
-  holdLift:46,
+  solid:1,
+  skin:0,
+  drag:3.4,
+  maxSpeed:62,
+  holdLift:52,
   holdK:22,
   ambient:0,
   ambientCoupling:0,
-  edge:500,
+  edge:420,
   inertia:.45,
   idleSpin:0,
-  spin:.003,
-  maxSpin:.5,
+  spin:.02,
+  maxSpin:2.2,
   spinDrag:8,
   holdSpin:.4,
   gather:0,
   floor:0,
-  sway:Object.freeze({bobAmp:.6,bobFreq:.14,swayAmp:.4,swayFreq:.09,scaleAmp:.006})
+  sway:Object.freeze({bobAmp:.8,bobFreq:.14,swayAmp:.5,swayFreq:.09,scaleAmp:.008})
  })
 });
 
