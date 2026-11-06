@@ -1,8 +1,8 @@
 // Transparentes WebGL über dem Meer: die drei Low-Poly-Netze, viele Instanzen.
 // Oberfläche klar, unter Wasser blau, weicher und durchscheinender. Fehlt WebGL,
 // bleibt das Canvas draussen und die Ebene zeichnet einfache Körper.
-import {getMesh,MESH_KEYS} from './trash-meshes.js?v=20261105-surf11';
-import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261105-surf11';
+import {getMesh,MESH_KEYS} from './trash-meshes.js?v=20261105-heap12';
+import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261105-heap12';
 
 const ATTRS={alpha:true,antialias:true,depth:true,stencil:false,premultipliedAlpha:true,powerPreference:'low-power',preserveDrawingBuffer:false};
 const VERT=`precision highp float;
