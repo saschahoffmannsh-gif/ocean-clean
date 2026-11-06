@@ -3,18 +3,18 @@
 // über der passenden Mulde sammelt es ein. Falsche Mulden stoßen es zurück.
 // Ist der Strand leer, wischt man nach links: der Wagen fährt weiter.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v10';
-import {loadItemMeshes} from './item-mesh.js?v=20261106-v10';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32} from './pile.js?v=20261106-v10';
-import {PileView,fallbackColor} from './pile-view.js?v=20261106-v10';
-import {pointerPoint} from './pile-pose.js?v=20261106-v10';
-import {waterRect} from './shore.js?v=20261106-v10';
-import {layoutTruck,wheelSpin} from './truck-layout.js?v=20261106-v10';
-import {releaseItem} from './sort-drop.js?v=20261106-v10';
-import {LEVELS,levelByIndex,spawnLevel} from './levels.js?v=20261106-v10';
-import {drivePose,isAdvanceSwipe} from './drive.js?v=20261106-v10';
-import {drawBeach,drawTruckShadow,plantsRevision,setPlantsImage} from './beach-draw.js?v=20261106-v10';
-import {loadPropMeshes} from './prop-mesh.js?v=20261106-v10';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v11';
+import {loadItemMeshes} from './item-mesh.js?v=20261106-v11';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32} from './pile.js?v=20261106-v11';
+import {PileView,fallbackColor} from './pile-view.js?v=20261106-v11';
+import {pointerPoint} from './pile-pose.js?v=20261106-v11';
+import {waterRect} from './shore.js?v=20261106-v11';
+import {layoutTruck,wheelSpin} from './truck-layout.js?v=20261106-v11';
+import {releaseItem} from './sort-drop.js?v=20261106-v11';
+import {LEVELS,levelByIndex,spawnLevel} from './levels.js?v=20261106-v11';
+import {drivePose,isAdvanceSwipe} from './drive.js?v=20261106-v11';
+import {drawBeach,drawTruckShadow,plantsRevision,setPlantsImage} from './beach-draw.js?v=20261106-v11';
+import {loadPropMeshes} from './prop-mesh.js?v=20261106-v11';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
@@ -42,7 +42,7 @@ export class PileLayer{
   if(this.view?.active)this.canvas=this.view.canvas;
   const plants=new Image();
   plants.onload=()=>{setPlantsImage(plants);this.beachKey='';};
-  plants.src=new URL('../assets/shore/plants.png?v=20261106-v10',import.meta.url).href;
+  plants.src=new URL('../assets/shore/plants.png?v=20261106-v11',import.meta.url).href;
   if(this.input)this.input.carrying=()=>!!this.held||!!this.drive;
   this.resize();this.spawn();
   this.bind();

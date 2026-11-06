@@ -5,7 +5,7 @@
 export const BASE_CONFIG=Object.freeze({
  water:Object.freeze({
   swell:0,           // keine Dünung im Leerlauf; tuneWater löscht auch die Restwelle
-  light:65,
+  light:88,          // helleres, sonniges Wasser; der Farbschleier liegt darüber
   ambient:0          // keine Hintergrundwelle, solange der Finger das Wasser nicht berührt
  }),
  // Wischen: EINE begrenzte Bugwelle entlang der Spur statt vieler Kreiswellen.

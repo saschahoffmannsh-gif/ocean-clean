@@ -1,5 +1,5 @@
 // Illustrierter Strand OBEN, Schaum zum Meer hin. Kein Panorama, keine Posterfläche.
-import { shoreY } from './shore.js?v=20261106-v10';
+import { shoreY } from './shore.js?v=20261106-v11';
 
 let plantsImg = null;
 let plantsRev = 0;
@@ -111,50 +111,76 @@ export function drawBeach(ctx, width, canvasH, playH){
   drawPlants(ctx, w, playH);
   ctx.restore();
 
+  drawShallowSea(ctx, w, h, playH, steps);
   drawFoam(ctx, w, playH, steps);
 }
 
-function drawFoam(ctx, w, playH, steps){
-  // dicker Schaum auf dem Saum, läuft ins Wasser
+// Helles karibisches Wasser: am Saum fast durchsichtig, weiter draußen etwas tiefer.
+function drawShallowSea(ctx, w, h, playH, steps){
+  ctx.save();
   ctx.beginPath();
-  lineShore(ctx, w, playH, steps, (x, i) => -18 - Math.max(0, Math.sin((i || 0) * 0.38) * 8 + Math.sin((i || 0) * 1.05) * 4));
+  lineShore(ctx, w, playH, steps, () => -28);
+  ctx.lineTo(w + 2, h + 4);
+  ctx.lineTo(-2, h + 4);
+  ctx.closePath();
+  const sea = ctx.createLinearGradient(0, playH * 0.3, 0, h);
+  sea.addColorStop(0, 'rgba(255, 246, 224, 0.15)');
+  sea.addColorStop(0.09, 'rgba(214, 250, 236, 0.86)');
+  sea.addColorStop(0.18, 'rgba(168, 236, 218, 0.72)');
+  sea.addColorStop(0.32, 'rgba(96, 214, 206, 0.4)');
+  sea.addColorStop(0.5, 'rgba(40, 186, 196, 0.08)');
+  sea.addColorStop(1, 'rgba(4, 78, 118, 0.22)');
+  ctx.fillStyle = sea;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawFoam(ctx, w, playH, steps){
+  // Nasser, dunklerer Sand, in den das Wasser hineinläuft.
+  ctx.save();
+  ctx.beginPath();
+  lineShore(ctx, w, playH, steps, () => -42);
   for (let i = steps; i >= 0; i--){
     const x = (w * i) / steps;
-    const scallop = Math.sin(i * 0.55) * 8 + Math.sin(i * 1.35 + 0.4) * 5 + Math.sin(i * 2.6) * 2.4;
-    ctx.lineTo(x, shoreY(x, w, playH) + 10 + Math.max(0, scallop));
+    ctx.lineTo(x, shoreY(x, w, playH) + 8);
   }
   ctx.closePath();
-  const g = ctx.createLinearGradient(0, playH * 0.3, 0, playH * 0.46);
-  g.addColorStop(0, 'rgba(255,252,246,0.15)');
-  g.addColorStop(0.35, 'rgba(255,255,255,0.92)');
-  g.addColorStop(0.7, 'rgba(255,255,252,0.72)');
-  g.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = g;
+  const wet = ctx.createLinearGradient(0, playH * 0.3, 0, playH * 0.42);
+  wet.addColorStop(0, 'rgba(196, 142, 72, 0)');
+  wet.addColorStop(0.55, 'rgba(168, 118, 62, 0.28)');
+  wet.addColorStop(1, 'rgba(142, 104, 58, 0.45)');
+  ctx.fillStyle = wet;
   ctx.fill();
+  ctx.restore();
 
+  // Weicher Schaum, kein harter weißer Strich.
+  ctx.save();
   ctx.beginPath();
-  lineShore(ctx, w, playH, steps, (x, i) => Math.sin((i || 0) * 0.7) * 1.2);
-  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
-  ctx.lineWidth = 3;
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  ctx.stroke();
+  lineShore(ctx, w, playH, steps, (x, i) => -10 - Math.sin((i || 0) * 0.45) * 4);
+  for (let i = steps; i >= 0; i--){
+    const x = (w * i) / steps;
+    const wash = 14 + Math.sin(i * 0.5) * 6 + Math.sin(i * 1.2 + 0.6) * 4;
+    ctx.lineTo(x, shoreY(x, w, playH) + wash);
+  }
+  ctx.closePath();
+  const foam = ctx.createLinearGradient(0, playH * 0.32, 0, playH * 0.46);
+  foam.addColorStop(0, 'rgba(255, 252, 246, 0)');
+  foam.addColorStop(0.4, 'rgba(255, 255, 252, 0.42)');
+  foam.addColorStop(0.7, 'rgba(236, 252, 248, 0.22)');
+  foam.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = foam;
+  ctx.fill();
+  ctx.restore();
 
-  // zweite, dünnere Gischtlinie im Wasser
-  ctx.beginPath();
-  lineShore(ctx, w, playH, steps, (x, i) => 16 + Math.sin((i || 0) * 0.62 + 1) * 4);
-  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = '#fff';
-  for (let i = 0; i < steps; i += 2){
-    const x = (w * (i + 0.2)) / steps;
-    const y = shoreY(x, w, playH) + (hash(i, 20) - 0.2) * 14;
-    const r = 1.8 + hash(i, 21) * 4.5;
-    ctx.globalAlpha = 0.28 + hash(i, 22) * 0.55;
+  ctx.fillStyle = 'rgba(255,255,252,0.85)';
+  for (let i = 0; i < steps; i++){
+    if (hash(i, 23) < 0.35) continue;
+    const x = (w * (i + hash(i, 24))) / steps;
+    const y = shoreY(x, w, playH) + (hash(i, 25) - 0.35) * 18;
+    const r = 2 + hash(i, 26) * 7;
+    ctx.globalAlpha = 0.12 + hash(i, 27) * 0.28;
     ctx.beginPath();
-    ctx.ellipse(x, y, r * 1.35, r * 0.5, 0, 0, 7);
+    ctx.ellipse(x, y, r * 1.6, r * 0.42, 0, 0, 7);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
