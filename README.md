@@ -1,5 +1,9 @@
 # Ocean Clean – Original-Meer
 
+## Strand, Wagen, Sortieren (v2026.11.06-9)
+
+Unten liegt ein Strand (etwa ein Drittel der Höhe), darüber das Meer, mit einer leicht gebogenen Uferlinie. Auf dem Sand steht der Recyclingwagen, breiter als der halbe Bildschirm, mit vier Rädern aus dem separaten Reifenmodell. Der Finger hebt ein Teil an und lässt es in eine Mulde fallen: Plastik, Metall, Glas, Restmüll. Die passende Mulde nimmt es auf und entfernt es. Eine falsche Mulde stößt es zurück aufs Wasser. Nichts wird von selbst eingesogen. Ist der Strand leer, wischt man nach links: der Wagen fährt am Ufer entlang, die Räder drehen mit der Strecke, und der nächste von zehn Stränden bringt neuen Müll. `water-13.0.0/` bleibt bytegleich.
+
 ## Strömung ohne Schatten (v2026.11.06-8)
 
 Keine Schatten unter den Teilen. Ohne Berührung liegt das Wasser still: keine Dünung und keine Hintergrundwelle. Auf offenem Wasser treiben freie Teile mit der Strömung, drehen sich darin und stoßen Nachbarn an; danach gleiten sie kurz aus und bleiben liegen. Auf einem Gegenstand hebt der Finger ihn an.
