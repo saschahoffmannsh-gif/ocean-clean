@@ -17,11 +17,13 @@
 
 /* Vollbild bis unter Notch/Dynamic Island und Home-Indicator (viewport-fit=cover).
    Überschreibt nur die Spalten-Begrenzung (620 px) aus water-13.0.0/ocean.css. */
-html{height:100%;background:#1497c4}
-body{min-height:100%;background:#1497c4;overscroll-behavior:none;position:fixed;inset:0;overflow:hidden;touch-action:none}
+html{height:100%;background:#3ec4c6}
+body{min-height:100%;background:#3ec4c6;overscroll-behavior:none;position:fixed;inset:0;overflow:hidden;touch-action:none}
 #ocean{position:fixed;inset:0;width:100%;max-width:none;margin:0;box-shadow:none;
  height:auto;min-height:100%;min-height:100dvh;min-height:100lvh;min-height:-webkit-fill-available;
- background:#1497c4;--ui-bottom:0px}
+ background:#3ec4c6;--ui-bottom:0px}
+/* Nur die Wasserfläche: heller, ein Stück ins Türkis. Der Strand liegt darüber. */
+.ocean-surface{filter:saturate(1.2) brightness(1.08) hue-rotate(-8deg)}
 @media(max-width:780px){#ocean{width:100%;max-width:none}}
 /* Bedienelemente bleiben im sichtbaren Bereich (Safe-Area + ggf. Browserleiste) */
 .hud{padding:calc(12px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 0 calc(16px + env(safe-area-inset-left));gap:8px}

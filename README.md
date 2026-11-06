@@ -1,5 +1,9 @@
 # Ocean Clean – Original-Meer
 
+## Karibisches Wasser (v2026.11.06-11)
+
+Das Meer ist helles Türkis, am Strand fast durchsichtig, weiter draußen etwas tiefer. Nasser Sand und weicher Schaum ersetzen die harte weiße Kante. Layout und Sortieren bleiben. `water-13.0.0/` bleibt bytegleich.
+
 ## Küste oben, Meer darunter (v2026.11.06-10)
 
 Der Strand liegt oben, das Meer füllt den Rest bis zum unteren Rand. Der Saum ist nasser Sand mit Schaum. Der Wagen steht auf dem Sand und ist leicht vom Meer her zu sehen; die Räder sitzen in den Kästen und drehen beim Fahren mit. Sortiert wird von Hand in Plastik, Metall, Glas und Restmüll. Eine falsche Mulde stößt das Teil ins Wasser zurück. Ist der Strand leer, wischt man nach links zum nächsten von zehn Ufern. `water-13.0.0/` bleibt bytegleich.

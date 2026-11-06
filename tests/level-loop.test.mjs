@@ -150,8 +150,8 @@ test('truck and wheel glbs are web-sized and readable', async () => {
   assert.ok(Math.abs((minX + maxX) / 2) < 0.08 && Math.abs((minY + maxY) / 2) < 0.08, 'Rad nicht zentriert');
   assert.ok((maxZ - minZ) < diam, 'Achse sollte die kurze Seite sein');
   const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
-  assert.match(readme, /v2026\.11\.06-10/);
+  assert.match(readme, /v2026\.11\.06-11/);
   assert.match(readme, /Wisch/);
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(html, /2026\.11\.06-10/);
+  assert.match(html, /2026\.11\.06-11/);
 });
