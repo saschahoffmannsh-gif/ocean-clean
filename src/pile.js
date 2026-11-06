@@ -3,7 +3,7 @@
 // Ohne DOM, testbar mit node --test.
 import {BASE_CONFIG} from './config.js';
 import {MESH_UNITS,SHEAR_X,SHEAR_Z} from './pile-pose.js';
-import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v8b';
+import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v9';
 
 export {PILE_KINDS};
 

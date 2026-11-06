@@ -1,7 +1,8 @@
 // Die 24 GLB-Teile über dem Meer. Jedes zeigt nur sein gemaltes Draufsicht-Bild
 // (baseColor, Alpha-Maske). Kein Atlas, keine Normal- oder Metallkarte.
-import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-v8b';
-import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-v8b';
+import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-v9';
+import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-v9';
+import {binMatrix,truckMatrix,wheelMatrix} from './truck-layout.js?v=20261106-v9';
 
 const ATTRS={alpha:true,antialias:true,depth:true,stencil:false,premultipliedAlpha:true,powerPreference:'low-power',preserveDrawingBuffer:false};
 const VERT=`precision highp float;
@@ -147,8 +148,16 @@ export class PileView{
    uv:g.getAttribLocation(p,'aUv')
   };
   this.textures=null;
+  this.props=null;this.gpuTruck=null;this.gpuWheel=null;this.gpuQuad=null;this.binTex=null;
   this.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();this.drop();});
   this.ready=false;
+ }
+ setProps(props){
+  this.props=props;
+  if(!this.gl||!this.program||!props)return;
+  this.gpuTruck=uploadMesh(this.gl,props.truck);
+  this.gpuWheel=uploadMesh(this.gl,props.wheel);
+  this.gpuQuad=uploadMesh(this.gl,quadMesh());
  }
  async warm(){
   if(!this.gl||!this.program||this.meshes.size!==MESH_KEYS.length)return false;
@@ -166,6 +175,12 @@ export class PileView{
   for(const gpu of this.meshes.values()){
    const img=gpu.mesh.images;
    gpu.tex={base:await loadTex(img.base,img.mime)};
+  }
+  if(this.gpuTruck&&this.props){
+   this.gpuTruck.tex={base:await loadTex(this.props.truck.images.base,this.props.truck.images.mime)};
+   this.gpuWheel.tex={base:await loadTex(this.props.wheel.images.base,this.props.wheel.images.mime)};
+   this.binTex={};
+   for(const category of ['plastik','metall','glas','rest'])this.binTex[category]=makeTexture(gl,binIcon(category));
   }
   this.ready=true;this.active=true;return true;
  }
@@ -188,13 +203,14 @@ export class PileView{
   items.sort((a,b)=>(a.pose.held-b.pose.held)||(a.pose.lift-b.pose.lift));
   gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);
   gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-  if(!items.length)return;
   gl.useProgram(this.program);
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);
   gl.disable(gl.BLEND);
   const pw=this.canvas.clientWidth||this.cssW,ph=this.canvas.clientHeight||this.cssH;
   gl.uniformMatrix4fv(this.loc.vp,false,obliqueMatrix(pw,ph));
   gl.uniform1i(this.loc.base,0);
+  if(pile.stage&&this.gpuTruck?.tex?.base)this.drawStage(pile.stage);
+  if(!items.length)return;
   const stride=STRIDE*4;
   for(const item of items){
    const gpu=this.meshes.get(item.key);
@@ -217,6 +233,68 @@ export class PileView{
   }
   gl.enable(gl.CULL_FACE);
  }
+ drawGpu(gpu,matrix,factor,cutoff,tex,sided){
+  const gl=this.gl;
+  gl.uniformMatrix4fv(this.loc.model,false,matrix);
+  gl.uniform1f(this.loc.held,0);
+  const f=factor||[1,1,1,1];
+  gl.uniform3f(this.loc.baseFactor,f[0],f[1],f[2]);
+  gl.uniform1f(this.loc.cutoff,cutoff||0);
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.bindBuffer(gl.ARRAY_BUFFER,gpu.vbo);
+  gl.enableVertexAttribArray(this.loc.pos);gl.enableVertexAttribArray(this.loc.norm);
+  gl.enableVertexAttribArray(this.loc.uv);
+  const stride=STRIDE*4;
+  gl.vertexAttribPointer(this.loc.pos,3,gl.FLOAT,false,stride,0);
+  gl.vertexAttribPointer(this.loc.norm,3,gl.FLOAT,false,stride,12);
+  gl.vertexAttribPointer(this.loc.uv,2,gl.FLOAT,false,stride,24);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,gpu.ibo);
+  if(sided)gl.disable(gl.CULL_FACE);else gl.enable(gl.CULL_FACE);
+  gl.drawElements(gl.TRIANGLES,gpu.count,gpu.type,0);
+ }
+ drawStage(stage){
+  const truck=this.props.truck,wheel=this.props.wheel;
+  this.drawGpu(this.gpuTruck,truckMatrix(stage.origin,stage.scale),truck.baseFactor,truck.alphaCutoff,this.gpuTruck.tex.base,true);
+  for(const bin of stage.bins){
+   const tex=this.binTex?.[bin.category];
+   if(tex)this.drawGpu(this.gpuQuad,binMatrix(stage.origin,stage.scale,bin.hole),[1,1,1],0,tex,false);
+  }
+  for(const axle of stage.wheels){
+   this.drawGpu(this.gpuWheel,wheelMatrix(stage.origin,stage.scale,axle,stage.spin||0,stage.wheelDiameter),wheel.baseFactor,wheel.alphaCutoff,this.gpuWheel.tex.base,true);
+  }
+  this.gl.enable(this.gl.CULL_FACE);
+ }
+}
+
+function quadMesh(){
+ return{
+  positions:new Float32Array([-0.5,0,-0.5, 0.5,0,-0.5, 0.5,0,0.5, -0.5,0,0.5]),
+  normals:new Float32Array([0,1,0, 0,1,0, 0,1,0, 0,1,0]),
+  uvs:new Float32Array([0,0, 1,0, 1,1, 0,1]),
+  tangents:new Float32Array(16),
+  indices:new Uint16Array([0,2,1, 0,3,2]),
+  baseFactor:[1,1,1,1],alphaCutoff:0,doubleSided:false
+ };
+}
+
+function binIcon(category){
+ const c=document.createElement('canvas');c.width=c.height=128;
+ const g=c.getContext('2d');
+ const fill={plastik:'#f0c01a',metall:'#9aa3ad',glas:'#1f9d8f',rest:'#23262b'}[category];
+ g.fillStyle=fill;g.fillRect(0,0,128,128);
+ g.strokeStyle=category==='rest'?'#e6ebf0':'#1b2430';
+ g.lineWidth=7;g.lineJoin='round';g.lineCap='round';
+ if(category==='plastik'||category==='glas'){
+  g.strokeRect(54,16,20,16);
+  g.beginPath();g.moveTo(46,32);g.lineTo(38,108);g.lineTo(90,108);g.lineTo(82,32);g.closePath();g.stroke();
+ }else if(category==='metall'){
+  g.beginPath();g.ellipse(64,30,28,11,0,0,7);g.stroke();
+  g.strokeRect(36,30,56,70);
+  g.beginPath();g.ellipse(64,100,28,11,0,0,7);g.stroke();
+ }else{
+  g.beginPath();g.moveTo(28,86);g.lineTo(46,42);g.lineTo(64,70);g.lineTo(86,36);g.lineTo(104,90);g.closePath();g.stroke();
+ }
+ return c;
 }
 
 export function fallbackColor(key){return COLORS[key]||'#d5ddd8';}

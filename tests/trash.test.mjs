@@ -191,11 +191,11 @@ test('idle water does not roll or push a current',()=>{
  assert.ok(Math.abs(moved.lift)>Math.abs(sea.lift)+.2);
 });
 
-test('shipped page is the stacked pile at v2026.11.06-8, without bags',()=>{
+test('shipped page is the beach truck loop at v2026.11.06-9, without bags',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../app.js',import.meta.url),'utf8');
  const layer=readFileSync(new URL('../src/pile-layer.js',import.meta.url),'utf8');
- assert.match(html,/v2026\.11\.06-8/);assert.match(html,/20261106-v8/);assert.match(app,/20261106-v8/);
- assert.match(html,/Finger hebt Gegenstände an/);assert.doesNotMatch(html,/wühlen/i);
+ assert.match(html,/v2026\.11\.06-9/);assert.match(html,/20261106-v9/);assert.match(app,/20261106-v9/);
+ assert.match(html,/passende Mulde/);assert.match(html,/Wisch nach links/);assert.doesNotMatch(html,/wühlen/i);
  assert.match(app,/PileLayer/);assert.doesNotMatch(app,/TrashLayer|sort-bags|bag-draw|drawBags/);
  assert.doesNotMatch(layer,/drawBags|layoutBags|sort-bags/);
  assert.doesNotMatch(html+app+layer,/LifeLayer|life-sim|layoutBoat|drawBoat|boat-layer|Förder/);
