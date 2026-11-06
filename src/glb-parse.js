@@ -97,20 +97,21 @@ export function parseGlb(buffer){
  const prim0=mesh.primitives[0];
  const mat=json.materials?.[prim0.material]||{};
  const pbr=mat.pbrMetallicRoughness||{};
+ const baseTex=pbr.baseColorTexture?.index;
+ if(baseTex==null)throw new Error('GLB missing baseColor');
+ const baseImg=json.images[json.textures[baseTex].source];
  const images={
-  base:imageBytes(json,bin,pbr.baseColorTexture?.index),
-  normal:imageBytes(json,bin,mat.normalTexture?.index),
-  mr:imageBytes(json,bin,pbr.metallicRoughnessTexture?.index)
+  base:imageBytes(json,bin,baseTex),
+  mime:baseImg.mimeType||'image/png'
  };
- if(!images.base||!images.normal||!images.mr)throw new Error('GLB missing textures');
+ if(!images.base)throw new Error('GLB missing baseColor');
+ const mask=mat.alphaMode==='MASK';
  return{
   positions,normals,uvs,indices,
   images,
   doubleSided:!!mat.doubleSided,
   baseFactor:pbr.baseColorFactor||[1,1,1,1],
-  metallicFactor:pbr.metallicFactor??1,
-  roughnessFactor:pbr.roughnessFactor??1,
-  normalScale:mat.normalTexture?.scale??1
+  alphaCutoff:mask?(mat.alphaCutoff??.5):0
  };
 }
 

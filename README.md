@@ -1,5 +1,9 @@
 # Ocean Clean – Original-Meer
 
+## Gemalte Draufsicht (v2026.11.06-4)
+
+Dieselben 24 flachen GLBs, senkrecht von oben. Jedes Teil trägt nur sein eigenes gemaltes Bild (PNG, Alpha-Maske), nicht mehr den gemeinsamen Tripo-Atlas. `water-13.0.0/` bleibt bytegleich.
+
 ## Draufsicht auf die GLBs (v2026.11.06-3)
 
 Genau 24 Müllmodelle aus `assets/items3d/*.glb`, dichter als zuvor (etwa 6k–14k Dreiecke), beidseitig, Gesicht nach oben. Die Kamera schaut senkrecht aufs Wasser, ohne Schrägsicht. Teppich über die ganze Fläche, in Lagen, nichts darunter. Berührung schiebt. Abgelegt bleibt liegen. Keine Säcke. `water-13.0.0/` bleibt bytegleich.

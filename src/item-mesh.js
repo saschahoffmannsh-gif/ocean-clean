@@ -59,7 +59,7 @@ export async function loadItemMeshes(fetchImpl=globalThis.fetch){
  if(cache.size>=ITEM_DEFS.length)return cache;
  await Promise.all(ITEM_DEFS.map(async item=>{
   if(cache.has(item.key))return;
-  const url=new URL('../assets/items3d/'+item.file,import.meta.url);
+  const url=new URL('../assets/items3d/'+item.file+'?v=20261106-v4',import.meta.url);
   const res=await fetchImpl(url);
   if(!res.ok)throw new Error('Müllmodell fehlt: '+item.file);
   cache.set(item.key,buildItem(new Uint8Array(await res.arrayBuffer()),item));
@@ -97,9 +97,7 @@ export function buildItem(bytes,item){
   images:parsed.images,
   doubleSided:parsed.doubleSided,
   baseFactor:parsed.baseFactor,
-  metallicFactor:parsed.metallicFactor,
-  roughnessFactor:parsed.roughnessFactor,
-  normalScale:parsed.normalScale,
+  alphaCutoff:parsed.alphaCutoff??0,
   collider:measure(pos),
   tris:parsed.indices.length/3
  };

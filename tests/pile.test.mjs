@@ -41,7 +41,9 @@ test('twenty-four textured glb items, one per kind, triangles unchanged',()=>{
   assert.equal(mesh.tris,row.tris,key);
   assert.equal(mesh.positions.length,mesh.normals.length);
   assert.equal(mesh.uvs.length,mesh.positions.length/3*2);
-  assert.ok(mesh.images.base.length>1000&&mesh.images.normal.length>1000&&mesh.images.mr.length>1000,key);
+  assert.ok(mesh.images.base.length>1000&&mesh.images.base[0]===0x89&&mesh.images.mime==='image/png',key);
+  assert.equal(mesh.alphaCutoff,.25,key);
+  assert.ok(!mesh.images.normal&&!mesh.images.mr,key);
   assert.ok(mesh.collider.tube>0.04&&mesh.collider.stackH>0.02,key);
   assert.equal(mesh.doubleSided,true,key);
   assert.ok(mesh.tris>=5000&&mesh.tris<=14000,key+' tris '+mesh.tris);

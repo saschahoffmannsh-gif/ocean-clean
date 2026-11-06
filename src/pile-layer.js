@@ -2,11 +2,11 @@
 // lassen sich aufnehmen und wieder ablegen. Keine Säcke. Wasser bleibt im Originalmodul:
 // Störung nur über surface.disturb, die Wischwelle kommt aus SwipeInput.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261106-td';
-import {MESH_UNITS} from './pile-pose.js?v=20261106-td';
-import {loadItemMeshes} from './item-mesh.js?v=20261106-td';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-td';
-import {PileView,fallbackColor} from './pile-view.js?v=20261106-td';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v4';
+import {MESH_UNITS} from './pile-pose.js?v=20261106-v4';
+import {loadItemMeshes} from './item-mesh.js?v=20261106-v4';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-v4';
+import {PileView,fallbackColor} from './pile-view.js?v=20261106-v4';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
