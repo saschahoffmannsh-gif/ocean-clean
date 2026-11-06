@@ -6,10 +6,10 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
 export const ROCK_GAIN=2.4;
 export const ROCK_LIMIT_DEG=28;
-export const SHEAR_X=-0.34;
-export const SHEAR_Z=-0.55;
-// Mesh-Länge 1 → Pixel. Kleiner als die alten Sprites, damit der Haufen dicht bleibt und lesbar.
-export const MESH_UNITS=1.9;
+export const SHEAR_X=-0.52;
+export const SHEAR_Z=-1.15;
+// Mesh-Länge 1 → Pixel. Dicht genug, dass der Teppich die Fläche füllt.
+export const MESH_UNITS=2.15;
 export const MURK_DEPTH=34;
 
 export function meshScale(px){return px*MESH_UNITS;}

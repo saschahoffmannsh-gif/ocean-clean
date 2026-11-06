@@ -2,10 +2,10 @@
 // lassen sich aufnehmen und wieder ablegen. Keine Säcke. Wasser bleibt im Originalmodul:
 // Störung nur über surface.disturb, die Wischwelle kommt aus SwipeInput.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261105-heap12';
-import {MESH_UNITS} from './pile-pose.js?v=20261105-heap12';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261105-heap12';
-import {PileView,fallbackColor} from './pile-view.js?v=20261105-heap12';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261106-q3';
+import {MESH_UNITS} from './pile-pose.js?v=20261106-q3';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-q3';
+import {PileView,fallbackColor} from './pile-view.js?v=20261106-q3';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
@@ -34,7 +34,7 @@ export class PileLayer{
  }
  playH(){const v=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--play-h'));return v>0?Math.min(this.ocean.height,v):this.ocean.height;}
  resize(){
-  const o=this.ocean,dpr=Math.min(devicePixelRatio||1,1.5);
+  const o=this.ocean,dpr=Math.min(devicePixelRatio||1,2);
   const w=Math.max(1,o.width),h=Math.max(1,o.height),ph=this.playH();
   const fit=(c)=>{const W=Math.round(w*dpr),H=Math.round(h*dpr);if(c.width!==W||c.height!==H){c.width=W;c.height=H;}};
   fit(this.shadow);fit(this.fx);this.dpr=dpr;
@@ -45,11 +45,11 @@ export class PileLayer{
  }
  spawn(){
   const lay=layoutPile(this.w,this.h);
-  this.bodies=spawnPile({kinds:PILE_KINDS,n:lay.n,cx:lay.cx,cy:lay.cy,pileR:lay.pileR,thick:this.cfg.pile.thick,rand:this.rand,radiusScale:lay.radiusScale});
+  this.bodies=spawnPile({kinds:PILE_KINDS,n:lay.n,width:this.w,height:this.h,rand:this.rand,radiusScale:lay.radiusScale});
  }
  rest(){
   const env=this.env(0);env.finger=null;const sim={};
-  for(let i=1;i<=240;i++)advancePile(sim,this.bodies,()=>env,1/60,i*16.7,this.cfg.pile);
+  for(let i=1;i<=320;i++)advancePile(sim,this.bodies,()=>env,1/60,i*16.7,this.cfg.pile);
   this.sim={};
  }
  env(t){
@@ -68,10 +68,22 @@ export class PileLayer{
   if(e.button>0||this.pointerId!=null)return;
   const p=this.local(e),now=performance.now();
   this.pointerId=e.pointerId;
-  const hit=grabTarget(p.x,p.y,this.bodies,this.cfg.pile,this.base*MESH_UNITS);
-  this.finger.active=true;this.finger.x=p.x;this.finger.y=p.y;this.finger.vx=0;this.finger.vy=0;this.finger.at=now;
-  this.finger.holding=!!hit;this.held=hit||null;
-  if(hit){hit.held=true;hit.vx=0;hit.vy=0;this.splash(hit.x,hit.y,.11,3.5,8);}
+  this.downX=p.x;this.downY=p.y;this.downAt=now;
+  this.pending=grabTarget(p.x,p.y,this.bodies,this.cfg.pile,this.base*MESH_UNITS);
+  this.finger.active=true;this.finger.holding=false;this.finger.x=p.x;this.finger.y=p.y;this.finger.vx=0;this.finger.vy=0;this.finger.at=now;
+  this.held=null;
+ }
+ tryGrab(){
+  if(this.held||!this.pending)return;
+  const travel=Math.hypot(this.finger.x-this.downX,this.finger.y-this.downY);
+  if(travel>10){this.pending=null;return;}
+  if(performance.now()-this.downAt<220)return;
+  const hit=this.pending;
+  this.pending=null;
+  if(!hit)return;
+  hit.held=true;hit.vx=0;hit.vy=0;
+  this.held=hit;this.finger.holding=true;
+  this.splash(hit.x,hit.y,.11,3.5,8);
  }
  move(e){
   if(e.pointerId!==this.pointerId)return;
@@ -79,6 +91,7 @@ export class PileLayer{
   const vx=(p.x-this.finger.x)/dt,vy=(p.y-this.finger.y)/dt,sp=Math.hypot(vx,vy);
   this.finger.vx=Math.max(-1600,Math.min(1600,vx));this.finger.vy=Math.max(-1600,Math.min(1600,vy));
   this.finger.x=p.x;this.finger.y=p.y;this.finger.at=now;
+  this.tryGrab();
   if(!this.held&&sp>28)this.ocean.surface.disturb(p.x/this.ocean.width,p.y/this.ocean.height,.045+.06*Math.min(1,sp/700),3.3);
  }
  up(e){
@@ -97,6 +110,7 @@ export class PileLayer{
  frame(){
   const t0=performance.now();this.now=t0;
   const frameDt=Math.min(.1,(t0-(this.last||t0-16.7))/1000);this.last=t0;
+  if(this.finger.active)this.tryGrab();
   if(this.finger.active&&t0-this.finger.at>60){this.finger.vx=0;this.finger.vy=0;}
   const o=this.ocean,F=this.cfg.float;
   advancePile(this.sim,this.bodies,(t)=>this.env(t),frameDt,t0,this.cfg.pile);
@@ -117,12 +131,12 @@ export class PileLayer{
  draw(){
   const dpr=this.dpr,s=this.sctx;s.setTransform(1,0,0,1,0,0);s.clearRect(0,0,this.shadow.width,this.shadow.height);s.setTransform(dpr,0,0,dpr,0,0);
   for(const b of this.bodies){
-   const depth=Math.max(0,Math.min(1,-b.z/28)),a=b.held?.22:.32*(1-depth);
-   if(a>=.02){
-    const len=this.base*b.kind.long*1.15,wid=this.base*b.kind.thick*.42;
-    s.save();s.translate(b.x+(b.held?0:4),b.y+(b.held?22:7));s.rotate(b.angle);s.scale(b.held?1.35:1,.72);
-    s.fillStyle=`rgba(0,28,42,${a})`;s.beginPath();s.ellipse(0,0,len*.46,wid,0,0,7);s.fill();s.restore();
-   }
+   const lift=Math.max(0,b.z),len=(b.halfLen||18)+(b.tube||10),wid=Math.max(8,b.tube||10);
+   s.save();s.translate(b.x+3,b.y+6);s.rotate(b.angle);
+   s.fillStyle=`rgba(2,14,24,${b.held?.1:.2})`;s.beginPath();s.ellipse(0,lift*.04,len*1.25,wid*1.35,0,0,7);s.fill();
+   s.fillStyle=`rgba(1,10,18,${b.held?.16:.34})`;s.beginPath();s.ellipse(0,2,len*.78,wid*.9,0,0,7);s.fill();
+   s.fillStyle=`rgba(0,8,14,${b.held?.2:.42})`;s.beginPath();s.ellipse(1,3,len*.42,wid*.5,0,0,7);s.fill();
+   s.restore();
    if(!this.view?.active)this.flat(s,b);
   }
   const f=this.fctx;f.setTransform(1,0,0,1,0,0);f.clearRect(0,0,this.fx.width,this.fx.height);f.setTransform(dpr,0,0,dpr,0,0);
