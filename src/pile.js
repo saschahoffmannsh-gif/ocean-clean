@@ -3,13 +3,34 @@
 // Ohne DOM, testbar mit node --test.
 import {BASE_CONFIG} from './config.js';
 import {MESH_UNITS,SHEAR_X,SHEAR_Z} from './pile-pose.js';
+import {colliderOf} from './trash-meshes.js';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
+const kind=(category,name,label,mass,fit=1)=>Object.freeze({
+ key:`${category}:${name}`,category,name,label,mass,fit,long:fit,thick:fit,radius:16,mid:.16
+});
 export const PILE_KINDS=Object.freeze([
- Object.freeze({key:'plastik:pet-flasche',category:'plastik',name:'pet-flasche',label:'PET-Flasche',mass:.34,long:1.08,thick:.84,radius:16,mid:.16}),
- Object.freeze({key:'metall:dose',category:'metall',name:'dose',label:'Getränkedose',mass:.52,long:.76,thick:1.16,radius:17,mid:.24}),
- Object.freeze({key:'glas:gruene-flasche',category:'glas',name:'gruene-flasche',label:'Glasflasche',mass:.74,long:1.14,thick:.8,radius:15.5,mid:.15})
+ kind('plastik','pet-flasche','PET-Flasche',.34,1),
+ kind('plastik','tuete','Plastiktüte',.22,.95),
+ kind('plastik','becher','Plastikbecher',.28,.85),
+ kind('plastik','sixpack-ring','Sixpack-Ring',.18,.9),
+ kind('plastik','kanister','Kanister',.7,1.05),
+ kind('plastik','waschmittelflasche','Waschmittelflasche',.55,1),
+ kind('glas','gruene-flasche','Glasflasche',.62,1),
+ kind('glas','schraubglas','Schraubglas',.7,.9),
+ kind('glas','bierflasche','Bierflasche',.6,1),
+ kind('glas','medizinflasche','Medizinfläschchen',.25,.62),
+ kind('gummi','reifen','Autoreifen',1.1,1.32),
+ kind('gummi','badelatsche','Badelatsche',.3,.95),
+ kind('gummi','handschuh','Gummihandschuh',.22,.85),
+ kind('metall','dose','Getränkedose',.45,.9),
+ kind('metall','konservendose','Konservendose',.55,.82),
+ kind('metall','spraydose','Spraydose',.4,.78),
+ kind('rest','fischernetz','Fischernetz',.4,.9),
+ kind('rest','maske','Einwegmaske',.12,.8),
+ kind('rest','windel','Windel',.35,1),
+ kind('rest','karton','Karton',.5,1.05)
 ]);
 
 export function mulberry32(seed){
@@ -19,9 +40,9 @@ export function mulberry32(seed){
 
 // Kapsel in Pixeln. tube ist die Auflage, stackH die Höhe, auf der das nächste Teil liegt.
 export function bodyShape(kind,radiusScale=1){
- const px=30*radiusScale*MESH_UNITS;
- const tube=Math.max(7,px*(kind.thick||1)*(kind.mid||.16)*.78);
- return{halfLen:px*(kind.long||1)*.4,tube,stackH:Math.max(26,tube*2.6)};
+ const px=30*radiusScale*MESH_UNITS*(kind.fit||1);
+ const c=colliderOf(kind.key)||{halfLen:.2,tube:.08,stackH:.12};
+ return{halfLen:Math.max(3,c.halfLen*px),tube:Math.max(5,c.tube*px),stackH:Math.max(8,c.stackH*px)};
 }
 
 export function createPileBody(kind,x,y,z,rand=Math.random,radiusScale=1){
@@ -40,29 +61,40 @@ function shuffle(a,rand){
 }
 
 export function layoutPile(w,h){
- const base=Math.max(28,Math.min(40,Math.min(w,h)/390*32));
- const pileR=Math.max(130,Math.min(240,Math.min(w,h)*.4));
- const n=Math.round(Math.max(26,Math.min(34,Math.min(w,h)/13)));
- return{cx:w*.5,cy:h*.47,pileR,n,base,radiusScale:base/30};
+ const base=Math.max(26,Math.min(36,Math.min(w,h)/390*30));
+ const grid=carpetGrid(w,h);
+ const cells=grid.cols*grid.rows;
+ const n=Math.min(116,cells*2+Math.round(cells*.35));
+ return{cx:w*.5,cy:h*.5,pileR:Math.min(w,h),n,base,radiusScale:base/30,width:w,height:h};
 }
 
-export function spawnPile({kinds=PILE_KINDS,n,cx,cy,rand,radiusScale=1}){
+export function carpetGrid(w,h){
+ const margin=14,top=76;
+ const x0=margin,x1=Math.max(x0+40,w-margin),y0=top,y1=Math.max(y0+40,h-margin);
+ const cols=Math.max(5,Math.round((x1-x0)/72)),rows=Math.max(8,Math.round((y1-y0)/80));
+ return{x0,x1,y0,y1,cols,rows};
+}
+
+export function spawnPile({kinds=PILE_KINDS,n,width=390,height=844,rand,radiusScale=1}){
  const order=[];
- while(order.length<n)for(const k of shuffle([0,1,2],rand))if(order.length<n)order.push(k);
- const spread=64*radiusScale,bodies=[];
- let g=0;
- while(bodies.length<n&&g<48){
-  const ang=g*2.399963,rad=g===0?0:Math.min(120*radiusScale,spread*(.5+.58*Math.sqrt(g)));
-  const room=n-bodies.length,stack=g<3?Math.min(4,room):g<8?Math.min(3,room):Math.min(2,room);
-  const x0=cx+Math.cos(ang)*rad,y0=cy+Math.sin(ang)*rad*.9;
-  for(let s=0;s<stack&&bodies.length<n;s++){
-   const kind=kinds[order[bodies.length]];
-   const b=createPileBody(kind,x0,y0,0,rand,radiusScale);
-   b.z=s*b.stackH*.96;
-   b.x+=(rand()-.5)*1.6;b.y+=(rand()-.5)*1.6;
-   bodies.push(b);
-  }
-  g++;
+ while(order.length<n)for(const k of shuffle(kinds.map((_,i)=>i),rand))if(order.length<n)order.push(k);
+ const {x0,x1,y0,y1,cols,rows}=carpetGrid(width,height);
+ const cells=[];
+ for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+  const brick=r%2?0.5:0;
+  cells.push({
+   x:x0+((c+.5+brick)%cols)/cols*(x1-x0),y:y0+(r+.5)/rows*(y1-y0)
+  });
+ }
+ const tops=cells.map(()=>null),bodies=[];
+ for(let i=0;i<n;i++){
+  const idx=i%cells.length,cell=cells[idx],under=tops[idx];
+  const kind=kinds[order[i]];
+  const b=createPileBody(kind,cell.x,cell.y,0,rand,radiusScale);
+  b.z=under?under.z+under.stackH*.96:0;
+  const reach=under?Math.min(6,under.tube*.22):2.4;
+  b.x+=(rand()-.5)*reach;b.y+=(rand()-.5)*reach;
+  tops[idx]=b;bodies.push(b);
  }
  return bodies;
 }
@@ -157,7 +189,7 @@ export function countFree(bodies){
 export function supportOf(body,bodies){
  let z=0,sx=0,sy=0,w=0;
  for(const other of bodies){
-  if(other===body||other.held)continue;
+  if(other===body||other.held||!near(other,body,72))continue;
   const foot=other.z+(other.stackH||0);
   if(foot>body.z+3)continue;
   const d=touchDistance(other,body.x,body.y),reach=(other.tube||8)*.88;
@@ -174,14 +206,18 @@ function sameBand(a,c){
  return overlap>Math.min(a.stackH||1,c.stackH||1)*.42;
 }
 
+function near(a,c,reach=96){
+ return Math.abs(a.x-c.x)<reach&&Math.abs(a.y-c.y)<reach;
+}
+
 function resolveContacts(bodies,cfg){
  for(let pass=0;pass<2;pass++){
   for(let i=0;i<bodies.length;i++)for(let j=i+1;j<bodies.length;j++){
    const a=bodies[i],c=bodies[j];
-   if(a.held||c.held||!sameBand(a,c))continue;
+   if(a.held||c.held||!near(a,c)||!sameBand(a,c))continue;
    const hit=capsulePair(a,c);
-   if(hit.pen<=.6)continue;
-   const push=Math.min(.65,hit.pen*.4);
+   if(hit.pen<=2.2)continue;
+   const push=Math.min(.4,(hit.pen-1.6)*.22);
    const ia=1/(a.kind.mass+cfg.inertia),ic=1/(c.kind.mass+cfg.inertia),share=ia+ic;
    a.x-=hit.ux*push*(ia/share);a.y-=hit.uy*push*(ia/share);
    c.x+=hit.ux*push*(ic/share);c.y+=hit.uy*push*(ic/share);
@@ -227,7 +263,7 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
     b.bumpX=dirx/norm*mag;b.bumpY=diry/norm*mag;
    }
   }
-  if(!b.held&&sup.z>1&&b.downhill>8&&b.z<sup.z+(b.stackH||16)){
+  if(!b.held&&sup.z>1&&b.downhill>Math.max(4,b.tube*.5)&&b.z<sup.z+(b.stackH||16)){
    ax+=sup.ox/b.downhill*cfg.roll;ay+=sup.oy/b.downhill*cfg.roll;
   }
   const m=b.radius*1.05;
@@ -238,20 +274,20 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   else b.vz=(sup.z-b.z)*5;
   b.ax=ax;b.ay=ay;b.az=0;
  }
- const damp=Math.exp(-cfg.drag*dt);
  for(const b of bodies){
   const prev=b.z;
+  const grounded=!b.held&&b.z<=(b.support||0)+1.2;
+  const damp=Math.exp(-(grounded?cfg.drag*1.55:cfg.drag*.5)*dt);
   if(b.held){
    b.vx+=b.ax*dt;b.vy+=b.ay*dt;b.vz+=b.az*dt;
   }else{
    b.vx=(b.vx+b.ax*dt)*damp;b.vy=(b.vy+b.ay*dt)*damp;
    const sp=Math.hypot(b.vx,b.vy);
    if(sp>cfg.maxSpeed){b.vx*=cfg.maxSpeed/sp;b.vy*=cfg.maxSpeed/sp;}
-   const margin=b.radius*1.05,nearEdge=b.x<margin+8||b.x>w-margin-8||b.y<margin+36||b.y>h-margin-8;
    if(b.bumpX||b.bumpY){
     b.x+=b.bumpX*dt;b.y+=b.bumpY*dt;
     b.vx=b.bumpX*.3;b.vy=b.bumpY*.3;
-   }else if(b.downhill<6&&b.z<=(b.support||0)+.8&&!nearEdge){b.vx=0;b.vy=0;}
+   }else if(b.downhill<Math.max(3.5,b.tube*.42)&&b.z<=(b.support||0)+1.2){b.vx=0;b.vy=0;}
   }
   b.x=clamp(b.x+b.vx*dt,-30,w+30);b.y=clamp(b.y+b.vy*dt,-30,h+30);
   if(!b.held){
@@ -263,11 +299,14 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   b.hitWater=!b.held&&prev>3&&b.z<=0;
   b.prevZ=b.z;
   const moving=Math.hypot(b.vx,b.vy);
-  if(b.held){b.spin=b.spinBias*(cfg.holdSpin||.4);b.angle+=b.spin*dt;}
+  if(b.held){b.spin=b.spinBias*(cfg.holdSpin||.4);b.angle+=b.spin*dt;b.pitch*=.8;b.roll*=.8;}
   else if(moving>8||b.vz<-8){
    b.angle+=Math.sign(b.vx||b.spinBias||1)*Math.min(cfg.maxSpin,moving*cfg.spin+Math.abs(b.vz)*.018)*dt;
+   const lean=Math.min(9,moving*.11);
+   b.roll=lean*Math.sign(b.vx||b.spinBias||1);
+   b.pitch=lean*.4*Math.sign(b.vy||1);
    b.spin=0;
-  }else b.spin=0;
+  }else{b.spin=0;b.pitch*=.82;b.roll*=.82;}
  }
  resolveContacts(bodies,cfg);
 }

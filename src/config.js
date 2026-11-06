@@ -89,15 +89,15 @@ export const BASE_CONFIG=Object.freeze({
   rejectHold:.55,    // s kein erneutes Saugen an demselben Sack
   maxAccel:240      // Deckel, der Sog reißt nie
  }),
- // Haufen auf dem Wasser (v2026.11.05-12). Nichts sinkt unter die Fläche.
+ // Haufen auf dem Wasser (v2026.11.06-1). Nichts sinkt unter die Fläche.
  // Teile liegen aufeinander. Berührung schiebt nur leicht; ohne Halt rollen sie herunter.
  pile:Object.freeze({
   thick:16,
   cover:.55,
   grabBand:0,
   grabInner:.92,
-  fingerR:14,
-  nudge:190,
+  fingerR:22,
+  nudge:460,
   dwell:12,
   fall:46,           // px/s sichtbares Herunterrollen, kein Sprung
   roll:80,           // px/s² den Hang hinunter, nur am Rand der Auflage

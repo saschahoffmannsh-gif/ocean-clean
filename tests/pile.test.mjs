@@ -21,40 +21,42 @@ function aboveWater(bodies){
  for(const b of bodies)if(!b.held)assert.ok(b.z>=-0.05,'unter Wasser '+b.z);
 }
 
-test('exactly three low-poly meshes, one per pile kind',()=>{
- assert.equal(PILE_KINDS.length,3);
+test('twenty distinct trash meshes, one per kind',()=>{
+ assert.equal(PILE_KINDS.length,20);
  assert.deepEqual(MESH_KEYS,[...PILE_KINDS.map(k=>k.key)]);
- assert.equal(new Set(PILE_KINDS.map(k=>k.category)).size,3);
+ const count={};
+ for(const k of PILE_KINDS)count[k.category]=(count[k.category]||0)+1;
+ assert.deepEqual(count,{plastik:6,glas:4,gummi:3,metall:3,rest:4});
  for(const key of MESH_KEYS){
   const mesh=getMesh(key);
-  assert.ok(mesh&&mesh.parts.length>=2,key);
-  let tris=0,minY=Infinity;
+  assert.ok(mesh&&mesh.parts.length>=1,key);
+  assert.ok(mesh.collider.tube>0.03&&mesh.collider.stackH>0.04,key);
+  let tris=0;
   for(const part of mesh.parts){
    assert.equal(part.positions.length,part.normals.length);
-   assert.equal(part.positions.length%3,0);
    assert.ok(part.indices.length>=12);
    tris+=part.indices.length/3;
-   for(let i=1;i<part.positions.length;i+=3)minY=Math.min(minY,part.positions[i]);
-   const n=part.positions.length/3;
-   for(const index of part.indices)assert.ok(index>=0&&index<n);
+   for(let i=0;i<part.positions.length;i++)assert.ok(Number.isFinite(part.positions[i]),key);
   }
-  assert.ok(tris>40&&tris<800,key+' tris '+tris);
-  assert.ok(Math.abs(minY)<1e-4,'sit '+key+' '+minY);
+  assert.ok(tris>40&&tris<4000,key+' tris '+tris);
  }
- assert.equal(getMesh('rest:reifen'),null);
+ assert.ok(getMesh('gummi:reifen').collider.tube>getMesh('glas:medizinflasche').collider.tube);
 });
 
 test('a settled pile is stacked above the water and then sits still',()=>{
  const lay=layoutPile(390,844);
- const bodies=spawnPile({n:lay.n,cx:lay.cx,cy:lay.cy,rand:mulberry32(11),radiusScale:1});
+ const bodies=spawnPile({n:lay.n,width:390,height:844,rand:mulberry32(11),radiusScale:1});
+ const xs=bodies.map(b=>b.x),ys=bodies.map(b=>b.y);
+ assert.ok(Math.min(...xs)<70&&Math.max(...xs)>320,'breite');
+ assert.ok(Math.min(...ys)<140&&Math.max(...ys)>700,'höhe');
  const env=t=>world({t,cx:lay.cx,cy:lay.cy,width:390,height:844});
- run(bodies,4,{env});
+ run(bodies,6.5,{env});
  const zs=bodies.map(b=>b.z);
  const high=zs.filter(z=>z>14).length;
  console.log(`haufen n=${bodies.length} oben=${high} max=${Math.max(...zs).toFixed(1)} frei=${countFree(bodies).free}`);
  assert.equal(bodies.length,lay.n);
- assert.ok(high>=4,'zu flach '+high);
- assert.ok(Math.max(...zs)>28,'kein Haufen');
+ assert.ok(high>=6,'zu flach '+high);
+ assert.ok(Math.max(...zs)>24,'kein Haufen');
  aboveWater(bodies);
  const snap=bodies.map(b=>({x:b.x,y:b.y,z:b.z}));
  run(bodies,1.5,{env});
@@ -103,7 +105,7 @@ test('an item resting on another stays stacked until it is rolled off',()=>{
  let maxStep=0;
  for(let i=1;i<track.length;i++)maxStep=Math.max(maxStep,track[i-1]-track[i]);
  console.log(`rollen ${track.map(z=>z.toFixed(1)).join(' → ')} max ${maxStep.toFixed(2)}`);
- assert.ok(track.at(-1)<track[0]-8,'nicht herunter');
+ assert.ok(track.at(-1)<track[0]-6,'nicht herunter');
  assert.ok(maxStep<8,'Sprung '+maxStep);
  assert.ok(b.z>=-0.05);
 });

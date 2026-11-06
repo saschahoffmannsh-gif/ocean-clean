@@ -1,8 +1,6 @@
-// Transparentes WebGL über dem Meer: die drei Low-Poly-Netze, viele Instanzen.
-// Oberfläche klar, unter Wasser blau, weicher und durchscheinender. Fehlt WebGL,
-// bleibt das Canvas draussen und die Ebene zeichnet einfache Körper.
-import {getMesh,MESH_KEYS} from './trash-meshes.js?v=20261105-heap12';
-import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261105-heap12';
+ // Zwanzig Müll-Netze über dem Meer. Klare Farben, weiche Schatten, nichts unter Wasser.
+import {getMesh,MESH_KEYS} from './trash-meshes.js?v=20261106-q3';
+import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-q3';
 
 const ATTRS={alpha:true,antialias:true,depth:true,stencil:false,premultipliedAlpha:true,powerPreference:'low-power',preserveDrawingBuffer:false};
 const VERT=`precision highp float;
@@ -35,34 +33,24 @@ uniform float uDepth;
 uniform float uHeld;
 void main(){
   vec3 N=normalize(vN);
-  vec3 L=normalize(uLight);
   vec3 V=normalize(uCam-vWorld);
-  float ndl=max(dot(N,L),0.0);
-  float fill=max(dot(N,normalize(vec3(0.35,0.55,0.28))),0.0);
+  float hemi=N.y*0.5+0.5;
+  vec3 sky=mix(vec3(0.62,0.70,0.74),vec3(1.0,0.99,0.96),hemi);
+  vec3 L=normalize(uLight);
+  float wrap=clamp(dot(N,L)*0.55+0.55,0.0,1.0);
+  float fill=clamp(dot(N,normalize(vec3(-0.4,0.2,0.6)))*0.5+0.5,0.0,1.0);
   vec3 H=normalize(L+V);
-  float shin=mix(72.0,12.0,clamp(uRough,0.0,1.0));
-  float spec=pow(max(dot(N,H),0.0),shin)*(1.0-uRough*0.75)*mix(0.25,1.05,uMetal);
-  float fres=pow(1.0-max(dot(N,V),0.0),2.4);
-  float hemi=clamp(N.y*0.5+0.5,0.0,1.0);
-  vec3 env=mix(vec3(0.03,0.16,0.22),vec3(0.78,0.93,0.96),hemi);
-  vec3 ambient=env*uColor*mix(0.72,0.36,uMetal);
-  vec3 diffuse=uColor*(ndl*mix(1.0,0.32,uMetal)+fill*0.22);
-  vec3 specCol=mix(vec3(1.0,0.98,0.92),uColor,uMetal*0.45)*spec;
-  vec3 rimCol=vec3(0.82,0.96,0.94)*fres*uFresnel;
-  float ao=mix(0.72,1.0,smoothstep(0.0,0.16,vLift));
-  vec3 lit=(ambient+diffuse)*ao+specCol+rimCol;
-  float depth=clamp(uDepth,0.0,1.0);
-  vec3 water=vec3(0.03,0.24,0.40);
-  float soft=mix(1.0,0.42,depth);
-  vec3 murk=mix(water,lit*0.35+water,0.55);
-  lit=mix(lit,murk,depth);
-  float l=dot(lit,vec3(0.30,0.50,0.20));
-  lit=mix(vec3(l),lit,soft)+water*depth*0.18;
-  specCol*=(1.0-depth*0.9);
-  lit+=vec3(0.14,0.12,0.08)*uHeld;
-  float alpha=mix(uAlpha,uAlpha*0.42+0.08,depth);
-  alpha=mix(alpha,min(1.0,alpha+0.12),uHeld);
-  alpha=clamp(mix(alpha,1.0,fres*uFresnel*(1.0-depth*0.65)),0.0,1.0);
+  float shin=mix(64.0,12.0,clamp(uRough,0.0,1.0));
+  float spec=pow(max(dot(N,H),0.0),shin)*(1.0-uRough*0.55)*mix(0.45,1.15,uMetal);
+  float fres=pow(1.0-max(dot(N,V),0.0),2.0);
+  float ao=mix(0.34,1.0,smoothstep(0.0,0.16,vLift));
+  ao*=mix(0.62,1.0,smoothstep(-0.2,0.65,N.y));
+  vec3 base=uColor*mix(0.55,1.0,1.0-uMetal*0.35);
+  vec3 lit=base*(sky*mix(0.55,0.28,uMetal)+wrap*mix(0.7,0.25,uMetal)+fill*0.18)*ao;
+  lit+=mix(vec3(1.0,0.98,0.94),uColor,uMetal*0.35)*spec;
+  lit+=vec3(0.85,0.93,0.95)*fres*uFresnel*0.35;
+  lit+=vec3(0.08)*uHeld;
+  float alpha=clamp(mix(uAlpha,1.0,fres*uFresnel*0.55),0.0,1.0);
   gl_FragColor=vec4(lit*alpha,alpha);
 }`;
 
@@ -155,7 +143,7 @@ export class PileView{
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);
   gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
   gl.uniformMatrix4fv(this.loc.vp,false,obliqueMatrix(this.cssW,this.cssH));
-  gl.uniform3f(this.loc.light,-.42,.86,-.28);
+  gl.uniform3f(this.loc.light,-.25,.94,.2);
   gl.uniform3f(this.loc.cam,this.cssW*.34,Math.max(this.cssW,this.cssH)*.85,this.cssH*.18);
   for(const item of items){
    gl.uniformMatrix4fv(this.loc.model,false,modelMatrix(item.pose,pile.base));
