@@ -1,5 +1,9 @@
 # Ocean Clean – Original-Meer
 
+## Aufheben und fallen lassen (v2026.11.06-6)
+
+Der Finger hebt den obersten Gegenstand unter sich an und trägt ihn. Loslassen lässt ihn dort fallen. Er bleibt liegen, auf dem Wasser oder auf anderen Teilen. Kein Wühlen mehr durch den Teppich.
+
 ## Originalnetze, Draco (v2026.11.06-5)
 
 Die 24 Teile sind die ursprünglichen hochauflösenden Tripo-Netze mit den originalen UVs und dem Atlas. Nur Draco-komprimiert, sonst unverändert. Kamera bleibt die senkrechte Draufsicht. `water-13.0.0/` bleibt bytegleich.

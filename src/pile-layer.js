@@ -2,11 +2,10 @@
 // lassen sich aufnehmen und wieder ablegen. Keine Säcke. Wasser bleibt im Originalmodul:
 // Störung nur über surface.disturb, die Wischwelle kommt aus SwipeInput.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v5';
-import {MESH_UNITS} from './pile-pose.js?v=20261106-v5';
-import {loadItemMeshes} from './item-mesh.js?v=20261106-v5';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-v5';
-import {PileView,fallbackColor} from './pile-view.js?v=20261106-v5';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v6';
+import {loadItemMeshes} from './item-mesh.js?v=20261106-v6';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-v6';
+import {PileView,fallbackColor} from './pile-view.js?v=20261106-v6';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
@@ -70,31 +69,19 @@ export class PileLayer{
   if(e.button>0||this.pointerId!=null)return;
   const p=this.local(e),now=performance.now();
   this.pointerId=e.pointerId;
-  this.downX=p.x;this.downY=p.y;this.downAt=now;
-  this.pending=grabTarget(p.x,p.y,this.bodies,this.cfg.pile,this.base*MESH_UNITS);
-  this.finger.active=true;this.finger.holding=false;this.finger.x=p.x;this.finger.y=p.y;this.finger.vx=0;this.finger.vy=0;this.finger.at=now;
-  this.held=null;
- }
- tryGrab(){
-  if(this.held||!this.pending)return;
-  const travel=Math.hypot(this.finger.x-this.downX,this.finger.y-this.downY);
-  if(travel>10){this.pending=null;return;}
-  if(performance.now()-this.downAt<220)return;
-  const hit=this.pending;
-  this.pending=null;
-  if(!hit)return;
+  const hit=grabTarget(p.x,p.y,this.bodies);
+  this.finger.x=p.x;this.finger.y=p.y;this.finger.vx=0;this.finger.vy=0;this.finger.at=now;
+  if(!hit){this.held=null;this.finger.active=false;this.finger.holding=false;return;}
   hit.held=true;hit.vx=0;hit.vy=0;
-  this.held=hit;this.finger.holding=true;
+  this.held=hit;this.finger.active=true;this.finger.holding=true;
   this.splash(hit.x,hit.y,.11,3.5,8);
  }
  move(e){
-  if(e.pointerId!==this.pointerId)return;
+  if(e.pointerId!==this.pointerId||!this.held)return;
   const p=this.local(e),now=performance.now(),dt=Math.max(1/240,(now-this.finger.at)/1000);
-  const vx=(p.x-this.finger.x)/dt,vy=(p.y-this.finger.y)/dt,sp=Math.hypot(vx,vy);
+  const vx=(p.x-this.finger.x)/dt,vy=(p.y-this.finger.y)/dt;
   this.finger.vx=Math.max(-1600,Math.min(1600,vx));this.finger.vy=Math.max(-1600,Math.min(1600,vy));
   this.finger.x=p.x;this.finger.y=p.y;this.finger.at=now;
-  this.tryGrab();
-  if(!this.held&&sp>28)this.ocean.surface.disturb(p.x/this.ocean.width,p.y/this.ocean.height,.045+.06*Math.min(1,sp/700),3.3);
  }
  up(e){
   if(e.pointerId!==this.pointerId)return;
@@ -112,7 +99,6 @@ export class PileLayer{
  frame(){
   const t0=performance.now();this.now=t0;
   const frameDt=Math.min(.1,(t0-(this.last||t0-16.7))/1000);this.last=t0;
-  if(this.finger.active)this.tryGrab();
   if(this.finger.active&&t0-this.finger.at>60){this.finger.vx=0;this.finger.vy=0;}
   const o=this.ocean,F=this.cfg.float;
   advancePile(this.sim,this.bodies,(t)=>this.env(t),frameDt,t0,this.cfg.pile);

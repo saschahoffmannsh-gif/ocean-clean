@@ -11,12 +11,12 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Ocean Clean">
-  <link rel="manifest" href="./manifest.webmanifest?v=20261106-v5">
-  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20261106-v5">
+  <link rel="manifest" href="./manifest.webmanifest?v=20261106-v6">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png?v=20261106-v6">
   <title>Ocean Clean</title>
   <script>
   // Version (oben rechts neben Impressum) – zum Prüfen, ob die neue Fassung geladen ist.
-  window.OCEAN_CLEAN_VERSION='2026.11.06-5';
+  window.OCEAN_CLEAN_VERSION='2026.11.06-6';
   // Sichtbare Spielfeldhöhe -> --play-h. Das WASSER ist absichtlich höher (siehe styles.css)
   // und ragt unten über den Bildschirmrand, egal wie iOS die Viewport-Höhe meldet.
   // iOS-Home-Bildschirm-App (black-translucent) meldet die Höhe teils um die Statusleiste zu klein;
@@ -28,21 +28,21 @@
    fit();addEventListener('resize',fit);addEventListener('orientationchange',function(){setTimeout(fit,300)});if(window.visualViewport)visualViewport.addEventListener('resize',fit);})();
   </script>
   <link rel="icon" type="image/svg+xml" href="./assets/wave.svg">
-  <link rel="stylesheet" href="./water-13.0.0/ocean.css?v=20261106-v5">
-  <link rel="stylesheet" href="./styles.css?v=20261106-v5">
+  <link rel="stylesheet" href="./water-13.0.0/ocean.css?v=20261106-v6">
+  <link rel="stylesheet" href="./styles.css?v=20261106-v6">
   <link rel="preload" as="image" href="./water-13.0.0/assets/coast-no-tent-v4.png">
 </head>
 <body>
-  <main id="ocean" aria-label="Offenes Meer. Im Müllhaufen wühlen und freie Teile aufnehmen.">
+  <main id="ocean" aria-label="Offenes Meer. Gegenstände anheben und woanders fallen lassen.">
     <div class="ocean-shade" aria-hidden="true"></div>
     <header class="hud">
       <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16c2.4 0 3.5-1.3 4.7-3.8C9.6 8.3 11.5 5 15.4 5a5.3 5.3 0 0 1 5.3 5.2c-1.3-1.7-3.8-2-5.1-.6-1.7 1.8-.3 4.4 2.5 4.4H21M3 19h18"/></svg><span>ocean <b>clean</b></span></div>
-      <p class="hint">Durch den Haufen wühlen. Oben liegende Teile aufnehmen.</p>
+      <p class="hint">Finger hebt Gegenstände an und lässt sie woanders fallen.</p>
     </header>
-    <p class="sr">Mit dem Finger durch den Haufen fahren schiebt Teile beiseite und hebt tiefere an. Freie Teile an der Oberfläche lassen sich greifen, am Finger halten und wieder aufs Wasser legen.</p>
-    <nav class="legal" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span class="ver" id="app-version">v2026.11.06-5</span></nav>
+    <p class="sr">Ein Gegenstand unter dem Finger hebt sich und folgt dem Finger. Loslassen lässt ihn an dieser Stelle fallen. Er bleibt dort liegen.</p>
+    <nav class="legal" aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><span class="ver" id="app-version">v2026.11.06-6</span></nav>
     <p id="error" class="error" role="alert" hidden></p>
   </main>
-  <script type="module" src="./app.js?v=20261106-v5"></script>
+  <script type="module" src="./app.js?v=20261106-v6"></script>
 </body>
 </html>

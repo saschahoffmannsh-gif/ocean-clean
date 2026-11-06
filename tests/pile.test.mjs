@@ -131,14 +131,16 @@ test('an item resting on another stays stacked until it is rolled off',()=>{
  assert.ok(b.z>=-0.05);
 });
 
-test('a finger nudges the touched item and a dropped one stays put',()=>{
+test('a finger slide does not plow the pile and a dropped one stays put',()=>{
  const a=createPileBody(kind,200,400,0,()=>.4),far=createPileBody(kind,40,700,0,()=>.4);
  const x0=a.x;
  const finger={active:true,holding:false,x:a.x-a.halfLen-24,y:a.y,vx:200,vy:0};
  const sim={};
  for(let i=1;i<=28;i++){finger.x+=4;advancePile(sim,[a,far],t=>world({t,finger}),1/60,i*16.7,cfg);}
- assert.ok(Math.hypot(a.x-x0,a.y-400)>6,'kein Schubs');
+ assert.ok(Math.hypot(a.x-x0,a.y-400)<2,'weggepflügt');
  assert.ok(Math.hypot(far.x-40,far.y-700)<2);
+ const low=createPileBody(kind,200,400,0,()=>.2),high=createPileBody(kind,200,400,40,()=>.3);
+ assert.equal(grabTarget(200,400,[low,high]),high);
  const dropped=createPileBody(kind,60,100,0,()=>.2);dropped.vx=50;
  run([dropped],1.5,{env:t=>world({t,flow:()=>({vx:200,vy:40,weight:1})})});
  assert.ok(Math.hypot(dropped.x-60,dropped.y-100)<2,'bleibt nicht');

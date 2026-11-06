@@ -3,7 +3,7 @@
 // Ohne DOM, testbar mit node --test.
 import {BASE_CONFIG} from './config.js';
 import {MESH_UNITS,SHEAR_X,SHEAR_Z} from './pile-pose.js';
-import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v5';
+import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v6';
 
 export {PILE_KINDS};
 
@@ -204,7 +204,6 @@ function resolveContacts(bodies,cfg){
 
 export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
  const {width:w,height:h}=env,finger=env.finger&&env.finger.active?env.finger:null;
- const hold=!!(finger&&finger.holding);
  for(const b of bodies){
   b.hitWater=false;
   const inv=.95/(b.kind.mass+cfg.inertia);
@@ -216,30 +215,8 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
    continue;
   }
   let ax=0,ay=0;
-  b.bumpX=0;b.bumpY=0;
   const sup=b.held?{z:b.z,ox:0,oy:0}:supportOf(b,bodies);
   b.support=sup.z;b.downhill=Math.hypot(sup.ox,sup.oy);
-  if(finger&&!hold){
-   const p=closestOnAxis(b,finger.x,finger.y);
-   const dx=p.x-finger.x,dy=p.y-finger.y,d=Math.hypot(dx,dy),R=(b.tube||8)+cfg.fingerR;
-   let buried=false;
-   for(const other of bodies){
-    if(other===b||other.held||other.z<b.z+(b.stackH||12)*.35)continue;
-    if(touchDistance(other,p.x,p.y)<(other.tube||8)){buried=true;break;}
-   }
-   if(!buried&&d<R){
-    const pen=(R-d)/R,speed=Math.hypot(finger.vx,finger.vy);
-    const rx=d>1e-3?dx/d:1,ry=d>1e-3?dy/d:0;
-    let dirx=rx,diry=ry;
-    if(speed>=22){
-     const fx=finger.vx/speed,fy=finger.vy/speed,side=fx*dy-fy*dx,sign=side>=0?1:-1;
-     dirx=(-fy*sign)*.35+rx*.9;diry=(fx*sign)*.35+ry*.9;
-    }
-    const norm=Math.hypot(dirx,diry)||1;
-    const mag=(speed>=22?cfg.nudge:cfg.dwell)*pen*Math.min(1,Math.max(speed,24)/220);
-    b.bumpX=dirx/norm*mag;b.bumpY=diry/norm*mag;
-   }
-  }
   if(!b.held&&sup.z>1&&b.downhill>Math.max(4,b.tube*.5)&&b.z<sup.z+(b.stackH||16)){
    ax+=sup.ox/b.downhill*cfg.roll;ay+=sup.oy/b.downhill*cfg.roll;
   }
@@ -261,10 +238,7 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
    b.vx=(b.vx+b.ax*dt)*damp;b.vy=(b.vy+b.ay*dt)*damp;
    const sp=Math.hypot(b.vx,b.vy);
    if(sp>cfg.maxSpeed){b.vx*=cfg.maxSpeed/sp;b.vy*=cfg.maxSpeed/sp;}
-   if(b.bumpX||b.bumpY){
-    b.x+=b.bumpX*dt;b.y+=b.bumpY*dt;
-    b.vx=b.bumpX*.3;b.vy=b.bumpY*.3;
-   }else if(b.downhill<Math.max(3.5,b.tube*.42)&&b.z<=(b.support||0)+1.2){b.vx=0;b.vy=0;}
+   if(b.downhill<Math.max(3.5,b.tube*.42)&&b.z<=(b.support||0)+1.2){b.vx=0;b.vy=0;}
   }
   b.x=clamp(b.x+b.vx*dt,-30,w+30);b.y=clamp(b.y+b.vy*dt,-30,h+30);
   if(!b.held){
