@@ -27,10 +27,10 @@ export function releaseItem(body, bins, foot) {
   if (bin || inRect(body.x, body.y, foot)) {
     const side = Math.sign(body.x - (bin?.cx ?? (foot.x + foot.w / 2))) || 1;
     body.collected = false;
-    // Klar vor den Wagen, auf den nassen Sand am Wasser, nicht auf die Kabine.
-    body.y = foot.y - 46;
+    // Das Meer liegt unter dem Strand. Zurück ins Wasser, nicht auf die Kabine.
+    body.y = foot.y + foot.h + 34;
     body.x = Math.min(foot.x + foot.w - 28, Math.max(foot.x + 28, body.x + side * 22));
-    body.vy = -140;
+    body.vy = 210;
     body.vx = side * 36;
     body.z = 16;
     body.vz = -20;

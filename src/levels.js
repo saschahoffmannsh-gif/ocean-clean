@@ -1,6 +1,6 @@
 // Zehn Strände. Jeder legt andere Teile aufs Wasser. Der Spieler sortiert sie
 // selbst in den Wagen. Kein Paare-Suchen.
-import { createPileBody } from './pile.js?v=20261106-v9';
+import { createPileBody } from './pile.js?v=20261106-v10';
 
 const RAW = [
   [1, 11, [

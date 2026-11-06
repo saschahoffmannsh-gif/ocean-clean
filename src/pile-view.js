@@ -1,8 +1,8 @@
 // Die 24 GLB-Teile über dem Meer. Jedes zeigt nur sein gemaltes Draufsicht-Bild
 // (baseColor, Alpha-Maske). Kein Atlas, keine Normal- oder Metallkarte.
-import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-v9';
-import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-v9';
-import {binMatrix,truckMatrix,wheelMatrix} from './truck-layout.js?v=20261106-v9';
+import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-v10';
+import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-v10';
+import {binMatrix,truckMatrix,wheelMatrix} from './truck-layout.js?v=20261106-v10';
 
 const ATTRS={alpha:true,antialias:true,depth:true,stencil:false,premultipliedAlpha:true,powerPreference:'low-power',preserveDrawingBuffer:false};
 const VERT=`precision highp float;
@@ -29,8 +29,14 @@ uniform float uHeld;
 void main(){
   vec4 tex=texture2D(uBase,vUv);
   if(tex.a<uCutoff) discard;
-  float up=clamp(normalize(vN).y*0.5+0.5,0.0,1.0);
-  vec3 lit=tex.rgb*uBaseFactor*mix(0.9,1.0,up)+vec3(0.04)*uHeld;
+  vec3 n=normalize(vN);
+  vec3 L=normalize(vec3(-0.22,0.84,0.46));
+  float wrap=clamp(dot(n,L)*0.42+0.8,0.55,1.16);
+  float sky=clamp(n.y*0.35+0.68,0.0,1.0);
+  vec3 base=tex.rgb*uBaseFactor;
+  vec3 lit=base*mix(vec3(0.8,0.86,0.9),vec3(1.05,1.01,0.95),sky)*wrap;
+  lit+=base*pow(clamp(n.y,0.0,1.0),2.2)*0.12;
+  lit+=vec3(0.04)*uHeld;
   gl_FragColor=vec4(lit,1.0);
 }`;
 

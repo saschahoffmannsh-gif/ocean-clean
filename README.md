@@ -1,8 +1,12 @@
 # Ocean Clean – Original-Meer
 
+## Küste oben, Meer darunter (v2026.11.06-10)
+
+Der Strand liegt oben, das Meer füllt den Rest bis zum unteren Rand. Der Saum ist nasser Sand mit Schaum. Der Wagen steht auf dem Sand und ist leicht vom Meer her zu sehen; die Räder sitzen in den Kästen und drehen beim Fahren mit. Sortiert wird von Hand in Plastik, Metall, Glas und Restmüll. Eine falsche Mulde stößt das Teil ins Wasser zurück. Ist der Strand leer, wischt man nach links zum nächsten von zehn Ufern. `water-13.0.0/` bleibt bytegleich.
+
 ## Strand, Wagen, Sortieren (v2026.11.06-9)
 
-Unten liegt ein Strand (etwa ein Drittel der Höhe), darüber das Meer, mit einer leicht gebogenen Uferlinie. Auf dem Sand steht der Recyclingwagen, breiter als der halbe Bildschirm, mit vier Rädern aus dem separaten Reifenmodell. Der Finger hebt ein Teil an und lässt es in eine Mulde fallen: Plastik, Metall, Glas, Restmüll. Die passende Mulde nimmt es auf und entfernt es. Eine falsche Mulde stößt es zurück aufs Wasser. Nichts wird von selbst eingesogen. Ist der Strand leer, wischt man nach links: der Wagen fährt am Ufer entlang, die Räder drehen mit der Strecke, und der nächste von zehn Stränden bringt neuen Müll. `water-13.0.0/` bleibt bytegleich.
+Erste spielfähige Fassung: Strand unten, Wagen mit vier Rädern, Sortieren von Hand, zehn Ufer. Ab v2026.11.06-10 liegt der Strand oben.
 
 ## Strömung ohne Schatten (v2026.11.06-8)
 

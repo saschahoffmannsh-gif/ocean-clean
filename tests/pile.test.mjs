@@ -204,16 +204,18 @@ test('the touch point stays on the visual finger when the canvas box changes',()
  assert.ok(Math.abs(scaled.y-((400-20)*844/400))<1e-6);
 });
 
-test('the item camera looks straight down, with no side shear',()=>{
+test('the camera is a mild three-quarter view from the sea, with no sideways shear',()=>{
  assert.equal(SHEAR_X,0);
- assert.equal(SHEAR_Z,0);
+ assert.ok(SHEAR_Z<0&&SHEAR_Z>-0.8,SHEAR_Z);
  const m=obliqueMatrix(200,400);
- assert.ok(m[4]===0&&m[5]===0);
+ assert.equal(m[4],0);
+ assert.ok(m[5]>0,'Höhe muss zum Strand wandern');
  assert.equal(m[15],1);
  const at=(x,y,z)=>({x:m[0]*x+m[4]*y+m[8]*z+m[12],y:m[1]*x+m[5]*y+m[9]*z+m[13]});
  const flat=at(100,0,200),lifted=at(100,48,200);
  assert.ok(Math.abs(flat.x)<1e-6&&Math.abs(flat.y)<1e-6);
- assert.ok(Math.abs(lifted.x-flat.x)<1e-6&&Math.abs(lifted.y-flat.y)<1e-6,'Höhe schiebt zur Seite');
+ assert.ok(Math.abs(lifted.x-flat.x)<1e-6,'kein seitlicher Versatz');
+ assert.ok(lifted.y>flat.y,'Höhe schiebt zum Strand');
 });
 
 test('pile pose stays clear of underwater tint and shows stack height',()=>{
