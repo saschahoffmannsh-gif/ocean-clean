@@ -1,5 +1,9 @@
 # Ocean Clean – Original-Meer
 
+## Finger genau auf dem Gegenstand (v2026.11.06-7)
+
+Der Treffer und das gehaltene Teil sitzen auf dem Finger, ohne Versatz nach oben.
+
 ## Aufheben und fallen lassen (v2026.11.06-6)
 
 Der Finger hebt den obersten Gegenstand unter sich an und trägt ihn. Loslassen lässt ihn dort fallen. Er bleibt liegen, auf dem Wasser oder auf anderen Teilen. Kein Wühlen mehr durch den Teppich.

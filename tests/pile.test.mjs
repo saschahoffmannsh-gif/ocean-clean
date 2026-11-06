@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import {PILE_KINDS,advancePile,countFree,createPileBody,grabTarget,isFree,layoutPile,mulberry32,spawnPile} from '../src/pile.js';
 import {getMesh,MESH_KEYS} from '../src/item-mesh.js';
-import {SHEAR_X,SHEAR_Z,itemPose,obliqueMatrix,submerge,waveRock} from '../src/pile-pose.js';
+import {SHEAR_X,SHEAR_Z,itemPose,obliqueMatrix,pointerPoint,submerge,waveRock} from '../src/pile-pose.js';
 import {BASE_CONFIG,makeConfig} from '../src/config.js';
 
 const cfg=BASE_CONFIG.pile;
@@ -155,13 +155,28 @@ test('clear grab follows the finger and the drop stays on the pile height it lan
  const finger={active:true,holding:true,x:180,y:300,vx:0,vy:0};
  const sim={};
  for(let i=1;i<=24;i++){finger.x=180+i*3;finger.y=300+i;advancePile(sim,[a],t=>world({t,finger}),1/60,i*16.7,cfg);}
- assert.ok(Math.hypot(a.x-finger.x,a.y-finger.y)<18);
+ assert.ok(Math.hypot(a.x-finger.x,a.y-finger.y)<1e-6);
  assert.ok(a.z>20);
  const x=a.x,y=a.y;
  a.held=false;a.vx=0;a.vy=0;a.vz=-40;
  run([a],1.2);
  assert.ok(a.z>=-0.05&&a.z<2,a.z);
  assert.ok(Math.hypot(a.x-x,a.y-y)<3);
+});
+
+test('the touch point stays on the visual finger when the canvas box changes',()=>{
+ const same=pointerPoint(100,200,{left:0,top:0,width:390,height:844},{width:390,height:844},null);
+ assert.ok(Math.abs(same.x-100)<1e-6&&Math.abs(same.y-200)<1e-6);
+ // Adressleiste: Layout-Rect ignoriert den Versatz, der Treffer läge sonst zu hoch.
+ const shifted=pointerPoint(100,200,{left:0,top:0,width:390,height:800},{width:390,height:800},{offsetTop:36,offsetLeft:0});
+ assert.ok(Math.abs(shifted.y-236)<1e-6);
+ // Rect kennt den Versatz schon: nicht doppelt addieren.
+ const known=pointerPoint(100,200,{left:0,top:-36,width:390,height:800},{width:390,height:800},{offsetTop:36,offsetLeft:0});
+ assert.ok(Math.abs(known.y-(200-(-36)))<1e-6);
+ // Projektionshöhe und sichtbare Box dürfen sich nicht verschieben.
+ const scaled=pointerPoint(0,400,{left:10,top:20,width:200,height:400},{width:390,height:844},null);
+ assert.ok(Math.abs(scaled.x-((0-10)*390/200))<1e-6);
+ assert.ok(Math.abs(scaled.y-((400-20)*844/400))<1e-6);
 });
 
 test('the item camera looks straight down, with no side shear',()=>{

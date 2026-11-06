@@ -3,7 +3,7 @@
 // Ohne DOM, testbar mit node --test.
 import {BASE_CONFIG} from './config.js';
 import {MESH_UNITS,SHEAR_X,SHEAR_Z} from './pile-pose.js';
-import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v6';
+import {PILE_KINDS,colliderOf} from './item-mesh.js?v=20261106-v7';
 
 export {PILE_KINDS};
 
@@ -209,9 +209,9 @@ export function stepPile(bodies,env,dt,cfg=BASE_CONFIG.pile){
   const inv=.95/(b.kind.mass+cfg.inertia);
   if(b.held&&finger){
    const k=cfg.holdK;
-   b.ax=(finger.x-b.x)*k*k-b.vx*2*k;
-   b.ay=(finger.y-b.y)*k*k-b.vy*2*k;
+   b.x=finger.x;b.y=finger.y;b.vx=0;b.vy=0;b.ax=0;b.ay=0;
    b.az=(cfg.holdLift-b.z)*k*k-b.vz*2*k;
+   b.pitch=0;b.roll=0;
    continue;
   }
   let ax=0,ay=0;

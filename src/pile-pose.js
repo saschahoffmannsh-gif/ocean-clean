@@ -62,6 +62,21 @@ export function modelMatrix(pose,px){
  return mul(T,mul(rotZ(pose.roll),mul(rotX(pose.pitch),mul(rotY(pose.yaw),S))));
 }
 
+// Fingerpunkt in derselben Pixelwelt wie die Projektion.
+// clientX/Y sind am sichtbaren Viewport, die Canvas-Box kann davon abweichen
+// (Adressleiste, Safe Area, CSS-Skalierung). Ohne den Ausgleich liegt der Treffer
+// über dem Finger.
+export function pointerPoint(clientX,clientY,rect,box,viewport){
+ let x=clientX-rect.left,y=clientY-rect.top;
+ const ot=viewport?.offsetTop||0,ol=viewport?.offsetLeft||0;
+ if(ot>0&&rect.top>-ot*.5)y+=ot;
+ if(ol>0&&rect.left>-ol*.5)x+=ol;
+ const bw=box?.width||rect.width||1,bh=box?.height||rect.height||1;
+ if(rect.width>0)x*=bw/rect.width;
+ if(rect.height>0)y*=bh/rect.height;
+ return{x,y};
+}
+
 // Orthografisch von oben: X nach rechts, die Wasserachse (Z) nach unten,
 // die Höhe (Y) nur in die Tiefe, damit Lagen sich verdecken und nicht kippen.
 export function obliqueMatrix(width,height,shearX=SHEAR_X,shearZ=SHEAR_Z){

@@ -2,10 +2,11 @@
 // lassen sich aufnehmen und wieder ablegen. Keine Säcke. Wasser bleibt im Originalmodul:
 // Störung nur über surface.disturb, die Wischwelle kommt aus SwipeInput.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v6';
-import {loadItemMeshes} from './item-mesh.js?v=20261106-v6';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-v6';
-import {PileView,fallbackColor} from './pile-view.js?v=20261106-v6';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v7';
+import {loadItemMeshes} from './item-mesh.js?v=20261106-v7';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32,spawnPile} from './pile.js?v=20261106-v7';
+import {PileView,fallbackColor} from './pile-view.js?v=20261106-v7';
+import {pointerPoint} from './pile-pose.js?v=20261106-v7';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
@@ -64,7 +65,13 @@ export class PileLayer{
   c.addEventListener('pointermove',e=>this.move(e),opt);
   for(const n of ['pointerup','pointercancel','lostpointercapture'])c.addEventListener(n,e=>this.up(e),opt);
  }
- local(e){const r=this.ocean.canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+ local(e){
+  const el=this.view?.canvas||this.ocean.canvas;
+  const r=el.getBoundingClientRect();
+  const box={width:el.clientWidth||this.view?.cssW||r.width,height:el.clientHeight||this.view?.cssH||r.height};
+  const src=e.touches?.[0]||e.changedTouches?.[0]||e;
+  return pointerPoint(src.clientX,src.clientY,r,box,window.visualViewport);
+ }
  down(e){
   if(e.button>0||this.pointerId!=null)return;
   const p=this.local(e),now=performance.now();
