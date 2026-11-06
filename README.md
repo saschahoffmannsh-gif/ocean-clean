@@ -1,8 +1,12 @@
 # Ocean Clean – Original-Meer
 
+## Draufsicht auf die GLBs (v2026.11.06-3)
+
+Genau 24 Müllmodelle aus `assets/items3d/*.glb`, dichter als zuvor (etwa 6k–14k Dreiecke), beidseitig, Gesicht nach oben. Die Kamera schaut senkrecht aufs Wasser, ohne Schrägsicht. Teppich über die ganze Fläche, in Lagen, nichts darunter. Berührung schiebt. Abgelegt bleibt liegen. Keine Säcke. `water-13.0.0/` bleibt bytegleich.
+
 ## Texturierte GLB-Teile (v2026.11.06-2)
 
-Genau 24 Müllmodelle aus `assets/items3d/*.glb` (Manifest daneben). Jedes bringt Position, Normale, UV und drei 512er-JPEGs mit (Farbe, Normal, Metallic/Roughness). Die Dreiecke bleiben wie geliefert. Die alten Verfahrensnetze und die PNG-Sprites im Spiel sind weg. Die Teile liegen als Teppich über die ganze Wasserfläche, in Lagen, nichts darunter. Berührung schiebt. Ohne Halt kippen, rutschen und rollen sie und bleiben dann ruhig liegen. Abgelegt bleibt liegen. Keine Säcke. `water-13.0.0/` bleibt bytegleich.
+Erste GLB-Fassung. Die Schrägsicht zeigte die dünnen Kanten der Reliefs; das ist in v2026.11.06-3 die senkrechte Draufsicht.
 
 ## Wühlen im Teppich (v2026.11.06-1)
 

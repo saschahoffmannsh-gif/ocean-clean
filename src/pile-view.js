@@ -1,7 +1,7 @@
 // Die 24 texturierten GLB-Teile über dem Meer. Materialien kommen aus den Dateien
 // (baseColor, normal, metallicRoughness). Nichts unter Wasser.
-import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-glb';
-import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-glb';
+import {MESH_KEYS,getMesh} from './item-mesh.js?v=20261106-td';
+import {itemPose,modelMatrix,obliqueMatrix} from './pile-pose.js?v=20261106-td';
 
 const ATTRS={alpha:true,antialias:true,depth:true,stencil:false,premultipliedAlpha:true,powerPreference:'low-power',preserveDrawingBuffer:false};
 const VERT=`precision highp float;

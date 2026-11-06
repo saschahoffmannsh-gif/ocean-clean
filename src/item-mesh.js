@@ -1,38 +1,39 @@
 import {parseGlb} from './glb-parse.js';
 
 // Die 24 GLB-Teile. Geometrie bleibt wie geliefert (keine Vereinfachung).
-// Jedes Teil wird auf die Wasserfläche gelegt: die erkennbare Seite nach oben,
-// die lange Seite entlang X, Unterkante auf y=0. `span` ist die längere
-// Grundseite in Mesh-Einheiten (1 ≈ eine Flasche, wie die bisherigen Netze).
+// Die Dateien liegen schon mit dem Gesicht nach oben: +Y ist die Dicke,
+// die Silhouette liegt in XZ. Nur zentrieren, auf y=0 setzen und auf
+// Handheld-Größe skalieren. Eine Drehung um Y richtet die lange Seite
+// auf X, damit die Kapsel zur Silhouette passt. Nicht aufstellen.
+// `span` ist die längere Grundseite in Mesh-Einheiten (1 ≈ eine Flasche).
 
 export const ITEM_DEFS=Object.freeze([
- // up: welche Achse der Datei nach oben zeigt. 'y' liegt schon, 'z' ist die Schauseite.
- ['plastik','pet-flasche','PET-Flasche',.34,1.00,'y'],
- ['plastik','tuete','Plastiktüte',.22,1.05,'z'],
- ['plastik','becher','Plastikbecher',.30,.90,'z'],
- ['plastik','sixpack-ring','Sixpack-Ring',.18,.84,'z'],
- ['plastik','kanister','Kanister',.70,1.08,'z'],
- ['plastik','waschmittelflasche','Waschmittelflasche',.55,1.02,'z'],
- ['metall','dose','Getränkedose',.45,.84,'y'],
- ['metall','konservendose','Konservendose',.55,.80,'z'],
- ['metall','spraydose','Spraydose',.40,.88,'y'],
- ['metall','kronkorken','Kronkorken',.12,.50,'z'],
- ['metall','alu-schale','Alu-Schale',.22,1.00,'z'],
- ['metall','fischdose','Fischdose',.48,.86,'z'],
- ['glas','gruene-flasche','Glasflasche',.62,1.00,'y'],
- ['glas','schraubglas','Schraubglas',.70,.82,'y'],
- ['glas','bierflasche','Bierflasche',.60,1.00,'y'],
- ['glas','flaschenpost','Flaschenpost',.50,.98,'y'],
- ['glas','parfuemflakon','Parfümflakon',.32,.66,'y'],
- ['glas','medizinflasche','Medizinflasche',.25,.64,'y'],
- ['rest','reifen','Autoreifen',1.10,1.28,'z'],
- ['rest','badelatsche','Badelatsche',.30,1.00,'z'],
- ['rest','handschuh','Gummihandschuh',.22,.92,'z'],
- ['rest','fischernetz','Fischernetz',.40,1.08,'z'],
- ['rest','maske','Einwegmaske',.12,.90,'z'],
- ['rest','windel','Windel',.35,.98,'z']
-].map(([category,name,label,mass,span,up])=>Object.freeze({
- category,name,label,mass,span,up,
+ ['plastik','pet-flasche','PET-Flasche',.34,1.00],
+ ['plastik','tuete','Plastiktüte',.22,1.05],
+ ['plastik','becher','Plastikbecher',.30,.90],
+ ['plastik','sixpack-ring','Sixpack-Ring',.18,.84],
+ ['plastik','kanister','Kanister',.70,1.08],
+ ['plastik','waschmittelflasche','Waschmittelflasche',.55,1.02],
+ ['metall','dose','Getränkedose',.45,.84],
+ ['metall','konservendose','Konservendose',.55,.80],
+ ['metall','spraydose','Spraydose',.40,.88],
+ ['metall','kronkorken','Kronkorken',.12,.50],
+ ['metall','alu-schale','Alu-Schale',.22,1.00],
+ ['metall','fischdose','Fischdose',.48,.86],
+ ['glas','gruene-flasche','Glasflasche',.62,1.00],
+ ['glas','schraubglas','Schraubglas',.70,.82],
+ ['glas','bierflasche','Bierflasche',.60,1.00],
+ ['glas','flaschenpost','Flaschenpost',.50,.98],
+ ['glas','parfuemflakon','Parfümflakon',.32,.66],
+ ['glas','medizinflasche','Medizinflasche',.25,.64],
+ ['rest','reifen','Autoreifen',1.10,1.28],
+ ['rest','badelatsche','Badelatsche',.30,1.00],
+ ['rest','handschuh','Gummihandschuh',.22,.92],
+ ['rest','fischernetz','Fischernetz',.40,1.08],
+ ['rest','maske','Einwegmaske',.12,.90],
+ ['rest','windel','Windel',.35,.98]
+].map(([category,name,label,mass,span])=>Object.freeze({
+ category,name,label,mass,span,
  key:`${category}:${name}`,
  file:`${category}-${name}.glb`,
  fit:1,long:1,thick:1,radius:16,mid:.12
@@ -82,7 +83,7 @@ export function buildItem(bytes,item){
  const parsed=parse(bytes);
  const pos=parsed.positions.slice();
  const nrm=parsed.normals.slice();
- layFlat(pos,nrm,item.up||'y');
+ yawLongAxis(pos,nrm);
  placeAndScale(pos,item.span);
  const indices=parsed.indices.length&&parsed.indices.every?.(i=>i<65536)!==false&&maxIndex(parsed.indices)<65536
   ?Uint16Array.from(parsed.indices):Uint32Array.from(parsed.indices);
@@ -108,18 +109,13 @@ function maxIndex(idx){let m=0;for(let i=0;i<idx.length;i++)if(idx[i]>m)m=idx[i]
 
 function parse(bytes){return parseGlb(bytes);}
 
-function layFlat(pos,nrm,upName){
- const up=upName==='z'?2:upName==='x'?0:1;
+// +Y bleibt oben. Liegt die Silhouette längs Z, dreht sie um die Hochachse auf X.
+function yawLongAxis(pos,nrm){
  const size=extents(pos).size;
- const horiz=[0,1,2].filter(a=>a!==up);
- const longA=size[horiz[0]]>=size[horiz[1]]?horiz[0]:horiz[1];
- const X=[0,0,0],Y=[0,0,0];
- X[longA]=1;Y[up]=1;
- const Z=[X[1]*Y[2]-X[2]*Y[1],X[2]*Y[0]-X[0]*Y[2],X[0]*Y[1]-X[1]*Y[0]];
- map3(pos,(x,y,z)=>[x*X[0]+y*X[1]+z*X[2],x*Y[0]+y*Y[1]+z*Y[2],x*Z[0]+y*Z[1]+z*Z[2]]);
+ if(size[2]<=size[0])return;
+ map3(pos,(x,y,z)=>[z,y,-x]);
  map3(nrm,(x,y,z)=>{
-  const o=[x*X[0]+y*X[1]+z*X[2],x*Y[0]+y*Y[1]+z*Y[2],x*Z[0]+y*Z[1]+z*Z[2]];
-  const l=Math.hypot(o[0],o[1],o[2])||1;
+  const o=[z,y,-x],l=Math.hypot(o[0],o[1],o[2])||1;
   return[o[0]/l,o[1]/l,o[2]/l];
  });
 }

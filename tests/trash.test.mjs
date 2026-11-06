@@ -167,10 +167,10 @@ test('calm sea sway rocks items without carrying them away',()=>{
  assert.equal(makeConfig().sway.bobAmp,cfg.bobAmp);assert.equal(makeConfig().water.swell,BASE_CONFIG.water.swell);
 });
 
-test('shipped page is the stacked pile at v2026.11.06-2, without bags',()=>{
+test('shipped page is the stacked pile at v2026.11.06-3, without bags',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../app.js',import.meta.url),'utf8');
  const layer=readFileSync(new URL('../src/pile-layer.js',import.meta.url),'utf8');
- assert.match(html,/v2026\.11\.06-2/);assert.match(html,/20261106-glb/);assert.match(app,/20261106-glb/);
+ assert.match(html,/v2026\.11\.06-3/);assert.match(html,/20261106-td/);assert.match(app,/20261106-td/);
  assert.match(html,/Durch den Haufen wühlen/);assert.match(html,/oben liegende Teile aufnehmen/i);
  assert.match(app,/PileLayer/);assert.doesNotMatch(app,/TrashLayer|sort-bags|bag-draw|drawBags/);
  assert.doesNotMatch(layer,/drawBags|layoutBags|sort-bags/);

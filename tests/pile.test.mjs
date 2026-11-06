@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import {PILE_KINDS,advancePile,countFree,createPileBody,grabTarget,isFree,layoutPile,mulberry32,spawnPile} from '../src/pile.js';
 import {getMesh,MESH_KEYS} from '../src/item-mesh.js';
-import {itemPose,submerge,waveRock} from '../src/pile-pose.js';
+import {SHEAR_X,SHEAR_Z,itemPose,obliqueMatrix,submerge,waveRock} from '../src/pile-pose.js';
 import {BASE_CONFIG,makeConfig} from '../src/config.js';
 
 const cfg=BASE_CONFIG.pile;
@@ -43,9 +43,19 @@ test('twenty-four textured glb items, one per kind, triangles unchanged',()=>{
   assert.equal(mesh.uvs.length,mesh.positions.length/3*2);
   assert.ok(mesh.images.base.length>1000&&mesh.images.normal.length>1000&&mesh.images.mr.length>1000,key);
   assert.ok(mesh.collider.tube>0.04&&mesh.collider.stackH>0.02,key);
+  assert.equal(mesh.doubleSided,true,key);
+  assert.ok(mesh.tris>=5000&&mesh.tris<=14000,key+' tris '+mesh.tris);
   for(let i=0;i<mesh.positions.length;i++)assert.ok(Number.isFinite(mesh.positions[i]),key);
-  let minY=Infinity;for(let i=1;i<mesh.positions.length;i+=3)minY=Math.min(minY,mesh.positions[i]);
+  let minY=Infinity,maxY=-Infinity,minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+  const p=mesh.positions;
+  for(let i=0;i<p.length;i+=3){
+   minX=Math.min(minX,p[i]);maxX=Math.max(maxX,p[i]);
+   minY=Math.min(minY,p[i+1]);maxY=Math.max(maxY,p[i+1]);
+   minZ=Math.min(minZ,p[i+2]);maxZ=Math.max(maxZ,p[i+2]);
+  }
   assert.ok(Math.abs(minY)<1e-4,'sitzt nicht auf y=0 '+key);
+  const hy=maxY-minY,hx=maxX-minX,hz=maxZ-minZ;
+  assert.ok(hy<=Math.max(hx,hz)*1.02,key+' steht hoch '+hy.toFixed(3)+' vs '+hx.toFixed(3)+'x'+hz.toFixed(3));
  }
  const tire=getMesh('rest:reifen').collider,vial=getMesh('glas:medizinflasche').collider,ring=getMesh('plastik:sixpack-ring').collider,pet=getMesh('plastik:pet-flasche').collider;
  assert.ok(tire.tube>vial.tube,'Reifen größer als Fläschchen');
@@ -150,6 +160,18 @@ test('clear grab follows the finger and the drop stays on the pile height it lan
  run([a],1.2);
  assert.ok(a.z>=-0.05&&a.z<2,a.z);
  assert.ok(Math.hypot(a.x-x,a.y-y)<3);
+});
+
+test('the item camera looks straight down, with no side shear',()=>{
+ assert.equal(SHEAR_X,0);
+ assert.equal(SHEAR_Z,0);
+ const m=obliqueMatrix(200,400);
+ assert.ok(m[4]===0&&m[5]===0);
+ assert.equal(m[15],1);
+ const at=(x,y,z)=>({x:m[0]*x+m[4]*y+m[8]*z+m[12],y:m[1]*x+m[5]*y+m[9]*z+m[13]});
+ const flat=at(100,0,200),lifted=at(100,48,200);
+ assert.ok(Math.abs(flat.x)<1e-6&&Math.abs(flat.y)<1e-6);
+ assert.ok(Math.abs(lifted.x-flat.x)<1e-6&&Math.abs(lifted.y-flat.y)<1e-6,'Höhe schiebt zur Seite');
 });
 
 test('pile pose stays clear of underwater tint and shows stack height',()=>{

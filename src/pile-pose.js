@@ -6,8 +6,9 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
 export const ROCK_GAIN=2.4;
 export const ROCK_LIMIT_DEG=28;
-export const SHEAR_X=-0.52;
-export const SHEAR_Z=-1.15;
+// Senkrechte Draufsicht: Höhe verschiebt das Teil nicht zur Seite.
+export const SHEAR_X=0;
+export const SHEAR_Z=0;
 // Mesh-Länge 1 → Pixel. Dicht genug, dass der Teppich die Fläche füllt.
 export const MESH_UNITS=2.15;
 export const MURK_DEPTH=34;
@@ -61,6 +62,8 @@ export function modelMatrix(pose,px){
  return mul(T,mul(rotZ(pose.roll),mul(rotX(pose.pitch),mul(rotY(pose.yaw),S))));
 }
 
+// Orthografisch von oben: X nach rechts, die Wasserachse (Z) nach unten,
+// die Höhe (Y) nur in die Tiefe, damit Lagen sich verdecken und nicht kippen.
 export function obliqueMatrix(width,height,shearX=SHEAR_X,shearZ=SHEAR_Z){
  const m=new Float32Array(16);
  m[0]=2/width;m[4]=2*shearX/width;m[12]=-1;
