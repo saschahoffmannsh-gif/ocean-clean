@@ -3,18 +3,18 @@
 // über der passenden Mulde sammelt es ein. Falsche Mulden stoßen es zurück.
 // Ist der Strand leer, wischt man nach links: der Wagen fährt weiter.
 import {stepBuoyancy} from '../water-13.0.0/ocean.js';
-import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v9';
-import {loadItemMeshes} from './item-mesh.js?v=20261106-v9';
-import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32} from './pile.js?v=20261106-v9';
-import {PileView,fallbackColor} from './pile-view.js?v=20261106-v9';
-import {pointerPoint} from './pile-pose.js?v=20261106-v9';
-import {waterRect} from './shore.js?v=20261106-v9';
-import {layoutTruck,wheelSpin} from './truck-layout.js?v=20261106-v9';
-import {releaseItem} from './sort-drop.js?v=20261106-v9';
-import {LEVELS,levelByIndex,spawnLevel} from './levels.js?v=20261106-v9';
-import {drivePose,isAdvanceSwipe} from './drive.js?v=20261106-v9';
-import {drawBeach} from './beach-draw.js?v=20261106-v9';
-import {loadPropMeshes} from './prop-mesh.js?v=20261106-v9';
+import {displayFloat,seaSway} from './trash-physics.js?v=20261106-v10';
+import {loadItemMeshes} from './item-mesh.js?v=20261106-v10';
+import {PILE_KINDS,advancePile,countFree,grabTarget,layoutPile,mulberry32} from './pile.js?v=20261106-v10';
+import {PileView,fallbackColor} from './pile-view.js?v=20261106-v10';
+import {pointerPoint} from './pile-pose.js?v=20261106-v10';
+import {waterRect} from './shore.js?v=20261106-v10';
+import {layoutTruck,wheelSpin} from './truck-layout.js?v=20261106-v10';
+import {releaseItem} from './sort-drop.js?v=20261106-v10';
+import {LEVELS,levelByIndex,spawnLevel} from './levels.js?v=20261106-v10';
+import {drivePose,isAdvanceSwipe} from './drive.js?v=20261106-v10';
+import {drawBeach,drawTruckShadow,plantsRevision,setPlantsImage} from './beach-draw.js?v=20261106-v10';
+import {loadPropMeshes} from './prop-mesh.js?v=20261106-v10';
 
 function canvas(className){
  const c=document.createElement('canvas');c.className=className;c.setAttribute('aria-hidden','true');return c;
@@ -40,6 +40,9 @@ export class PileLayer{
   if(this.view?.canvas)this.ocean.spray.before(this.view.canvas);
   this.ocean.root.append(this.fx);
   if(this.view?.active)this.canvas=this.view.canvas;
+  const plants=new Image();
+  plants.onload=()=>{setPlantsImage(plants);this.beachKey='';};
+  plants.src=new URL('../assets/shore/plants.png?v=20261106-v10',import.meta.url).href;
   if(this.input)this.input.carrying=()=>!!this.held||!!this.drive;
   this.resize();this.spawn();
   this.bind();
@@ -195,16 +198,31 @@ export class PileLayer{
   this.raf=requestAnimationFrame(()=>this.frame());
  }
  swayOf(b){return seaSway(b,this.sim.time||0,this.cfg.pile.sway);}
- paintBeach(){
-  const key=this.w+'x'+this.h+'x'+this.ocean.height;
-  if(this.beachKey===key)return;
+ ensureSand(){
+  const key=this.w+'x'+this.h+'x'+this.ocean.height+'x'+plantsRevision();
+  if(this.beachKey===key&&this.sand)return;
   this.beachKey=key;
-  const dpr=this.dpr,b=this.bctx;
-  b.setTransform(1,0,0,1,0,0);b.clearRect(0,0,this.beach.width,this.beach.height);b.setTransform(dpr,0,0,dpr,0,0);
-  drawBeach(b,this.w,this.ocean.height,this.h);
+  if(!this.sand)this.sand=document.createElement('canvas');
+  const dpr=this.dpr||1;
+  const W=Math.max(1,Math.round(this.w*dpr)),H=Math.max(1,Math.round(this.ocean.height*dpr));
+  if(this.sand.width!==W||this.sand.height!==H){this.sand.width=W;this.sand.height=H;}
+  const s=this.sand.getContext('2d');
+  s.setTransform(dpr,0,0,dpr,0,0);
+  s.clearRect(0,0,this.w,this.ocean.height);
+  drawBeach(s,this.w,this.ocean.height,this.h);
+ }
+ paintBeach(truck){
+  this.ensureSand();
+  const dpr=this.dpr||1,b=this.bctx;
+  b.setTransform(1,0,0,1,0,0);
+  b.clearRect(0,0,this.beach.width,this.beach.height);
+  b.drawImage(this.sand,0,0);
+  b.setTransform(dpr,0,0,dpr,0,0);
+  if(truck)drawTruckShadow(b,truck.foot);
  }
  draw(){
-  this.paintBeach();
+  const stage=this.truckNow();
+  this.paintBeach(stage);
   const dpr=this.dpr,s=this.sctx;s.setTransform(1,0,0,1,0,0);s.clearRect(0,0,this.shadow.width,this.shadow.height);s.setTransform(dpr,0,0,dpr,0,0);
   if(!this.view?.active)for(const b of this.bodies)this.flat(s,b);
   const f=this.fctx;f.setTransform(1,0,0,1,0,0);f.clearRect(0,0,this.fx.width,this.fx.height);f.setTransform(dpr,0,0,dpr,0,0);
@@ -215,7 +233,7 @@ export class PileLayer{
   }
   for(const p of this.droplets){const u=1-p.life/p.max;f.globalAlpha=Math.max(0,u)*.8;f.fillStyle='rgba(232,252,255,.95)';f.beginPath();f.arc(p.x,p.y,p.r,0,7);f.fill();}
   f.globalAlpha=1;
-  this.stage=this.truckNow();
+  this.stage=stage;
   this.view?.render(this,b=>this.swayOf(b));
  }
  flat(s,b){
@@ -229,7 +247,7 @@ export class PileLayer{
   const level=this.level(),left=this.bodies.length;
   if(this.drive&&!this.drive.spawned){el.textContent='Der Wagen fährt am Strand entlang.';return;}
   if(!left){el.textContent=`Strand ${level.id} ist leer. Wisch nach links, der Wagen fährt weiter.`;return;}
-  el.textContent=`Strand ${level.id} von ${LEVELS.length}. Heb ein Teil auf und lass es in die passende Mulde fallen. Noch ${left}.`;
+  el.textContent=`Strand ${level.id} · noch ${left}. In die passende Mulde fallen lassen.`;
  }
  stats(){const c=countFree(this.bodies,this.cfg.pile);return{...c,n:this.bodies.length,held:this.held?.kind.label||'',level:this.level().id,drive:!!this.drive};}
 }

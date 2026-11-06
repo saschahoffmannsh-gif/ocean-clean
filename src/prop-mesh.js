@@ -16,7 +16,7 @@ async function loadOne(fetchImpl, file) {
   if (fs && urlMod && fetchImpl === globalThis.fetch) {
     bytes = fs.readFileSync(urlMod.fileURLToPath(bare));
   } else {
-    const res = await fetchImpl(new URL('../assets/models/' + file + '?v=20261106-v9', import.meta.url));
+    const res = await fetchImpl(new URL('../assets/models/' + file + '?v=20261106-v10', import.meta.url));
     if (!res.ok) throw new Error('Modell fehlt: ' + file);
     bytes = new Uint8Array(await res.arrayBuffer());
   }

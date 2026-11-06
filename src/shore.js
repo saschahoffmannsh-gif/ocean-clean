@@ -1,9 +1,14 @@
-// Uferlinie im sichtbaren Spielfeld. y wächst nach unten.
-// Im Mittel liegt das Ufer bei zwei Dritteln der Höhe: darüber Meer, darunter Strand.
+// Ufer oben. y wächst nach unten: Strand im oberen Drittel, Meer darunter.
+// Die Wellen mitteln sich heraus, der Saum bleibt bei BEACH.
+export const BEACH = 0.37;
+
 export function shoreY(x, width, playH) {
   const t = width > 0 ? x / width : 0;
-  const wave = Math.sin(t * Math.PI * 2) * 12 + Math.sin(t * Math.PI * 5.2 + 1.1) * 7;
-  return playH * (2 / 3) + wave;
+  const s = playH / 844;
+  const wave = Math.sin(t * Math.PI * 2) * 16 * s
+    + Math.sin(t * Math.PI * 4.4 + 0.7) * 9 * s
+    + Math.sin(t * Math.PI * 9.1 + 0.2) * 3.5 * s;
+  return playH * BEACH + wave;
 }
 
 export function shoreRange(width, playH, steps = 32) {
@@ -18,15 +23,15 @@ export function shoreRange(width, playH, steps = 32) {
   return { min, max, avg: sum / (n + 1) };
 }
 
-// Rechteck, in dem Teile auf dem Wasser liegen. Unter dem Ufer ist Sand.
+// Teile treiben unter dem Schaum, nicht auf dem Sand.
 export function waterRect(width, playH) {
   const shore = shoreRange(width, playH);
-  const top = 78;
-  const bottom = shore.min - 24;
+  const top = shore.max + 36;
+  const bottom = playH - 20;
   return {
-    x: 16,
+    x: 18,
     y: top,
-    w: Math.max(40, width - 32),
+    w: Math.max(40, width - 36),
     h: Math.max(48, bottom - top),
     shore
   };

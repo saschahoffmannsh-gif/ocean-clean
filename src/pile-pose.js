@@ -6,9 +6,10 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
 export const ROCK_GAIN=2.4;
 export const ROCK_LIMIT_DEG=28;
-// Senkrechte Draufsicht: Höhe verschiebt das Teil nicht zur Seite.
+// Leichte Dreiviertelansicht vom Meer her: Höhe wandert zum Strand (nach oben).
+// Kein seitlicher Versatz, damit der Finger auf dem Teil bleibt.
 export const SHEAR_X=0;
-export const SHEAR_Z=0;
+export const SHEAR_Z=-0.52;
 // Mesh-Länge 1 → Pixel. Dicht genug, dass der Teppich die Fläche füllt.
 export const MESH_UNITS=2.15;
 export const MURK_DEPTH=34;

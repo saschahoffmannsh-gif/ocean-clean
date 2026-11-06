@@ -2,13 +2,17 @@
 // Die vier Mulden sitzen im Bett, von der Fahrerkabine (links, −X) nach hinten:
 // Plastik, Metall, Glas, Restmüll. Die Radkästen sind bei x ≈ ±0.30 leer.
 import { CATEGORIES } from './trash-catalog.js';
+import { shoreRange } from './shore.js';
+import { SHEAR_Z } from './pile-pose.js';
 
 export const TRUCK_MESH = Object.freeze({
   length: 0.9808961153030396,
   width: 0.3927612900733948,
   height: 0.3404083251953125,
-  wheelDiameter: 0.145,
-  axleZ: 0.212,
+  // Radkasten ~0.12 breit, Karosserie dort nur bis |z|≈0.165.
+  // Die Achse sitzt in der Wange, ein schmaler Streifen Reifen schaut heraus.
+  wheelDiameter: 0.12,
+  axleZ: 0.146,
   axles: Object.freeze([-0.300, 0.300]),
   holes: Object.freeze([
     Object.freeze({ category: 'plastik', x0: -0.129, x1: -0.037, z0: -0.046, z1: 0.046 }),
@@ -78,26 +82,28 @@ export function wheelSpin(distancePx, radiusPx) {
 
 export function layoutTruck(width, playH, centerX = null) {
   const mesh = TRUCK_MESH;
-  const shoreLow = playH * (2 / 3) - 19;
-  const beachH = playH - playH * (2 / 3);
+  const shore = shoreRange(width, playH);
+  const topPad = Math.max(36, playH * 0.045);
+  const foam = shore.min - 8;
+  const beachH = Math.max(48, foam - topPad);
   const depthRatio = mesh.width / mesh.length;
-  const lengthByWidth = width * 0.96;
-  const lengthByBeach = (beachH * 0.9) / depthRatio;
-  const length = Math.min(lengthByWidth, Math.max(width * 0.62, lengthByBeach));
+  const lengthByWidth = width * 0.9;
+  const lengthByBeach = (beachH * 0.72) / depthRatio;
+  const length = Math.min(lengthByWidth, Math.max(width * 0.7, lengthByBeach));
   const scale = length / mesh.length;
   const depth = mesh.width * scale;
   const cx = centerX == null ? width / 2 : centerX;
-  const margin = 8;
-  let centerY = (Math.max(shoreLow, playH * (2 / 3) - 8) + playH) / 2;
-  const minY = shoreLow + margin + depth / 2;
-  const maxY = playH - margin - depth / 2;
-  if (minY <= maxY) centerY = Math.min(maxY, Math.max(minY, centerY));
-  const origin = { x: cx, y: 0.8, z: centerY };
+  // Am Saum parken, Sand und Pflanzen bleiben darüber frei.
+  let centerY = foam - depth / 2 - 6;
+  if (centerY - depth / 2 < topPad) centerY = topPad + depth / 2;
+  const origin = { x: cx, y: 1.2, z: centerY };
+  // Die Mulden liegen etwas über dem Sand und wandern in der Dreiviertelansicht nach oben.
+  const rise = SHEAR_Z * (0.11 * scale);
   const bins = CATEGORIES.map((category, index) => {
     const hole = mesh.holes[index];
     const x0 = HIT_X[index], x1 = HIT_X[index + 1];
     const px = origin.x + x0 * scale;
-    const py = origin.z + HIT_Z0 * scale;
+    const py = origin.z + HIT_Z0 * scale + rise;
     return {
       index,
       category,
@@ -106,7 +112,7 @@ export function layoutTruck(width, playH, centerX = null) {
       w: (x1 - x0) * scale,
       h: (HIT_Z1 - HIT_Z0) * scale,
       cx: origin.x + ((x0 + x1) / 2) * scale,
-      cy: origin.z + ((HIT_Z0 + HIT_Z1) / 2) * scale,
+      cy: origin.z + ((HIT_Z0 + HIT_Z1) / 2) * scale + rise,
       hole
     };
   });

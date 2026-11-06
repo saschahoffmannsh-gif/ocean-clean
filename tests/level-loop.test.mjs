@@ -14,13 +14,14 @@ import { BASE_CONFIG } from '../src/config.js';
 
 const phone = { w: 390, h: 844 };
 
-test('the shore sits near two thirds so the beach is the bottom third', () => {
+test('the beach is the top band and the sea fills everything below it', () => {
   const range = shoreRange(phone.w, phone.h);
-  assert.ok(Math.abs(range.avg / phone.h - 2 / 3) < 0.03, range.avg);
-  assert.ok(range.max - range.min < 48, 'Ufer zu wild');
-  assert.ok(range.min > phone.h * 0.55);
+  assert.ok(Math.abs(range.avg / phone.h - 0.37) < 0.04, range.avg);
+  assert.ok(range.max - range.min < 70, 'Ufer zu wild');
+  assert.ok(range.max < phone.h * 0.5, 'Strand nicht oben');
   const water = waterRect(phone.w, phone.h);
-  assert.ok(water.y + water.h < range.min, 'Teile müssen über dem Ufer liegen');
+  assert.ok(water.y > range.max, 'Teile müssen unter dem Ufer liegen');
+  assert.ok(water.y + water.h > phone.h * 0.9, 'Meer reicht nicht nach unten');
   assert.ok(shoreY(0, phone.w, phone.h) !== shoreY(phone.w * 0.25, phone.w, phone.h));
 });
 
@@ -36,8 +37,10 @@ test('the truck is wider than half the screen and has four category bins', () =>
     assert.ok(a.x + a.w <= b.x + 0.6, 'Mulden überlappen');
     assert.ok(a.w > 36 && a.h > 36, 'Mulde zu klein ' + a.w + 'x' + a.h);
   }
-  const top = Math.min(...truck.bins.map((b) => b.y));
-  assert.ok(top > shoreRange(phone.w, phone.h).min - 8, 'Wagen liegt nicht auf dem Strand');
+  const shore = shoreRange(phone.w, phone.h);
+  const low = Math.max(...truck.bins.map((b) => b.y + b.h));
+  assert.ok(low < shore.max + 24, 'Wagen liegt nicht auf dem Strand ' + low + ' ' + shore.max);
+  assert.ok(truck.foot.y < shore.avg, 'Strand ist oben');
 });
 
 test('a drop collects only the matching bin and never by itself', () => {
@@ -52,10 +55,10 @@ test('a drop collects only the matching bin and never by itself', () => {
   const bad = releaseItem(glass, truck.bins, truck.foot);
   assert.equal(bad.type, 'reject');
   assert.notEqual(glass.collected, true);
-  assert.ok(glass.y < before - 8, 'nicht zurück zum Wasser');
-  assert.ok(glass.vy < 0);
+  assert.ok(glass.y > before + 8, 'nicht zurück ins Meer');
+  assert.ok(glass.vy > 0);
 
-  const sea = { kind: { category: 'metall' }, x: 40, y: 120, z: 0, vx: 9, vy: 4, vz: 0 };
+  const sea = { kind: { category: 'metall' }, x: 40, y: 640, z: 0, vx: 9, vy: 4, vz: 0 };
   assert.equal(releaseItem(sea, truck.bins, truck.foot).type, 'place');
   assert.notEqual(sea.collected, true);
 
@@ -119,7 +122,7 @@ test('ten beaches, each with its own trash, every category present', () => {
   assert.equal(bodies.length, 4);
   const shore = shoreRange(phone.w, phone.h);
   for (const body of bodies) {
-    assert.ok(body.y < shore.min - 8, body.y);
+    assert.ok(body.y > shore.max + 8, body.y);
     assert.equal(body.collected, undefined);
   }
   assert.equal(levelByIndex(10).id, 1);
@@ -147,8 +150,8 @@ test('truck and wheel glbs are web-sized and readable', async () => {
   assert.ok(Math.abs((minX + maxX) / 2) < 0.08 && Math.abs((minY + maxY) / 2) < 0.08, 'Rad nicht zentriert');
   assert.ok((maxZ - minZ) < diam, 'Achse sollte die kurze Seite sein');
   const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
-  assert.match(readme, /v2026\.11\.06-9/);
+  assert.match(readme, /v2026\.11\.06-10/);
   assert.match(readme, /Wisch/);
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(html, /2026\.11\.06-9/);
+  assert.match(html, /2026\.11\.06-10/);
 });
